@@ -358,7 +358,7 @@
         "Handle network errors and timeouts gracefully",
         "Configurable backend URL from chrome.storage.local"
       ],
-      "status": "planned",
+      "status": "done",
       "phase": "2D"
     },
     {
@@ -371,7 +371,7 @@
         "Stored in chrome.storage.local",
         "backend-client.ts reads URL from storage"
       ],
-      "status": "planned",
+      "status": "done",
       "phase": "2D"
     },
     {
@@ -383,7 +383,7 @@
         "Displayed alongside template description in step detail UI",
         "Graceful fallback to template if backend unavailable"
       ],
-      "status": "planned",
+      "status": "done",
       "phase": "2D"
     },
     {
@@ -395,7 +395,7 @@
         "Visual context includes UI elements, page context, layout type",
         "Analysis results viewable in step detail"
       ],
-      "status": "planned",
+      "status": "done",
       "phase": "2D"
     },
     {
@@ -407,7 +407,7 @@
         "Replaces manual toggle with intelligent detection",
         "Decision points visually highlighted in step list"
       ],
-      "status": "planned",
+      "status": "done",
       "phase": "2D"
     },
     {

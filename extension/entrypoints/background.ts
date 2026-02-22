@@ -8,6 +8,7 @@ import {
 } from '@/lib/storage/db';
 import { captureScreenshot } from '@/lib/capture/screenshot';
 import { generateDescription } from '@/lib/capture/description-generator';
+import { processActionWithBackend } from '@/lib/api/backend-client';
 import type {
   RecordingStatus,
   RecordingSession,
@@ -232,6 +233,38 @@ async function processAction(payload: ActionCapturedPayload) {
 
   broadcastStatus();
   saveState();
+
+  // Async enrichment — does not block action storage
+  enrichActionInBackground(action);
+}
+
+async function enrichActionInBackground(action: CapturedAction) {
+  try {
+    const result = await chrome.storage.local.get('backendUrl');
+    const backendUrl = result.backendUrl as string | undefined;
+    if (!backendUrl) return;
+
+    const enriched = await processActionWithBackend(
+      action,
+      action.screenshotDataUrl || '',
+      backendUrl,
+    );
+    if (!enriched) return;
+
+    const changes: Partial<CapturedAction> = {
+      llmDescription: enriched.humanDescription,
+      llmVisualAnalysis: enriched.visualAnalysis,
+    };
+
+    if (enriched.decisionAnalysis.isDecisionPoint) {
+      changes.decisionPoint = enriched.decisionAnalysis;
+    }
+
+    await updateAction(action.id, changes);
+    broadcastStatus();
+  } catch (err) {
+    console.warn('Background enrichment failed:', err);
+  }
 }
 
 // ─── Message Handler ────────────────────────────────────────────────────────

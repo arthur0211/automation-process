@@ -74,6 +74,34 @@ export function StepDetail({ action, onUpdate, onDelete }: StepDetailProps) {
         )}
       </div>
 
+      {/* AI Description (from backend enrichment) */}
+      {action.llmDescription && (
+        <div>
+          <label class="block text-xs font-medium text-gray-500 mb-1">AI Description</label>
+          <p class="text-sm text-gray-800 bg-blue-50 px-2 py-1.5 rounded">
+            {action.llmDescription}
+          </p>
+        </div>
+      )}
+
+      {/* Visual Analysis (from backend enrichment) */}
+      {action.llmVisualAnalysis && (
+        <div>
+          <label class="block text-xs font-medium text-gray-500 mb-1">Visual Analysis</label>
+          <div class="text-xs text-gray-600 bg-gray-50 px-2 py-1.5 rounded space-y-0.5">
+            {(action.llmVisualAnalysis as Record<string, any>).pageContext?.section && (
+              <p><span class="text-gray-400">Section:</span> {(action.llmVisualAnalysis as Record<string, any>).pageContext.section}</p>
+            )}
+            {(action.llmVisualAnalysis as Record<string, any>).layout && (
+              <p><span class="text-gray-400">Layout:</span> {(action.llmVisualAnalysis as Record<string, any>).layout}</p>
+            )}
+            {(action.llmVisualAnalysis as Record<string, any>).interactedElement?.description && (
+              <p><span class="text-gray-400">Element:</span> {(action.llmVisualAnalysis as Record<string, any>).interactedElement.description}</p>
+            )}
+          </div>
+        </div>
+      )}
+
       {/* Decision Point Toggle */}
       <div class="flex items-center gap-2">
         <label class="text-xs font-medium text-gray-500">Decision Point</label>
@@ -96,6 +124,18 @@ export function StepDetail({ action, onUpdate, onDelete }: StepDetailProps) {
             }`}
           />
         </button>
+        {action.decisionPoint.isDecisionPoint && action.decisionPoint.reason && (
+          <p class="text-xs text-gray-500">{action.decisionPoint.reason}</p>
+        )}
+        {action.decisionPoint.branches.length > 0 && (
+          <ul class="space-y-0.5">
+            {action.decisionPoint.branches.map((b, i) => (
+              <li key={i} class="text-xs text-gray-500">
+                <span class="font-medium">{b.condition}:</span> {b.description}
+              </li>
+            ))}
+          </ul>
+        )}
       </div>
 
       {/* Metadata */}

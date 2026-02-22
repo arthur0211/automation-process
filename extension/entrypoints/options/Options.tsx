@@ -4,12 +4,16 @@ import { DEFAULT_CAPTURE_SETTINGS } from '@/lib/types';
 
 export function Options() {
   const [settings, setSettings] = useState<CaptureSettings>(DEFAULT_CAPTURE_SETTINGS);
+  const [backendUrl, setBackendUrl] = useState('');
   const [saved, setSaved] = useState(false);
 
   useEffect(() => {
-    chrome.storage.local.get('settings', (result) => {
+    chrome.storage.local.get(['settings', 'backendUrl'], (result) => {
       if (result.settings) {
         setSettings({ ...DEFAULT_CAPTURE_SETTINGS, ...result.settings });
+      }
+      if (result.backendUrl) {
+        setBackendUrl(result.backendUrl as string);
       }
     });
   }, []);
@@ -20,7 +24,7 @@ export function Options() {
   }
 
   function handleSave() {
-    chrome.storage.local.set({ settings }, () => {
+    chrome.storage.local.set({ settings, backendUrl }, () => {
       setSaved(true);
       setTimeout(() => setSaved(false), 2000);
     });
@@ -106,6 +110,26 @@ export function Options() {
         >
           {saved ? 'Saved!' : 'Save Settings'}
         </button>
+      </div>
+
+      <div class="space-y-4 bg-white p-5 rounded-lg shadow-sm">
+        <h2 class="text-sm font-semibold text-gray-700">Backend Integration</h2>
+        <p class="text-xs text-gray-400">
+          Connect to an ADK backend for LLM-powered enrichment. Leave empty for template-only mode.
+        </p>
+        <div>
+          <label class="block text-xs font-medium text-gray-600 mb-1">Backend URL</label>
+          <input
+            type="url"
+            placeholder="http://localhost:8000"
+            value={backendUrl}
+            onInput={(e) => {
+              setBackendUrl((e.target as HTMLInputElement).value);
+              setSaved(false);
+            }}
+            class="w-full px-3 py-2 text-sm border border-gray-200 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-400"
+          />
+        </div>
       </div>
 
       <div class="space-y-4 bg-white p-5 rounded-lg shadow-sm">
