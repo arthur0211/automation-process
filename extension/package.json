@@ -10,7 +10,9 @@
     "build:firefox": "wxt build --browser firefox",
     "zip": "wxt zip",
     "zip:firefox": "wxt zip --browser firefox",
-    "postinstall": "wxt prepare"
+    "postinstall": "wxt prepare",
+    "test": "vitest run",
+    "test:watch": "vitest"
   },
   "dependencies": {
     "dexie": "^4.3.0",
@@ -22,7 +24,10 @@
     "@preact/preset-vite": "^2.10.3",
     "@tailwindcss/vite": "^4.2.0",
     "@types/chrome": "^0.1.37",
+    "fake-indexeddb": "^6.2.5",
+    "happy-dom": "^20.7.0",
     "tailwindcss": "^4.2.0",
-    "typescript": "^5.9.3"
+    "typescript": "^5.9.3",
+    "vitest": "^4.0.18"
   }
 }

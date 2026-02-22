@@ -20,6 +20,12 @@ export function ExportPanel({ session, actions }: ExportPanelProps) {
     downloadFile(html, `${session!.name}.html`, 'text/html');
   }
 
+  async function exportPlaywright() {
+    const { exportToPlaywright } = await import('@/lib/export/playwright-exporter');
+    const code = exportToPlaywright(session!, actions);
+    downloadFile(code, `${session!.name}.spec.ts`, 'text/plain');
+  }
+
   function downloadFile(content: string, filename: string, mimeType: string) {
     const blob = new Blob([content], { type: mimeType });
     const url = URL.createObjectURL(blob);
@@ -45,6 +51,12 @@ export function ExportPanel({ session, actions }: ExportPanelProps) {
           class="flex-1 px-3 py-1.5 text-xs font-medium text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200 transition-colors"
         >
           HTML (Human)
+        </button>
+        <button
+          onClick={exportPlaywright}
+          class="flex-1 px-3 py-1.5 text-xs font-medium text-green-700 bg-green-50 rounded-md hover:bg-green-100 transition-colors"
+        >
+          Playwright (.spec.ts)
         </button>
       </div>
     </div>
