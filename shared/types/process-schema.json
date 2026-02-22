@@ -1,0 +1,91 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "ProcessExport",
+  "description": "Structured export of a recorded web process, consumable by LLMs and automation agents",
+  "type": "object",
+  "required": ["version", "metadata", "steps"],
+  "properties": {
+    "version": {
+      "type": "string",
+      "const": "1.0.0"
+    },
+    "metadata": {
+      "type": "object",
+      "required": ["name", "createdAt", "totalSteps", "startUrl", "duration"],
+      "properties": {
+        "name": { "type": "string", "description": "Name of the recorded process" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "totalSteps": { "type": "integer", "minimum": 0 },
+        "startUrl": { "type": "string", "format": "uri" },
+        "duration": { "type": "number", "description": "Duration in milliseconds" }
+      }
+    },
+    "steps": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["stepNumber", "actionType", "url", "pageTitle", "element", "description", "timestamp"],
+        "properties": {
+          "stepNumber": { "type": "integer", "minimum": 1 },
+          "actionType": { "type": "string", "enum": ["click", "input", "scroll", "navigate", "submit"] },
+          "url": { "type": "string" },
+          "pageTitle": { "type": "string" },
+          "element": {
+            "type": "object",
+            "properties": {
+              "tag": { "type": "string" },
+              "id": { "type": "string" },
+              "classes": { "type": "array", "items": { "type": "string" } },
+              "text": { "type": "string", "description": "Visible text content of the element" },
+              "role": { "type": "string" },
+              "ariaLabel": { "type": "string" },
+              "name": { "type": "string" },
+              "type": { "type": "string" },
+              "href": { "type": "string" },
+              "placeholder": { "type": "string" },
+              "boundingBox": {
+                "type": "object",
+                "properties": {
+                  "x": { "type": "number" },
+                  "y": { "type": "number" },
+                  "width": { "type": "number" },
+                  "height": { "type": "number" }
+                }
+              },
+              "selectors": {
+                "type": "object",
+                "properties": {
+                  "css": { "type": "string" },
+                  "xpath": { "type": "string" },
+                  "role": { "type": "string" },
+                  "testId": { "type": "string" }
+                }
+              }
+            }
+          },
+          "description": { "type": "string", "description": "Human-readable description of the action" },
+          "note": { "type": "string", "description": "User-added note for this step" },
+          "screenshotDataUrl": { "type": "string", "description": "Base64-encoded screenshot" },
+          "decisionPoint": {
+            "type": "object",
+            "properties": {
+              "isDecisionPoint": { "type": "boolean" },
+              "reason": { "type": "string" },
+              "branches": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "condition": { "type": "string" },
+                    "description": { "type": "string" }
+                  }
+                }
+              }
+            }
+          },
+          "timestamp": { "type": "number" }
+        }
+      }
+    }
+  }
+}

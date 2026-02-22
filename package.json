@@ -1,0 +1,12 @@
+{
+  "name": "agentic-automation",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Chrome Extension that records and documents web processes for humans and LLMs",
+  "scripts": {
+    "dev": "npm run dev --workspace=extension",
+    "build": "npm run build --workspace=extension",
+    "zip": "npm run zip --workspace=extension"
+  },
+  "workspaces": ["extension"]
+}
