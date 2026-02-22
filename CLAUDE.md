@@ -5,8 +5,8 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## Project Overview
 
 Chrome Extension that records and documents web processes for humans and LLMs. Two-part architecture:
-- **Extension** (Phase 1 - complete): Captures user actions, screenshots, video; stores in IndexedDB; exports to JSON/HTML
-- **Backend** (Phase 2 - in progress): Google ADK agents on Vertex AI that enrich recordings with LLM analysis
+- **Extension** (Phases 1-2C complete): Captures user actions, screenshots, video; stores in IndexedDB; exports to JSON/HTML/Playwright; centralized Zustand state
+- **Backend** (Phase 2D - pending integration): Google ADK agents on Vertex AI that enrich recordings with LLM analysis
 
 ## Build & Run Commands
 
@@ -29,6 +29,14 @@ adk deploy cloud_run --region us-central1  # deploy to Cloud Run
 ```
 
 Backend requires Vertex AI env vars — see `backend/.env.example`.
+
+### Tests
+```bash
+cd extension
+npx vitest run           # run all tests (116 tests, vitest + happy-dom + fake-indexeddb)
+npx vitest               # watch mode
+npx tsc --noEmit         # type check (0 errors expected)
+```
 
 ### Root shortcuts (forward to extension)
 ```bash
@@ -67,14 +75,18 @@ Standalone agents (not in pipeline yet):
 `__init__.py` registers Claude in `LLMRegistry` before any agent imports — this order matters.
 
 ### Extension Key Modules
-- `lib/types.ts` — all TypeScript interfaces (`CapturedAction`, `RecordingSession`, `ElementMetadata`, etc.)
+- `lib/types.ts` — all TypeScript interfaces (`CapturedAction`, `RecordingSession`, `ElementMetadata`, `StatusPayload`, etc.)
 - `lib/storage/db.ts` — Dexie IndexedDB with tables: sessions, actions, videoBlobs
-- `lib/stores/recording-store.ts` — Zustand state for UI
-- `lib/capture/event-capture.ts` — DOM listeners (click, input, scroll, submit, SPA navigation polling)
-- `lib/capture/selector-generator.ts` — CSS/XPath selector generation with priority cascade
-- `lib/capture/description-generator.ts` — template-based descriptions (Phase 1; Phase 2 uses LLM)
-- `lib/api/backend-client.ts` — placeholder for Phase 2 backend integration (currently returns null)
-- `lib/export/json-exporter.ts` + `html-exporter.ts` — export to ProcessExport schema or styled HTML
+- `lib/stores/recording-store.ts` — Zustand vanilla store (single source of truth) + `useRecordingStore` hook via `useSyncExternalStore`
+- `lib/stores/recording-actions.ts` — async action creators that sync store mutations to IndexedDB (updateActionWithDb, deleteActionWithDb, reorderActionsWithDb, syncFromBackground, handleStatusUpdate)
+- `lib/hooks/use-background-sync.ts` — Preact hook for mount-time sync + STATUS_UPDATE listener (used in App.tsx and Popup.tsx)
+- `lib/capture/event-capture.ts` — DOM listeners (click, input, scroll, submit, change, SPA navigation polling)
+- `lib/capture/selector-generator.ts` — CSS/XPath selector generation with priority cascade and confidence scoring
+- `lib/capture/description-generator.ts` — template-based descriptions (Phase 1; Phase 2D will use LLM)
+- `lib/api/backend-client.ts` — placeholder for Phase 2D backend integration (currently returns null)
+- `lib/export/json-exporter.ts` — export to ProcessExport JSON schema
+- `lib/export/html-exporter.ts` — export to styled self-contained HTML
+- `lib/export/playwright-exporter.ts` — export to Playwright .spec.ts test with smart native locator cascade
 - `shared/types/process-schema.json` — JSON Schema v7 defining the export format
 
 ### Tech Stack
@@ -84,12 +96,21 @@ Standalone agents (not in pipeline yet):
 ## Conventions
 
 - Extension uses **Preact** (not React) — imports from `preact/hooks`, JSX pragma is `react-jsx` via config
+- Zustand store uses `zustand/vanilla` + `useSyncExternalStore` from `preact/compat` (not `useStore` from `zustand`, which requires React)
+- Action creators with DB side effects live in `recording-actions.ts`, separate from the synchronous store
 - ADK agents use `LlmAgent` (not `Agent` which is deprecated) from `google.adk.agents`
 - Each agent has an `output_key` that names its output in the pipeline context
 - WXT entrypoints follow convention: `entrypoints/<name>/` for UI pages, `entrypoints/<name>.ts` for scripts
 - Extension manifest permissions and keyboard shortcuts are defined in `wxt.config.ts`, not a separate manifest.json
 - IndexedDB compound index `[sessionId+sequenceNumber]` is used for ordered action queries
 - Path alias `@/*` maps to extension root in tsconfig
+- Tests use `vitest` + `happy-dom` + `fake-indexeddb`; chrome API mocks via `vi.stubGlobal`
+
+## Project Tracking
+
+- `features.json` — all features with acceptance criteria and status (done/planned)
+- `progress.md` — session state, commit history, next steps, known issues, architecture decisions
+- Update `progress.md` at the end of each session before `/clear`
 
 ## Environment Variables
 
