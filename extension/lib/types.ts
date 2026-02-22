@@ -54,6 +54,34 @@ export interface DecisionPoint {
   branches: DecisionBranch[];
 }
 
+// ─── Validation ─────────────────────────────────────────────────────────────
+
+export type ValidationStatus = 'pending' | 'running' | 'done' | 'error';
+
+export interface ValidationIssue {
+  step: number;
+  type: 'missing_step' | 'unclear' | 'inaccurate' | 'missing_decision';
+  description: string;
+}
+
+export interface ValidationSuggestion {
+  step: number;
+  suggestion: string;
+}
+
+export interface ValidationMissingStep {
+  afterStep: number;
+  description: string;
+}
+
+export interface ValidationResult {
+  overallScore: number;
+  issues: ValidationIssue[];
+  suggestions: ValidationSuggestion[];
+  missingSteps: ValidationMissingStep[];
+  summary: string;
+}
+
 // ─── Captured Action ────────────────────────────────────────────────────────
 
 export interface CapturedAction {
@@ -88,6 +116,8 @@ export interface RecordingSession {
   status: RecordingStatus;
   url: string;
   actionCount: number;
+  validationResult?: ValidationResult;
+  validationStatus?: ValidationStatus;
 }
 
 // ─── Process Export ─────────────────────────────────────────────────────────
@@ -113,6 +143,7 @@ export interface ProcessExport {
     totalSteps: number;
     startUrl: string;
     duration: number;
+    validation?: ValidationResult;
   };
   steps: ProcessStep[];
 }

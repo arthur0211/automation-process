@@ -2,21 +2,32 @@
 
 ## Current State
 
-- **Latest commit**: `feat(extension): integrate ADK backend for async action enrichment`
-- **Total commits**: 9
-- **Tests**: 122 passing (extension)
+- **Latest commit**: `feat(extension): add doc_validator and complex_analyzer agent integration`
+- **Total commits**: 10
+- **Tests**: 131 passing (extension)
 - **TS errors**: 0
-- **Extension**: Feature-complete for Phase 1 + 2A + 2B + 2C + 2D (pipeline)
-- **Backend**: ADK agents defined (7 agents), extension integration complete for pipeline (P2D-01 to P2D-05)
+- **Extension**: Feature-complete for Phase 1 + 2A + 2B + 2C + 2D (all)
+- **Backend**: ADK agents defined (7 agents), all 7 integrated with extension (pipeline + standalone)
 
 ## Completed This Session
 
-### Phase 2D: Backend Integration (Pipeline)
+### Phase 2D: Backend Integration (Pipeline — P2D-01 to P2D-05)
 - Rewrote `backend-client.ts` with real ADK API integration (POST /run + GET session state)
 - Added async enrichment in `background.ts` — actions stored immediately, enriched in background
 - Added Backend URL configuration to Options page (stored in `chrome.storage.local`)
 - Added AI Description, Visual Analysis, and Decision branches display in StepDetail
 - 6 new tests for backend-client (empty URL, ADK format, network error, 500, session GET fail, JSON string parsing)
+
+### Phase 2D: Standalone Agents (P2D-06 + P2D-07)
+- Added `validateRecordingWithBackend()` — calls doc_validator after stop, validates full recording
+- Added `analyzeComplexAction()` — calls complex_analyzer for low-confidence selectors (< 0.5)
+- Added ValidationResult/ValidationStatus types, stored on RecordingSession
+- Created ValidationPanel component (score badge, summary, issues, missing steps)
+- Added "Deep Analysis" badge, confidence, and reasoning in StepDetail
+- Added standaloneAgentsUrl config in Options page
+- Created backend entry points: `validator_app.py`, `analyzer_app.py`
+- Validation included in JSON export (metadata.validation) and HTML export (report block)
+- 9 new tests (5 validateRecording + 4 analyzeComplex)
 
 ### Previous Sessions
 - Phase 2C: Zustand Store Migration (centralized store, action creators, useBackgroundSync)
@@ -32,12 +43,9 @@
 6. `chore: add features.json with complete project feature tracking` — 38 features with acceptance criteria and status
 7. `docs: update README and CLAUDE.md with current architecture` — Playwright in diagram, tests in tech stack, project status
 8. `feat(extension): integrate ADK backend for async action enrichment` — backend-client, Options URL, StepDetail enriched display, 6 tests
+9. `feat(extension): add doc_validator and complex_analyzer agent integration` — validation after stop, complex analysis for low-confidence, ValidationPanel, export integration, 9 tests
 
 ## Next Steps
-
-### Phase 2D: Remaining (standalone agents)
-1. **P2D-06**: Add doc_validator to export/review flow
-2. **P2D-07**: Add complex_analyzer for low-confidence actions
 
 ### Future Backlog
 - FUTURE-01: Video playback/export in HTML report

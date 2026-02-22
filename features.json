@@ -419,7 +419,7 @@
         "Reports missing steps, unclear descriptions, quality score",
         "Validation results displayed in export panel"
       ],
-      "status": "planned",
+      "status": "done",
       "phase": "2D"
     },
     {
@@ -431,7 +431,7 @@
         "Claude Sonnet 4.6 via Vertex AI LLMRegistry",
         "Higher confidence results replace primary analysis"
       ],
-      "status": "planned",
+      "status": "done",
       "phase": "2D"
     },
     {

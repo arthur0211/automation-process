@@ -6,6 +6,7 @@ import { RecordingControls } from './components/RecordingControls';
 import { StepList } from './components/StepList';
 import { StepDetail } from './components/StepDetail';
 import { ExportPanel } from './components/ExportPanel';
+import { ValidationPanel } from './components/ValidationPanel';
 
 export function App() {
   useBackgroundSync();
@@ -65,6 +66,7 @@ export function App() {
         />
       )}
 
+      <ValidationPanel session={session} />
       <ExportPanel session={session} actions={actions} />
     </div>
   );

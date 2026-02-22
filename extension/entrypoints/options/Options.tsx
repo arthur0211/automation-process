@@ -5,15 +5,19 @@ import { DEFAULT_CAPTURE_SETTINGS } from '@/lib/types';
 export function Options() {
   const [settings, setSettings] = useState<CaptureSettings>(DEFAULT_CAPTURE_SETTINGS);
   const [backendUrl, setBackendUrl] = useState('');
+  const [standaloneAgentsUrl, setStandaloneAgentsUrl] = useState('');
   const [saved, setSaved] = useState(false);
 
   useEffect(() => {
-    chrome.storage.local.get(['settings', 'backendUrl'], (result) => {
+    chrome.storage.local.get(['settings', 'backendUrl', 'standaloneAgentsUrl'], (result) => {
       if (result.settings) {
         setSettings({ ...DEFAULT_CAPTURE_SETTINGS, ...result.settings });
       }
       if (result.backendUrl) {
         setBackendUrl(result.backendUrl as string);
+      }
+      if (result.standaloneAgentsUrl) {
+        setStandaloneAgentsUrl(result.standaloneAgentsUrl as string);
       }
     });
   }, []);
@@ -24,7 +28,7 @@ export function Options() {
   }
 
   function handleSave() {
-    chrome.storage.local.set({ settings, backendUrl }, () => {
+    chrome.storage.local.set({ settings, backendUrl, standaloneAgentsUrl }, () => {
       setSaved(true);
       setTimeout(() => setSaved(false), 2000);
     });
@@ -129,6 +133,22 @@ export function Options() {
             }}
             class="w-full px-3 py-2 text-sm border border-gray-200 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-400"
           />
+        </div>
+        <div>
+          <label class="block text-xs font-medium text-gray-600 mb-1">Standalone Agents URL</label>
+          <input
+            type="url"
+            placeholder="http://localhost:8001"
+            value={standaloneAgentsUrl}
+            onInput={(e) => {
+              setStandaloneAgentsUrl((e.target as HTMLInputElement).value);
+              setSaved(false);
+            }}
+            class="w-full px-3 py-2 text-sm border border-gray-200 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-400"
+          />
+          <p class="text-xs text-gray-400 mt-1">
+            For doc_validator and complex_analyzer agents. Leave empty to disable.
+          </p>
         </div>
       </div>
 

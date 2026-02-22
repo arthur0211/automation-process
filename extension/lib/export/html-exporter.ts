@@ -78,6 +78,16 @@ export function exportToHtml(
     ${sorted.length} steps &middot; ${formatTime(duration)} &middot; Started at ${escapeHtml(session.url)}
   </div>
   ${stepsHtml}
+  ${session.validationResult ? `
+  <div class="step" style="border-left: 3px solid ${session.validationResult.overallScore >= 7 ? '#22c55e' : session.validationResult.overallScore >= 4 ? '#eab308' : '#ef4444'}; margin-top: 2rem;">
+    <div class="step-header">
+      <span class="step-number" style="background: ${session.validationResult.overallScore >= 7 ? '#22c55e' : session.validationResult.overallScore >= 4 ? '#eab308' : '#ef4444'}">${session.validationResult.overallScore}</span>
+      <span class="step-action">VALIDATION REPORT</span>
+    </div>
+    <div class="step-description">${escapeHtml(session.validationResult.summary)}</div>
+    ${session.validationResult.issues.length > 0 ? `<div class="step-note"><strong>Issues:</strong><ul style="margin:0.25rem 0 0 1rem">${session.validationResult.issues.map(i => `<li>Step ${i.step}: ${escapeHtml(i.description)}</li>`).join('')}</ul></div>` : ''}
+    ${session.validationResult.missingSteps.length > 0 ? `<div class="step-note"><strong>Missing Steps:</strong><ul style="margin:0.25rem 0 0 1rem">${session.validationResult.missingSteps.map(ms => `<li>After step ${ms.afterStep}: ${escapeHtml(ms.description)}</li>`).join('')}</ul></div>` : ''}
+  </div>` : ''}
 </body>
 </html>`;
 }

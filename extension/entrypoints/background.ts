@@ -8,7 +8,7 @@ import {
 } from '@/lib/storage/db';
 import { captureScreenshot } from '@/lib/capture/screenshot';
 import { generateDescription } from '@/lib/capture/description-generator';
-import { processActionWithBackend } from '@/lib/api/backend-client';
+import { processActionWithBackend, validateRecordingWithBackend, analyzeComplexAction } from '@/lib/api/backend-client';
 import type {
   RecordingStatus,
   RecordingSession,
@@ -150,6 +150,11 @@ async function stopRecording(tabId: number) {
 
   broadcastStatus();
   saveState();
+
+  // Async validation — does not block stop
+  if (currentSession) {
+    validateRecordingInBackground(currentSession.id);
+  }
 }
 
 // ─── Tab Capture (Video Recording) ─────────────────────────────────────────
@@ -238,6 +243,8 @@ async function processAction(payload: ActionCapturedPayload) {
   enrichActionInBackground(action);
 }
 
+const COMPLEX_ANALYSIS_CONFIDENCE_THRESHOLD = 0.5;
+
 async function enrichActionInBackground(action: CapturedAction) {
   try {
     const result = await chrome.storage.local.get('backendUrl');
@@ -262,8 +269,73 @@ async function enrichActionInBackground(action: CapturedAction) {
 
     await updateAction(action.id, changes);
     broadcastStatus();
+
+    // Trigger complex analysis for low-confidence selectors
+    if (
+      action.element.selectors.confidence !== undefined &&
+      action.element.selectors.confidence < COMPLEX_ANALYSIS_CONFIDENCE_THRESHOLD
+    ) {
+      analyzeComplexActionInBackground(action, enriched.visualAnalysis);
+    }
   } catch (err) {
     console.warn('Background enrichment failed:', err);
+  }
+}
+
+async function validateRecordingInBackground(sessionId: string) {
+  try {
+    const result = await chrome.storage.local.get('standaloneAgentsUrl');
+    const agentsUrl = result.standaloneAgentsUrl as string | undefined;
+    if (!agentsUrl) return;
+
+    await updateSession(sessionId, { validationStatus: 'running' });
+    broadcastStatus();
+
+    const session = await getSession(sessionId);
+    if (!session) return;
+    const actions = await getSessionActions(sessionId);
+
+    const validationResult = await validateRecordingWithBackend(session, actions, agentsUrl);
+
+    if (validationResult) {
+      await updateSession(sessionId, { validationResult, validationStatus: 'done' });
+    } else {
+      await updateSession(sessionId, { validationStatus: 'error' });
+    }
+    broadcastStatus();
+  } catch (err) {
+    console.warn('Background validation failed:', err);
+    await updateSession(sessionId, { validationStatus: 'error' }).catch(() => {});
+    broadcastStatus();
+  }
+}
+
+async function analyzeComplexActionInBackground(
+  action: CapturedAction,
+  originalAnalysis: Record<string, unknown>,
+) {
+  try {
+    const result = await chrome.storage.local.get('standaloneAgentsUrl');
+    const agentsUrl = result.standaloneAgentsUrl as string | undefined;
+    if (!agentsUrl) return;
+
+    const complexResult = await analyzeComplexAction(
+      action,
+      originalAnalysis,
+      action.screenshotDataUrl || '',
+      agentsUrl,
+    );
+    if (!complexResult) return;
+
+    // Only replace if complex analysis has higher confidence
+    if (complexResult.confidence > (action.element.selectors.confidence || 0)) {
+      await updateAction(action.id, {
+        llmVisualAnalysis: complexResult as unknown as Record<string, unknown>,
+      });
+      broadcastStatus();
+    }
+  } catch (err) {
+    console.warn('Complex analysis failed:', err);
   }
 }
 

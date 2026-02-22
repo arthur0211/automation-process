@@ -5,7 +5,9 @@ import type {
   ElementSelector,
   BoundingBox,
   DecisionPoint,
+  ValidationResult,
 } from '../lib/types';
+import type { ComplexAnalysis } from '../lib/api/backend-client';
 
 export function createSelector(overrides: Partial<ElementSelector> = {}): ElementSelector {
   return {
@@ -77,6 +79,30 @@ export function createSession(overrides: Partial<RecordingSession> = {}): Record
     status: 'recording',
     url: 'https://example.com',
     actionCount: 0,
+    ...overrides,
+  };
+}
+
+export function createValidationResult(overrides: Partial<ValidationResult> = {}): ValidationResult {
+  return {
+    overallScore: 8,
+    issues: [],
+    suggestions: [],
+    missingSteps: [],
+    summary: 'Good quality documentation.',
+    ...overrides,
+  };
+}
+
+export function createComplexAnalysis(overrides: Partial<ComplexAnalysis> = {}): ComplexAnalysis {
+  return {
+    elements: [{ type: 'button', text: 'Submit', position: 'center' }],
+    interactedElement: { type: 'button', text: 'Submit', description: 'Submit form button' },
+    pageContext: { app: 'Example App', section: 'Login', workflow: 'Authentication' },
+    statusIndicators: [],
+    layout: 'form',
+    confidence: 0.92,
+    reasoning: 'High confidence based on unique button text and form context',
     ...overrides,
   };
 }

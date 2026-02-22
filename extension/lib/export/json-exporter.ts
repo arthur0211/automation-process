@@ -29,6 +29,7 @@ export function exportToJson(
       totalSteps: sorted.length,
       startUrl: session.url,
       duration: (session.stoppedAt || Date.now()) - session.startedAt,
+      ...(session.validationResult && { validation: session.validationResult }),
     },
     steps: sorted.map(actionToStep),
   };
