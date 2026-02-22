@@ -1,0 +1,498 @@
+{
+  "version": "1.0.0",
+  "lastUpdated": "2026-02-22",
+  "features": [
+    {
+      "id": "P1-01",
+      "name": "Event capture",
+      "description": "Capture user interactions: click, input, scroll, navigate, submit, change events from the DOM",
+      "acceptanceCriteria": [
+        "Click events captured with coordinates",
+        "Input events debounced and captured with final value",
+        "Scroll events throttled and captured with position",
+        "Form submit events captured",
+        "SPA navigation detected via History API polling",
+        "Change events captured for select, date, time, color, range inputs"
+      ],
+      "status": "done",
+      "phase": "1"
+    },
+    {
+      "id": "P1-02",
+      "name": "Element metadata and smart selectors",
+      "description": "Extract comprehensive element metadata with CSS/XPath selectors and confidence scoring",
+      "acceptanceCriteria": [
+        "Tag, id, classes, text, role, aria-label, name, type, href, placeholder extracted",
+        "CSS selector generated with priority cascade: data-testid > id > aria-label > classes > name > nth-of-type",
+        "XPath selector generated",
+        "Confidence score assigned based on selector stability (0.20-0.95)",
+        "BoundingBox captured for element position"
+      ],
+      "status": "done",
+      "phase": "1"
+    },
+    {
+      "id": "P1-03",
+      "name": "Screenshot capture",
+      "description": "Capture visible tab screenshot after each action with configurable JPEG quality",
+      "acceptanceCriteria": [
+        "Screenshot taken via chrome.tabs.captureVisibleTab",
+        "Quality configurable via settings (40-100)",
+        "Screenshot stored as data URL in CapturedAction",
+        "Graceful failure if screenshot fails"
+      ],
+      "status": "done",
+      "phase": "1"
+    },
+    {
+      "id": "P1-04",
+      "name": "Tab video recording",
+      "description": "Record tab video via MediaRecorder in offscreen document",
+      "acceptanceCriteria": [
+        "Video capture via chrome.tabCapture.getMediaStreamId",
+        "Offscreen document handles MediaRecorder",
+        "Video blob saved to IndexedDB on stop",
+        "Start/stop lifecycle managed by background service worker"
+      ],
+      "status": "done",
+      "phase": "1"
+    },
+    {
+      "id": "P1-05",
+      "name": "Template-based description generation",
+      "description": "Generate human-readable descriptions for captured actions using templates",
+      "acceptanceCriteria": [
+        "Each action type has a description template",
+        "Templates use element metadata (text, aria-label, placeholder, name, id, tag)",
+        "Descriptions are concise and readable"
+      ],
+      "status": "done",
+      "phase": "1"
+    },
+    {
+      "id": "P1-06",
+      "name": "IndexedDB storage via Dexie",
+      "description": "Persistent storage for sessions, actions, and video blobs using Dexie ORM over IndexedDB",
+      "acceptanceCriteria": [
+        "Sessions table with CRUD operations",
+        "Actions table with compound index [sessionId+sequenceNumber]",
+        "VideoBlobs table for recorded videos",
+        "Ordered action queries by session",
+        "Transaction support for cascading deletes"
+      ],
+      "status": "done",
+      "phase": "1"
+    },
+    {
+      "id": "P1-07",
+      "name": "SidePanel UI",
+      "description": "Chrome side panel showing step list, step detail, notes editing, and export controls",
+      "acceptanceCriteria": [
+        "Step list view with action type icons and descriptions",
+        "Step detail view with full metadata and screenshot",
+        "Notes editing per step with save",
+        "Navigation between list and detail views",
+        "Drag reorder of steps"
+      ],
+      "status": "done",
+      "phase": "1"
+    },
+    {
+      "id": "P1-08",
+      "name": "Popup UI",
+      "description": "Browser action popup with recording controls and status display",
+      "acceptanceCriteria": [
+        "Start/Stop/Pause/Resume buttons based on status",
+        "Status indicator with color and label",
+        "Action count display during recording",
+        "Open side panel button",
+        "Keyboard shortcut hints displayed"
+      ],
+      "status": "done",
+      "phase": "1"
+    },
+    {
+      "id": "P1-09",
+      "name": "Options page",
+      "description": "Extension options page for configuring screenshot quality and throttle/debounce timers",
+      "acceptanceCriteria": [
+        "Screenshot quality slider (40-100%)",
+        "Scroll throttle interval setting (500-3000ms)",
+        "Input debounce interval setting (200-2000ms)",
+        "Settings persisted to chrome.storage.local",
+        "Clear All Data button"
+      ],
+      "status": "done",
+      "phase": "1"
+    },
+    {
+      "id": "P1-10",
+      "name": "JSON export",
+      "description": "Export recording session to ProcessExport JSON schema v1.0.0",
+      "acceptanceCriteria": [
+        "Exports to ProcessExport format with metadata and steps",
+        "Triggers file download with .json extension",
+        "Includes all action data, selectors, screenshots, and decision points"
+      ],
+      "status": "done",
+      "phase": "1"
+    },
+    {
+      "id": "P1-11",
+      "name": "HTML export",
+      "description": "Export recording session to styled, self-contained HTML document",
+      "acceptanceCriteria": [
+        "Self-contained HTML with inline CSS",
+        "Step cards with screenshots and decision badges",
+        "Readable format for documentation sharing"
+      ],
+      "status": "done",
+      "phase": "1"
+    },
+    {
+      "id": "P1-12",
+      "name": "Keyboard shortcuts",
+      "description": "Global keyboard shortcuts for recording control",
+      "acceptanceCriteria": [
+        "Ctrl+Shift+R starts recording",
+        "Ctrl+Shift+P pauses/resumes recording",
+        "Ctrl+Shift+S stops recording",
+        "Shortcuts defined in wxt.config.ts manifest"
+      ],
+      "status": "done",
+      "phase": "1"
+    },
+    {
+      "id": "P2A-01",
+      "name": "Wire user settings to capture pipeline",
+      "description": "Connect chrome.storage.local settings to event capture and screenshot pipeline",
+      "acceptanceCriteria": [
+        "Settings loaded on recording start",
+        "Screenshot quality, scroll throttle, input debounce use stored settings",
+        "Falls back to DEFAULT_CAPTURE_SETTINGS if no stored settings"
+      ],
+      "status": "done",
+      "phase": "2A"
+    },
+    {
+      "id": "P2A-02",
+      "name": "Fix stop-to-idle race condition",
+      "description": "Recording stays in stopped state for review instead of immediately going idle",
+      "acceptanceCriteria": [
+        "Status transitions to stopped (not idle) on stop",
+        "Last session remains visible for review",
+        "New recording starts fresh from stopped state"
+      ],
+      "status": "done",
+      "phase": "2A"
+    },
+    {
+      "id": "P2A-03",
+      "name": "Password input masking",
+      "description": "Mask password field values before storing in IndexedDB",
+      "acceptanceCriteria": [
+        "Input type=password captured as masked value",
+        "Actual password never stored in IndexedDB or exports"
+      ],
+      "status": "done",
+      "phase": "2A"
+    },
+    {
+      "id": "P2A-04",
+      "name": "Push-based STATUS_UPDATE",
+      "description": "Replace polling-based status checks with push-based STATUS_UPDATE broadcasts from background",
+      "acceptanceCriteria": [
+        "Background broadcasts STATUS_UPDATE on every state change",
+        "SidePanel and Popup listen for STATUS_UPDATE messages",
+        "No interval-based polling for status"
+      ],
+      "status": "done",
+      "phase": "2A"
+    },
+    {
+      "id": "P2A-05",
+      "name": "Persist drag reorder to IndexedDB",
+      "description": "Save step reorder changes to IndexedDB with updated sequenceNumbers",
+      "acceptanceCriteria": [
+        "Drag reorder updates sequenceNumber in DB via transaction",
+        "Reloading side panel preserves step order"
+      ],
+      "status": "done",
+      "phase": "2A"
+    },
+    {
+      "id": "P2A-06",
+      "name": "Unified message listener",
+      "description": "Consolidate multiple chrome.runtime.onMessage listeners into single switch handler",
+      "acceptanceCriteria": [
+        "Single onMessage.addListener in background.ts",
+        "Switch/case pattern for message routing",
+        "Async handlers return true for sendResponse"
+      ],
+      "status": "done",
+      "phase": "2A"
+    },
+    {
+      "id": "P2A-07",
+      "name": "Service worker state persistence",
+      "description": "Persist recording state to chrome.storage.session to survive MV3 service worker termination",
+      "acceptanceCriteria": [
+        "Status, sessionId, actionCount saved to chrome.storage.session",
+        "State restored on service worker restart via loadState()",
+        "Active session recoverable after SW termination"
+      ],
+      "status": "done",
+      "phase": "2A"
+    },
+    {
+      "id": "P2A-08",
+      "name": "Prioritize data-testid in selectors",
+      "description": "Add data-testid and data-test-id as highest priority selector strategy",
+      "acceptanceCriteria": [
+        "data-testid checked before id in CSS selector generation",
+        "data-test-id as alias also supported",
+        "Confidence score 0.95 for data-testid selectors"
+      ],
+      "status": "done",
+      "phase": "2A"
+    },
+    {
+      "id": "P2A-09",
+      "name": "Change events for special inputs",
+      "description": "Capture change events for select, date, time, color, range inputs",
+      "acceptanceCriteria": [
+        "Select element changes captured",
+        "Date/time/datetime-local/month/week input changes captured",
+        "Color picker and range slider changes captured"
+      ],
+      "status": "done",
+      "phase": "2A"
+    },
+    {
+      "id": "P2A-10",
+      "name": "Confidence scoring for selectors",
+      "description": "Assign stability confidence scores to generated CSS selectors",
+      "acceptanceCriteria": [
+        "Scores: data-testid 0.95, id 0.90, aria-label 0.85, name 0.80, class 0.60, nth-of-type 0.20",
+        "Score stored in ElementSelector.confidence",
+        "Used by Playwright exporter for locator selection"
+      ],
+      "status": "done",
+      "phase": "2A"
+    },
+    {
+      "id": "P2A-11",
+      "name": "Delete step with confirmation",
+      "description": "Allow deleting individual steps from the recording with confirmation dialog",
+      "acceptanceCriteria": [
+        "Delete button on step detail view",
+        "Confirmation dialog before delete",
+        "Step removed from IndexedDB and UI"
+      ],
+      "status": "done",
+      "phase": "2A"
+    },
+    {
+      "id": "P2B-01",
+      "name": "Playwright test exporter",
+      "description": "Export recording as executable Playwright test script with smart native locator cascade",
+      "acceptanceCriteria": [
+        "Generates valid .spec.ts Playwright test file",
+        "Locator cascade: getByTestId > getByRole > getByLabel > getByPlaceholder > getByText > locator(css)",
+        "Handles click, input, scroll, navigate, submit action types",
+        "Password inputs use fill with masked placeholder",
+        "Confidence scores included as comments",
+        "17 tests passing"
+      ],
+      "status": "done",
+      "phase": "2B"
+    },
+    {
+      "id": "P2C-01",
+      "name": "Zustand store as single source of truth",
+      "description": "Centralized Zustand store replacing duplicated local state in 3 UI components",
+      "acceptanceCriteria": [
+        "recordingStore with zustand/vanilla createStore",
+        "useRecordingStore hook via useSyncExternalStore (Preact compat)",
+        "State: status, session, actions, actionCount, error, selectedActionId, view",
+        "App.tsx, RecordingControls.tsx, Popup.tsx use store instead of local state",
+        "~60 lines of duplicated state eliminated"
+      ],
+      "status": "done",
+      "phase": "2C"
+    },
+    {
+      "id": "P2C-02",
+      "name": "Action creators with DB sync",
+      "description": "Async action creators that sync Zustand store mutations to IndexedDB",
+      "acceptanceCriteria": [
+        "updateActionWithDb: updates DB then store",
+        "deleteActionWithDb: deletes from DB, removes from store, clears selection",
+        "reorderActionsWithDb: reorders in store and persists to DB",
+        "syncFromBackground: sends GET_STATUS and populates store from DB",
+        "handleStatusUpdate: processes STATUS_UPDATE messages into store"
+      ],
+      "status": "done",
+      "phase": "2C"
+    },
+    {
+      "id": "P2C-03",
+      "name": "useBackgroundSync hook",
+      "description": "Preact hook that syncs UI state with background service worker on mount and listens for STATUS_UPDATE",
+      "acceptanceCriteria": [
+        "Calls syncFromBackground on mount",
+        "Listens for STATUS_UPDATE messages via chrome.runtime.onMessage",
+        "Cleans up listener on unmount",
+        "Used by both SidePanel App.tsx and Popup.tsx entry points"
+      ],
+      "status": "done",
+      "phase": "2C"
+    },
+    {
+      "id": "P2D-01",
+      "name": "Implement backend-client.ts",
+      "description": "Connect extension to ADK backend for LLM-powered action enrichment",
+      "acceptanceCriteria": [
+        "POST action + screenshot to backend API endpoint",
+        "Receive enriched description, visual analysis, decision analysis",
+        "Handle network errors and timeouts gracefully",
+        "Configurable backend URL from chrome.storage.local"
+      ],
+      "status": "planned",
+      "phase": "2D"
+    },
+    {
+      "id": "P2D-02",
+      "name": "Backend URL configuration",
+      "description": "Add backend URL setting to Options page",
+      "acceptanceCriteria": [
+        "Text input for backend URL in Options page",
+        "URL validated before save",
+        "Stored in chrome.storage.local",
+        "backend-client.ts reads URL from storage"
+      ],
+      "status": "planned",
+      "phase": "2D"
+    },
+    {
+      "id": "P2D-03",
+      "name": "LLM description enrichment",
+      "description": "Enrich action descriptions with LLM-generated natural language via Gemini description_generator agent",
+      "acceptanceCriteria": [
+        "llmDescription field populated from description_generator agent response",
+        "Displayed alongside template description in step detail UI",
+        "Graceful fallback to template if backend unavailable"
+      ],
+      "status": "planned",
+      "phase": "2D"
+    },
+    {
+      "id": "P2D-04",
+      "name": "Visual analysis from Gemini",
+      "description": "Analyze screenshots with Gemini vision via screenshot_analyzer agent",
+      "acceptanceCriteria": [
+        "llmVisualAnalysis field populated from screenshot_analyzer agent response",
+        "Visual context includes UI elements, page context, layout type",
+        "Analysis results viewable in step detail"
+      ],
+      "status": "planned",
+      "phase": "2D"
+    },
+    {
+      "id": "P2D-05",
+      "name": "Intelligent decision point detection",
+      "description": "Use decision_detector agent to identify decision points and document alternative branches",
+      "acceptanceCriteria": [
+        "DecisionPoint populated with isDecisionPoint, reason, branches from agent",
+        "Replaces manual toggle with intelligent detection",
+        "Decision points visually highlighted in step list"
+      ],
+      "status": "planned",
+      "phase": "2D"
+    },
+    {
+      "id": "P2D-06",
+      "name": "Process documentation validation",
+      "description": "Validate completeness and quality of recorded process via doc_validator agent (Gemini Pro)",
+      "acceptanceCriteria": [
+        "doc_validator reviews full recording after stop",
+        "Reports missing steps, unclear descriptions, quality score",
+        "Validation results displayed in export panel"
+      ],
+      "status": "planned",
+      "phase": "2D"
+    },
+    {
+      "id": "P2D-07",
+      "name": "Complex analysis for edge cases",
+      "description": "Use complex_analyzer agent (Claude Sonnet via Vertex) for deep analysis of ambiguous actions",
+      "acceptanceCriteria": [
+        "Triggered for low-confidence actions from primary pipeline",
+        "Claude Sonnet 4.6 via Vertex AI LLMRegistry",
+        "Higher confidence results replace primary analysis"
+      ],
+      "status": "planned",
+      "phase": "2D"
+    },
+    {
+      "id": "FUTURE-01",
+      "name": "Video playback and export",
+      "description": "Embed recorded tab video in HTML export with playback controls",
+      "acceptanceCriteria": [
+        "Video blob embedded or linked in HTML export",
+        "Playback controls in HTML report",
+        "Timeline synced with step list"
+      ],
+      "status": "planned",
+      "phase": "future"
+    },
+    {
+      "id": "FUTURE-02",
+      "name": "Session management",
+      "description": "List, rename, and delete recording sessions from the side panel",
+      "acceptanceCriteria": [
+        "Session list view with all recordings",
+        "Rename session functionality",
+        "Delete session with confirmation (cascades to actions and video)"
+      ],
+      "status": "planned",
+      "phase": "future"
+    },
+    {
+      "id": "FUTURE-03",
+      "name": "Import recordings",
+      "description": "Import previously exported JSON recordings back into the extension",
+      "acceptanceCriteria": [
+        "File picker for JSON import",
+        "Validate against ProcessExport schema",
+        "Create session and actions in IndexedDB"
+      ],
+      "status": "planned",
+      "phase": "future"
+    },
+    {
+      "id": "FUTURE-04",
+      "name": "Multi-tab recording",
+      "description": "Record actions across multiple browser tabs in a single session",
+      "acceptanceCriteria": [
+        "Content script injected in all tabs during recording",
+        "Actions tagged with tab identifier",
+        "Tab switches captured as navigation events"
+      ],
+      "status": "planned",
+      "phase": "future"
+    },
+    {
+      "id": "FUTURE-05",
+      "name": "Cloud sync and sharing",
+      "description": "Sync recordings to cloud storage and share with team members",
+      "acceptanceCriteria": [
+        "Cloud storage backend for recordings",
+        "Share links for individual recordings",
+        "Team workspace with shared recordings"
+      ],
+      "status": "planned",
+      "phase": "future"
+    }
+  ]
+}
