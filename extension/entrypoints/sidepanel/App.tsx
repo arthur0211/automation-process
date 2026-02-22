@@ -1,95 +1,46 @@
-import { useState, useEffect, useCallback } from 'preact/hooks';
-import type { CapturedAction, RecordingSession, RecordingStatus } from '@/lib/types';
-import { getSessionActions, updateAction as dbUpdateAction, getSession, reorderActions as dbReorderActions, deleteAction as dbDeleteAction } from '@/lib/storage/db';
+import type { CapturedAction } from '@/lib/types';
+import { useRecordingStore } from '@/lib/stores/recording-store';
+import { useBackgroundSync } from '@/lib/hooks/use-background-sync';
+import { updateActionWithDb, deleteActionWithDb, reorderActionsWithDb } from '@/lib/stores/recording-actions';
 import { RecordingControls } from './components/RecordingControls';
 import { StepList } from './components/StepList';
 import { StepDetail } from './components/StepDetail';
 import { ExportPanel } from './components/ExportPanel';
 
 export function App() {
-  const [session, setSession] = useState<RecordingSession | null>(null);
-  const [actions, setActions] = useState<CapturedAction[]>([]);
-  const [selectedId, setSelectedId] = useState<string | null>(null);
-  const [view, setView] = useState<'list' | 'detail'>('list');
+  useBackgroundSync();
 
-  // Load actions when session changes
-  const loadActions = useCallback(async (sessionId: string) => {
-    const loaded = await getSessionActions(sessionId);
-    setActions(loaded);
-  }, []);
-
-  useEffect(() => {
-    // Listen for status updates to track current session
-    const listener = (message: { type: string; payload?: { status: RecordingStatus; sessionId?: string; actionCount: number } }) => {
-      if (message.type === 'STATUS_UPDATE' && message.payload) {
-        const { sessionId, status } = message.payload;
-        if (sessionId) {
-          getSession(sessionId).then((s) => {
-            if (s) setSession(s);
-          });
-          loadActions(sessionId);
-        }
-        if (status === 'idle') {
-          // Recording ended - keep showing last session for review
-        }
-      }
-    };
-    chrome.runtime.onMessage.addListener(listener);
-
-    // Get initial status
-    chrome.runtime.sendMessage({ type: 'GET_STATUS' }, (response) => {
-      if (response?.sessionId) {
-        getSession(response.sessionId).then((s) => {
-          if (s) setSession(s);
-        });
-        loadActions(response.sessionId);
-      }
-    });
-
-    return () => {
-      chrome.runtime.onMessage.removeListener(listener);
-    };
-  }, [loadActions]);
+  const session = useRecordingStore((s) => s.session);
+  const actions = useRecordingStore((s) => s.actions);
+  const selectedActionId = useRecordingStore((s) => s.selectedActionId);
+  const view = useRecordingStore((s) => s.view);
+  const selectAction = useRecordingStore((s) => s.selectAction);
+  const clearSelection = useRecordingStore((s) => s.clearSelection);
 
   function handleSelect(id: string) {
-    setSelectedId(id);
-    setView('detail');
+    selectAction(id);
   }
 
   function handleBack() {
-    setView('list');
-    setSelectedId(null);
+    clearSelection();
   }
 
   async function handleUpdate(id: string, changes: Partial<CapturedAction>) {
-    await dbUpdateAction(id, changes);
-    setActions((prev) =>
-      prev.map((a) => (a.id === id ? { ...a, ...changes } : a)),
-    );
+    await updateActionWithDb(id, changes);
   }
 
   function handleReorder(fromIndex: number, toIndex: number) {
-    setActions((prev) => {
-      const updated = [...prev];
-      const [moved] = updated.splice(fromIndex, 1);
-      updated.splice(toIndex, 0, moved);
-      const reordered = updated.map((a, i) => ({ ...a, sequenceNumber: i + 1 }));
-      if (session?.id) {
-        dbReorderActions(session.id, reordered.map((a) => a.id));
-      }
-      return reordered;
-    });
+    if (session?.id) {
+      reorderActionsWithDb(session.id, fromIndex, toIndex);
+    }
   }
 
   async function handleDelete(id: string) {
     if (!confirm('Delete this step?')) return;
-    await dbDeleteAction(id);
-    setActions((prev) => prev.filter((a) => a.id !== id));
-    setView('list');
-    setSelectedId(null);
+    await deleteActionWithDb(id);
   }
 
-  const selectedAction = actions.find((a) => a.id === selectedId);
+  const selectedAction = actions.find((a) => a.id === selectedActionId);
 
   return (
     <div class="flex flex-col h-screen bg-gray-50">
@@ -108,7 +59,7 @@ export function App() {
       ) : (
         <StepList
           actions={actions}
-          selectedId={selectedId}
+          selectedId={selectedActionId}
           onSelect={handleSelect}
           onReorder={handleReorder}
         />

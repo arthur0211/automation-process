@@ -1,29 +1,9 @@
-import { useEffect, useState } from 'preact/hooks';
 import type { RecordingStatus } from '@/lib/types';
+import { useRecordingStore } from '@/lib/stores/recording-store';
 
 export function RecordingControls() {
-  const [status, setStatus] = useState<RecordingStatus>('idle');
-  const [actionCount, setActionCount] = useState(0);
-
-  useEffect(() => {
-    // Get initial status
-    chrome.runtime.sendMessage({ type: 'GET_STATUS' }, (response) => {
-      if (response && !chrome.runtime.lastError) {
-        setStatus(response.status);
-        setActionCount(response.actionCount || 0);
-      }
-    });
-
-    // Listen for status updates
-    const listener = (message: { type: string; payload?: { status: RecordingStatus; actionCount: number } }) => {
-      if (message.type === 'STATUS_UPDATE' && message.payload) {
-        setStatus(message.payload.status);
-        setActionCount(message.payload.actionCount);
-      }
-    };
-    chrome.runtime.onMessage.addListener(listener);
-    return () => chrome.runtime.onMessage.removeListener(listener);
-  }, []);
+  const status = useRecordingStore((s) => s.status);
+  const actionCount = useRecordingStore((s) => s.actionCount);
 
   const send = (type: string) => {
     chrome.runtime.sendMessage({ type });

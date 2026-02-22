@@ -14,6 +14,8 @@ describe('recordingStore', () => {
     expect(state.actions).toEqual([]);
     expect(state.actionCount).toBe(0);
     expect(state.error).toBeNull();
+    expect(state.selectedActionId).toBeNull();
+    expect(state.view).toBe('list');
   });
 
   it('setStatus updates the status', () => {
@@ -105,6 +107,7 @@ describe('recordingStore', () => {
     recordingStore.getState().setStatus('recording');
     recordingStore.getState().addAction(createAction());
     recordingStore.getState().setError('err');
+    recordingStore.getState().selectAction('action-1');
 
     recordingStore.getState().reset();
 
@@ -114,5 +117,24 @@ describe('recordingStore', () => {
     expect(state.actions).toEqual([]);
     expect(state.actionCount).toBe(0);
     expect(state.error).toBeNull();
+    expect(state.selectedActionId).toBeNull();
+    expect(state.view).toBe('list');
+  });
+
+  it('selectAction sets selectedActionId and view to detail', () => {
+    recordingStore.getState().selectAction('action-1');
+
+    const state = recordingStore.getState();
+    expect(state.selectedActionId).toBe('action-1');
+    expect(state.view).toBe('detail');
+  });
+
+  it('clearSelection resets selectedActionId and view to list', () => {
+    recordingStore.getState().selectAction('action-1');
+    recordingStore.getState().clearSelection();
+
+    const state = recordingStore.getState();
+    expect(state.selectedActionId).toBeNull();
+    expect(state.view).toBe('list');
   });
 });

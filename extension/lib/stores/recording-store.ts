@@ -1,4 +1,5 @@
 import { createStore } from 'zustand/vanilla';
+import { useSyncExternalStore } from 'preact/compat';
 import type { RecordingStatus, CapturedAction, RecordingSession } from '../types';
 
 export interface RecordingState {
@@ -7,6 +8,8 @@ export interface RecordingState {
   actions: CapturedAction[];
   actionCount: number;
   error: string | null;
+  selectedActionId: string | null;
+  view: 'list' | 'detail';
 }
 
 export interface RecordingActions {
@@ -18,6 +21,8 @@ export interface RecordingActions {
   reorderActions: (orderedIds: string[]) => void;
   setActions: (actions: CapturedAction[]) => void;
   setError: (error: string | null) => void;
+  selectAction: (id: string) => void;
+  clearSelection: () => void;
   reset: () => void;
 }
 
@@ -27,6 +32,8 @@ const initialState: RecordingState = {
   actions: [],
   actionCount: 0,
   error: null,
+  selectedActionId: null,
+  view: 'list',
 };
 
 export const recordingStore = createStore<RecordingState & RecordingActions>()((set) => ({
@@ -70,17 +77,19 @@ export const recordingStore = createStore<RecordingState & RecordingActions>()((
 
   setError: (error) => set({ error }),
 
+  selectAction: (id) => set({ selectedActionId: id, view: 'detail' }),
+
+  clearSelection: () => set({ selectedActionId: null, view: 'list' }),
+
   reset: () => set(initialState),
 }));
 
-// Helper to sync store with background status updates
-export function syncStatusFromBackground() {
-  chrome.runtime.sendMessage({ type: 'GET_STATUS' }, (response) => {
-    if (response && !chrome.runtime.lastError) {
-      recordingStore.getState().setStatus(response.status);
-      if (response.actionCount !== undefined) {
-        recordingStore.setState({ actionCount: response.actionCount });
-      }
-    }
-  });
+type StoreState = RecordingState & RecordingActions;
+
+export function useRecordingStore<U>(selector: (state: StoreState) => U): U {
+  return useSyncExternalStore(
+    recordingStore.subscribe,
+    () => selector(recordingStore.getState()),
+    () => selector(recordingStore.getState()),
+  );
 }
