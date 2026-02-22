@@ -74,14 +74,15 @@ function getCssSelector(element: Element): string {
   const parts: string[] = [];
   let current: Element | null = element;
   while (current && current !== document.documentElement) {
-    const tag = current.tagName.toLowerCase();
-    const parent = current.parentElement;
+    const el: Element = current;
+    const tag = el.tagName.toLowerCase();
+    const parent: Element | null = el.parentElement;
     if (parent) {
       const siblings = Array.from(parent.children).filter(
-        (c) => c.tagName === current!.tagName,
+        (c: Element) => c.tagName === el.tagName,
       );
       if (siblings.length > 1) {
-        const index = siblings.indexOf(current) + 1;
+        const index = siblings.indexOf(el) + 1;
         parts.unshift(`${tag}:nth-of-type(${index})`);
       } else {
         parts.unshift(tag);

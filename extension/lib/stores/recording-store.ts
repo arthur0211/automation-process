@@ -90,6 +90,5 @@ export function useRecordingStore<U>(selector: (state: StoreState) => U): U {
   return useSyncExternalStore(
     recordingStore.subscribe,
     () => selector(recordingStore.getState()),
-    () => selector(recordingStore.getState()),
   );
 }

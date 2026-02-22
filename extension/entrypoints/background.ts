@@ -76,7 +76,7 @@ async function startRecording(tabId: number) {
 
   // Load user settings from chrome.storage.local
   const stored = await chrome.storage.local.get('settings');
-  currentSettings = { ...DEFAULT_CAPTURE_SETTINGS, ...stored.settings };
+  currentSettings = { ...DEFAULT_CAPTURE_SETTINGS, ...(stored.settings as Partial<CaptureSettings>) };
 
   const tab = await chrome.tabs.get(tabId);
   const sessionId = generateSessionId();
