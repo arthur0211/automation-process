@@ -20,6 +20,22 @@ function getXPath(element: Element): string {
 }
 
 function getCssSelector(element: Element): string {
+  const tag = element.tagName.toLowerCase();
+
+  // 0. Try data-testid / data-test-id (most reliable for automation)
+  const testId =
+    element.getAttribute('data-testid') ||
+    element.getAttribute('data-test-id');
+  if (testId) {
+    const attr = element.hasAttribute('data-testid')
+      ? 'data-testid'
+      : 'data-test-id';
+    const selector = `${tag}[${attr}="${CSS.escape(testId)}"]`;
+    if (document.querySelectorAll(selector).length === 1) {
+      return selector;
+    }
+  }
+
   // 1. Try ID (most reliable)
   if (element.id) {
     return `#${CSS.escape(element.id)}`;
@@ -28,7 +44,6 @@ function getCssSelector(element: Element): string {
   // 2. Try aria-label
   const ariaLabel = element.getAttribute('aria-label');
   if (ariaLabel) {
-    const tag = element.tagName.toLowerCase();
     const selector = `${tag}[aria-label="${CSS.escape(ariaLabel)}"]`;
     if (document.querySelectorAll(selector).length === 1) {
       return selector;
@@ -40,7 +55,6 @@ function getCssSelector(element: Element): string {
     (c) => !c.match(/^(js-|is-|has-|ng-|v-|_|css-|sc-|emotion-)/) && c.length < 40,
   );
   if (classes.length > 0) {
-    const tag = element.tagName.toLowerCase();
     const selector = `${tag}.${classes.map((c) => CSS.escape(c)).join('.')}`;
     if (document.querySelectorAll(selector).length === 1) {
       return selector;
@@ -50,7 +64,6 @@ function getCssSelector(element: Element): string {
   // 4. Try name attribute (for form inputs)
   const name = element.getAttribute('name');
   if (name) {
-    const tag = element.tagName.toLowerCase();
     const selector = `${tag}[name="${CSS.escape(name)}"]`;
     if (document.querySelectorAll(selector).length === 1) {
       return selector;
@@ -82,16 +95,27 @@ function getCssSelector(element: Element): string {
   return parts.join(' > ');
 }
 
+function getSelectorConfidence(css: string): number {
+  if (css.includes('[data-testid=') || css.includes('[data-test-id=')) return 0.95;
+  if (css.startsWith('#')) return 0.90;
+  if (css.includes('[aria-label=')) return 0.85;
+  if (css.includes('[name=')) return 0.80;
+  if (css.includes('.') && !css.includes('nth-of-type')) return 0.60;
+  return 0.20;
+}
+
 export function generateSelectors(element: Element): ElementSelector {
   const role = element.getAttribute('role') || '';
   const testId =
     element.getAttribute('data-testid') ||
     element.getAttribute('data-test-id') ||
     '';
+  const css = getCssSelector(element);
 
   return {
-    css: getCssSelector(element),
+    css,
     xpath: getXPath(element),
+    confidence: getSelectorConfidence(css),
     ...(role && { role }),
     ...(testId && { testId }),
   };

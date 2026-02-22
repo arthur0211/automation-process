@@ -1,6 +1,8 @@
 node_modules/
 .output/
+.output2/
 .wxt/
+nul
 dist/
 *.zip
 

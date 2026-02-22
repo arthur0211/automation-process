@@ -4,7 +4,9 @@ import type {
   ElementMetadata,
   CapturedAction,
   DecisionPoint,
+  CaptureSettings,
 } from '../types';
+import { DEFAULT_CAPTURE_SETTINGS } from '../types';
 import { generateSelectors } from './selector-generator';
 
 // ─── Helpers ────────────────────────────────────────────────────────────────
@@ -12,6 +14,7 @@ import { generateSelectors } from './selector-generator';
 let sequenceCounter = 0;
 let currentSessionId = '';
 let isCapturing = false;
+let captureSettings: CaptureSettings = { ...DEFAULT_CAPTURE_SETTINGS };
 
 function generateId(): string {
   return `action_${Date.now()}_${Math.random().toString(36).slice(2, 9)}`;
@@ -117,16 +120,19 @@ function handleInput(event: Event) {
   const existing = inputTimers.get(target);
   if (existing) clearTimeout(existing);
 
-  // Debounce: wait 500ms after last input
+  // Debounce: wait after last input
   inputTimers.set(
     target,
     setTimeout(() => {
       inputTimers.delete(target);
+      const value = (target as HTMLInputElement).type === 'password'
+        ? '••••••••'
+        : target.value;
       const action = buildAction('input', target, {
-        inputValue: target.value,
+        inputValue: value,
       });
       sendAction(action);
-    }, 500),
+    }, captureSettings.inputDebounceMs),
   );
 }
 
@@ -137,9 +143,9 @@ let lastScrollTime = 0;
 function handleScroll() {
   if (!isCapturing) return;
   const now = Date.now();
-  if (now - lastScrollTime < 1000) {
+  if (now - lastScrollTime < captureSettings.scrollThrottleMs) {
     if (scrollTimer) clearTimeout(scrollTimer);
-    scrollTimer = setTimeout(handleScroll, 1000 - (now - lastScrollTime));
+    scrollTimer = setTimeout(handleScroll, captureSettings.scrollThrottleMs - (now - lastScrollTime));
     return;
   }
   lastScrollTime = now;
@@ -154,6 +160,22 @@ function handleSubmit(event: Event) {
   const target = (event.target as HTMLFormElement) || document.body;
 
   sendAction(buildAction('submit', target));
+}
+
+// Capture change events for select, date/time, color, range inputs
+function handleChange(event: Event) {
+  if (!isCapturing) return;
+  const target = event.target as HTMLSelectElement | HTMLInputElement;
+  if (!target) return;
+
+  const tag = target.tagName.toLowerCase();
+  const type = (target as HTMLInputElement).type || '';
+  const isSelect = tag === 'select';
+  const isSpecialInput = ['date', 'time', 'datetime-local', 'month', 'week', 'color', 'range'].includes(type);
+
+  if (!isSelect && !isSpecialInput) return;
+
+  sendAction(buildAction('input', target, { inputValue: target.value }));
 }
 
 // Navigation detection via History API patching
@@ -172,16 +194,18 @@ function checkNavigation() {
 
 let navigationInterval: ReturnType<typeof setInterval> | null = null;
 
-export function startCapturing(sessionId: string) {
+export function startCapturing(sessionId: string, settings?: Partial<CaptureSettings>) {
   currentSessionId = sessionId;
   sequenceCounter = 0;
   isCapturing = true;
   lastUrl = window.location.href;
+  captureSettings = { ...DEFAULT_CAPTURE_SETTINGS, ...settings };
 
   document.addEventListener('click', handleClick, true);
   document.addEventListener('input', handleInput, true);
   document.addEventListener('scroll', handleScroll, { passive: true, capture: true });
   document.addEventListener('submit', handleSubmit, true);
+  document.addEventListener('change', handleChange, true);
 
   // Poll for SPA navigation changes
   navigationInterval = setInterval(checkNavigation, 500);
@@ -194,6 +218,7 @@ export function stopCapturing() {
   document.removeEventListener('input', handleInput, true);
   document.removeEventListener('scroll', handleScroll, true);
   document.removeEventListener('submit', handleSubmit, true);
+  document.removeEventListener('change', handleChange, true);
 
   if (navigationInterval) {
     clearInterval(navigationInterval);

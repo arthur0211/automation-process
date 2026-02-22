@@ -7,6 +7,7 @@ export type ActionType = 'click' | 'input' | 'scroll' | 'navigate' | 'submit';
 export interface ElementSelector {
   css: string;
   xpath: string;
+  confidence?: number;
   role?: string;
   testId?: string;
 }
@@ -116,6 +117,20 @@ export interface ProcessExport {
   steps: ProcessStep[];
 }
 
+// ─── Capture Settings ──────────────────────────────────────────────────────
+
+export interface CaptureSettings {
+  screenshotQuality: number;
+  scrollThrottleMs: number;
+  inputDebounceMs: number;
+}
+
+export const DEFAULT_CAPTURE_SETTINGS: CaptureSettings = {
+  screenshotQuality: 80,
+  scrollThrottleMs: 1000,
+  inputDebounceMs: 500,
+};
+
 // ─── Messages (between extension components) ────────────────────────────────
 
 export type MessageType =
@@ -123,6 +138,7 @@ export type MessageType =
   | 'PAUSE_RECORDING'
   | 'RESUME_RECORDING'
   | 'STOP_RECORDING'
+  | 'RESET_RECORDING'
   | 'ACTION_CAPTURED'
   | 'SCREENSHOT_TAKEN'
   | 'GET_STATUS'

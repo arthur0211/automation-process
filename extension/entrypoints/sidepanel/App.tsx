@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'preact/hooks';
 import type { CapturedAction, RecordingSession, RecordingStatus } from '@/lib/types';
-import { getSessionActions, updateAction as dbUpdateAction, getSession } from '@/lib/storage/db';
+import { getSessionActions, updateAction as dbUpdateAction, getSession, reorderActions as dbReorderActions, deleteAction as dbDeleteAction } from '@/lib/storage/db';
 import { RecordingControls } from './components/RecordingControls';
 import { StepList } from './components/StepList';
 import { StepDetail } from './components/StepDetail';
@@ -46,18 +46,10 @@ export function App() {
       }
     });
 
-    // Refresh actions periodically during recording
-    const interval = setInterval(() => {
-      if (session?.id) {
-        loadActions(session.id);
-      }
-    }, 2000);
-
     return () => {
       chrome.runtime.onMessage.removeListener(listener);
-      clearInterval(interval);
     };
-  }, [loadActions, session?.id]);
+  }, [loadActions]);
 
   function handleSelect(id: string) {
     setSelectedId(id);
@@ -81,8 +73,20 @@ export function App() {
       const updated = [...prev];
       const [moved] = updated.splice(fromIndex, 1);
       updated.splice(toIndex, 0, moved);
-      return updated.map((a, i) => ({ ...a, sequenceNumber: i + 1 }));
+      const reordered = updated.map((a, i) => ({ ...a, sequenceNumber: i + 1 }));
+      if (session?.id) {
+        dbReorderActions(session.id, reordered.map((a) => a.id));
+      }
+      return reordered;
     });
+  }
+
+  async function handleDelete(id: string) {
+    if (!confirm('Delete this step?')) return;
+    await dbDeleteAction(id);
+    setActions((prev) => prev.filter((a) => a.id !== id));
+    setView('list');
+    setSelectedId(null);
   }
 
   const selectedAction = actions.find((a) => a.id === selectedId);
@@ -99,7 +103,7 @@ export function App() {
           >
             &larr; Back to steps
           </button>
-          <StepDetail action={selectedAction} onUpdate={handleUpdate} />
+          <StepDetail action={selectedAction} onUpdate={handleUpdate} onDelete={handleDelete} />
         </div>
       ) : (
         <StepList

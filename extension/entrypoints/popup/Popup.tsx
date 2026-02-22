@@ -101,6 +101,15 @@ export function Popup() {
           </div>
         )}
 
+        {status === 'stopped' && (
+          <button
+            onClick={() => send('START_RECORDING')}
+            class="w-full px-3 py-2 text-sm font-medium text-white bg-red-600 rounded-md hover:bg-red-700 transition-colors"
+          >
+            New Recording
+          </button>
+        )}
+
         <button
           onClick={openSidePanel}
           class="w-full px-3 py-1.5 text-xs font-medium text-blue-600 bg-blue-50 rounded-md hover:bg-blue-100 transition-colors"

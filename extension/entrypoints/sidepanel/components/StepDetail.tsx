@@ -5,9 +5,10 @@ import { NoteEditor } from './NoteEditor';
 interface StepDetailProps {
   action: CapturedAction;
   onUpdate: (id: string, changes: Partial<CapturedAction>) => void;
+  onDelete: (id: string) => void;
 }
 
-export function StepDetail({ action, onUpdate }: StepDetailProps) {
+export function StepDetail({ action, onUpdate, onDelete }: StepDetailProps) {
   const [editingDesc, setEditingDesc] = useState(false);
   const [descValue, setDescValue] = useState(action.description);
 
@@ -127,6 +128,16 @@ export function StepDetail({ action, onUpdate }: StepDetailProps) {
             {action.element.selectors.css}
           </span>
         </div>
+      </div>
+
+      {/* Delete */}
+      <div class="pt-2 border-t border-gray-200">
+        <button
+          onClick={() => onDelete(action.id)}
+          class="px-3 py-1.5 text-xs font-medium text-red-600 bg-red-50 rounded-md hover:bg-red-100 transition-colors"
+        >
+          Delete Step
+        </button>
       </div>
 
       {/* Notes */}

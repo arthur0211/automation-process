@@ -1,30 +1,20 @@
 import { useState, useEffect } from 'preact/hooks';
-
-interface Settings {
-  screenshotQuality: number;
-  scrollThrottleMs: number;
-  inputDebounceMs: number;
-}
-
-const DEFAULT_SETTINGS: Settings = {
-  screenshotQuality: 80,
-  scrollThrottleMs: 1000,
-  inputDebounceMs: 500,
-};
+import type { CaptureSettings } from '@/lib/types';
+import { DEFAULT_CAPTURE_SETTINGS } from '@/lib/types';
 
 export function Options() {
-  const [settings, setSettings] = useState<Settings>(DEFAULT_SETTINGS);
+  const [settings, setSettings] = useState<CaptureSettings>(DEFAULT_CAPTURE_SETTINGS);
   const [saved, setSaved] = useState(false);
 
   useEffect(() => {
     chrome.storage.local.get('settings', (result) => {
       if (result.settings) {
-        setSettings({ ...DEFAULT_SETTINGS, ...result.settings });
+        setSettings({ ...DEFAULT_CAPTURE_SETTINGS, ...result.settings });
       }
     });
   }, []);
 
-  function handleChange(key: keyof Settings, value: number) {
+  function handleChange(key: keyof CaptureSettings, value: number) {
     setSettings((prev) => ({ ...prev, [key]: value }));
     setSaved(false);
   }

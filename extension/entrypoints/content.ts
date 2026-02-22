@@ -4,7 +4,7 @@ import {
   pauseCapturing,
   resumeCapturing,
 } from '@/lib/capture/event-capture';
-import type { ExtensionMessage } from '@/lib/types';
+import type { ExtensionMessage, CaptureSettings } from '@/lib/types';
 
 export default defineContentScript({
   matches: ['<all_urls>'],
@@ -13,8 +13,8 @@ export default defineContentScript({
       (message: ExtensionMessage, _sender, _sendResponse) => {
         switch (message.type) {
           case 'START_RECORDING': {
-            const payload = message.payload as { sessionId: string };
-            startCapturing(payload.sessionId);
+            const payload = message.payload as { sessionId: string; settings?: Partial<CaptureSettings> };
+            startCapturing(payload.sessionId, payload.settings);
             break;
           }
           case 'PAUSE_RECORDING':

@@ -100,6 +100,15 @@ export function RecordingControls() {
             </button>
           </>
         )}
+
+        {status === 'stopped' && (
+          <button
+            onClick={() => send('START_RECORDING')}
+            class="flex-1 px-3 py-1.5 text-sm font-medium text-white bg-red-600 rounded-md hover:bg-red-700 transition-colors"
+          >
+            New Recording
+          </button>
+        )}
       </div>
     </div>
   );
