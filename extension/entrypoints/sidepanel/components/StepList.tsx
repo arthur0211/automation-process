@@ -1,3 +1,4 @@
+import { useRef } from 'preact/hooks';
 import type { CapturedAction } from '@/lib/types';
 
 interface StepListProps {
@@ -16,17 +17,17 @@ const actionIcons: Record<string, string> = {
 };
 
 export function StepList({ actions, selectedId, onSelect, onReorder }: StepListProps) {
-  let dragIndex: number | null = null;
+  const dragIndexRef = useRef<number | null>(null);
 
   function handleDragStart(index: number) {
-    dragIndex = index;
+    dragIndexRef.current = index;
   }
 
   function handleDrop(index: number) {
-    if (dragIndex !== null && dragIndex !== index) {
-      onReorder(dragIndex, index);
+    if (dragIndexRef.current !== null && dragIndexRef.current !== index) {
+      onReorder(dragIndexRef.current, index);
     }
-    dragIndex = null;
+    dragIndexRef.current = null;
   }
 
   if (actions.length === 0) {
