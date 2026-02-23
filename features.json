@@ -491,7 +491,7 @@
         "Copy to clipboard from preview",
         "Download button within preview"
       ],
-      "status": "planned",
+      "status": "done",
       "phase": "sprint-4",
       "priority": "P2",
       "effort": "M",
@@ -508,7 +508,7 @@
         "Undo restores deleted item from a temporary buffer",
         "Toast auto-dismisses and commits delete after countdown"
       ],
-      "status": "planned",
+      "status": "done",
       "phase": "sprint-4",
       "priority": "P2",
       "effort": "M",
@@ -797,7 +797,7 @@
         "cy.visit() for navigation, cy.type() for input, cy.click() for clicks",
         "cy.intercept() for API-dependent actions"
       ],
-      "status": "planned",
+      "status": "done",
       "phase": "sprint-7",
       "priority": "P2",
       "effort": "M",
