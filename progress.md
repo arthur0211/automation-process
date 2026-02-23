@@ -141,4 +141,4 @@
 - **Preact (not React)**: Preact 10 with @preact/preset-vite, imports from preact/hooks and preact/compat
 - **Async enrichment**: Actions stored immediately, backend enrichment runs in background, UI updates via STATUS_UPDATE
 - **Optimistic deletes**: Items removed from UI instantly, committed to DB after 5s undo window
-- **Export architecture**: 5 exporters (JSON, HTML, Markdown, Playwright, Cypress) all follow same pattern: pure functions taking session+actions
+- **Export architecture**: 9 exporters (JSON, HTML, Markdown, Playwright, Playwright+CI, Cypress, Selenium, PDF, GitHub Issues) all follow same pattern: pure functions taking session+actions
