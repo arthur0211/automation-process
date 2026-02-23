@@ -164,6 +164,20 @@ export interface ProcessExport {
   steps: ProcessStep[];
 }
 
+// ─── Branding Settings ─────────────────────────────────────────────────────
+
+export interface BrandingSettings {
+  accentColor: string; // hex color, default '#2563eb' (blue-600)
+  headerText: string; // custom header, default ''
+  footerText: string; // custom footer, default ''
+}
+
+export const DEFAULT_BRANDING_SETTINGS: BrandingSettings = {
+  accentColor: '#2563eb',
+  headerText: '',
+  footerText: '',
+};
+
 // ─── Capture Settings ──────────────────────────────────────────────────────
 
 export interface CaptureSettings {

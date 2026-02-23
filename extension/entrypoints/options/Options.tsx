@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'preact/hooks';
-import type { CaptureSettings } from '@/lib/types';
-import { DEFAULT_CAPTURE_SETTINGS } from '@/lib/types';
+import type { CaptureSettings, BrandingSettings } from '@/lib/types';
+import { DEFAULT_CAPTURE_SETTINGS, DEFAULT_BRANDING_SETTINGS } from '@/lib/types';
 
 export function Options() {
   const [settings, setSettings] = useState<CaptureSettings>(DEFAULT_CAPTURE_SETTINGS);
@@ -8,13 +8,14 @@ export function Options() {
   const [backendApiKey, setBackendApiKey] = useState('');
   const [standaloneAgentsUrl, setStandaloneAgentsUrl] = useState('');
   const [showThumbnails, setShowThumbnails] = useState(true);
+  const [branding, setBranding] = useState<BrandingSettings>(DEFAULT_BRANDING_SETTINGS);
   const [githubPat, setGithubPat] = useState('');
   const [githubRepo, setGithubRepo] = useState('');
   const [saved, setSaved] = useState(false);
 
   useEffect(() => {
     chrome.storage.local.get(
-      ['settings', 'backendUrl', 'backendApiKey', 'standaloneAgentsUrl', 'showThumbnails', 'github_pat', 'github_repo'],
+      ['settings', 'backendUrl', 'backendApiKey', 'standaloneAgentsUrl', 'showThumbnails', 'brandingSettings', 'github_pat', 'github_repo'],
       (result) => {
         if (result.settings) {
           setSettings({ ...DEFAULT_CAPTURE_SETTINGS, ...result.settings });
@@ -30,6 +31,9 @@ export function Options() {
         }
         if (result.showThumbnails !== undefined) {
           setShowThumbnails(result.showThumbnails as boolean);
+        }
+        if (result.brandingSettings) {
+          setBranding({ ...DEFAULT_BRANDING_SETTINGS, ...(result.brandingSettings as BrandingSettings) });
         }
         if (result.github_pat) {
           setGithubPat(result.github_pat as string);
@@ -47,7 +51,7 @@ export function Options() {
   }
 
   function handleSave() {
-    chrome.storage.local.set({ settings, backendUrl, backendApiKey, standaloneAgentsUrl, showThumbnails, github_pat: githubPat, github_repo: githubRepo }, () => {
+    chrome.storage.local.set({ settings, backendUrl, backendApiKey, standaloneAgentsUrl, showThumbnails, brandingSettings: branding, github_pat: githubPat, github_repo: githubRepo }, () => {
       setSaved(true);
       setTimeout(() => setSaved(false), 2000);
     });
@@ -178,6 +182,90 @@ export function Options() {
         >
           {saved ? 'Saved!' : 'Save Settings'}
         </button>
+      </div>
+
+      <div class="space-y-4 bg-white p-5 rounded-lg shadow-sm">
+        <h2 class="text-sm font-semibold text-gray-700">Export Branding</h2>
+        <p class="text-xs text-gray-400">
+          Customize the appearance of HTML exports with your brand colors and text.
+        </p>
+
+        <div>
+          <label class="block text-xs font-medium text-gray-600 mb-1">
+            Accent Color
+            <span
+              class="inline-flex items-center justify-center w-4 h-4 ml-1 text-[10px] font-bold text-gray-400 bg-gray-100 rounded-full cursor-help align-middle"
+              title="Primary color used for headers, step numbers, and links in HTML exports."
+            >
+              i
+            </span>
+          </label>
+          <div class="flex items-center gap-2">
+            <input
+              type="color"
+              value={branding.accentColor}
+              onInput={(e) => {
+                setBranding((prev) => ({ ...prev, accentColor: (e.target as HTMLInputElement).value }));
+                setSaved(false);
+              }}
+              class="w-10 h-10 rounded border border-gray-200 cursor-pointer p-0.5"
+            />
+            <input
+              type="text"
+              value={branding.accentColor}
+              onInput={(e) => {
+                setBranding((prev) => ({ ...prev, accentColor: (e.target as HTMLInputElement).value }));
+                setSaved(false);
+              }}
+              class="w-28 px-3 py-2 text-sm border border-gray-200 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-400 font-mono"
+              placeholder="#2563eb"
+            />
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-xs font-medium text-gray-600 mb-1">
+            Header Text
+            <span
+              class="inline-flex items-center justify-center w-4 h-4 ml-1 text-[10px] font-bold text-gray-400 bg-gray-100 rounded-full cursor-help align-middle"
+              title="Custom text displayed at the top of HTML exports, below the title."
+            >
+              i
+            </span>
+          </label>
+          <input
+            type="text"
+            placeholder="e.g., Company Name - Internal Documentation"
+            value={branding.headerText}
+            onInput={(e) => {
+              setBranding((prev) => ({ ...prev, headerText: (e.target as HTMLInputElement).value }));
+              setSaved(false);
+            }}
+            class="w-full px-3 py-2 text-sm border border-gray-200 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-400"
+          />
+        </div>
+
+        <div>
+          <label class="block text-xs font-medium text-gray-600 mb-1">
+            Footer Text
+            <span
+              class="inline-flex items-center justify-center w-4 h-4 ml-1 text-[10px] font-bold text-gray-400 bg-gray-100 rounded-full cursor-help align-middle"
+              title="Custom text displayed at the bottom of HTML exports."
+            >
+              i
+            </span>
+          </label>
+          <input
+            type="text"
+            placeholder="e.g., Confidential - Do not distribute"
+            value={branding.footerText}
+            onInput={(e) => {
+              setBranding((prev) => ({ ...prev, footerText: (e.target as HTMLInputElement).value }));
+              setSaved(false);
+            }}
+            class="w-full px-3 py-2 text-sm border border-gray-200 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-400"
+          />
+        </div>
       </div>
 
       <details class="bg-white rounded-lg shadow-sm">

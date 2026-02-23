@@ -198,4 +198,118 @@ describe('exportToHtml', () => {
     expect(html).not.toContain('<script>xss</script>');
     expect(html).toContain('&lt;script&gt;xss&lt;/script&gt;');
   });
+
+  // ─── Branding ────────────────────────────────────────────────────────────
+
+  it('applies custom accent color from branding settings', () => {
+    const action = createAction();
+    const html = exportToHtml(createSession({ stoppedAt: 1700000060000 }), [action], undefined, {
+      accentColor: '#e11d48',
+      headerText: '',
+      footerText: '',
+    });
+    // Accent color should be used for step-number background, play-btn color, TOC links, etc.
+    expect(html).toContain('background: #e11d48');
+    expect(html).toContain('color: #e11d48');
+    // Should NOT contain the default blue for step-number
+    expect(html).not.toContain('background: #3b82f6');
+  });
+
+  it('includes header text when branding provides headerText', () => {
+    const html = exportToHtml(createSession({ stoppedAt: 1700000060000 }), [], undefined, {
+      accentColor: '#2563eb',
+      headerText: 'Acme Corp - Internal Docs',
+      footerText: '',
+    });
+    expect(html).toContain('branding-header');
+    expect(html).toContain('Acme Corp - Internal Docs');
+  });
+
+  it('includes footer text when branding provides footerText', () => {
+    const html = exportToHtml(createSession({ stoppedAt: 1700000060000 }), [], undefined, {
+      accentColor: '#2563eb',
+      headerText: '',
+      footerText: 'Confidential - Do not distribute',
+    });
+    expect(html).toContain('branding-footer');
+    expect(html).toContain('Confidential - Do not distribute');
+  });
+
+  it('escapes HTML in branding header and footer text', () => {
+    const html = exportToHtml(createSession({ stoppedAt: 1700000060000 }), [], undefined, {
+      accentColor: '#2563eb',
+      headerText: '<script>alert("xss")</script>',
+      footerText: '<img src=x onerror=alert(1)>',
+    });
+    expect(html).not.toContain('<script>alert("xss")</script>');
+    expect(html).toContain('&lt;script&gt;alert(&quot;xss&quot;)&lt;/script&gt;');
+    expect(html).not.toContain('<img src=x');
+    expect(html).toContain('&lt;img src=x onerror=alert(1)&gt;');
+  });
+
+  it('does not include header/footer elements when branding texts are empty', () => {
+    const html = exportToHtml(createSession({ stoppedAt: 1700000060000 }), [], undefined, {
+      accentColor: '#2563eb',
+      headerText: '',
+      footerText: '',
+    });
+    // CSS class definitions exist, but no actual header/footer divs should be rendered
+    expect(html).not.toContain('<div class="branding-header">');
+    expect(html).not.toContain('<div class="branding-footer">');
+  });
+
+  // ─── Table of Contents ────────────────────────────────────────────────────
+
+  it('generates table of contents for 10+ steps', () => {
+    const actions = Array.from({ length: 12 }, (_, i) =>
+      createAction({
+        id: `action-${i + 1}`,
+        sequenceNumber: i + 1,
+        description: `Step ${i + 1} description`,
+      }),
+    );
+    const html = exportToHtml(createSession({ stoppedAt: 1700000060000 }), actions);
+    expect(html).toContain('Table of Contents');
+    expect(html).toContain('<nav class="toc">');
+    // Check that TOC links point to step anchors
+    expect(html).toContain('href="#step-1"');
+    expect(html).toContain('href="#step-12"');
+    expect(html).toContain('Step 1: Step 1 description');
+    expect(html).toContain('Step 12: Step 12 description');
+    // Check that steps have id anchors
+    expect(html).toContain('id="step-1"');
+    expect(html).toContain('id="step-12"');
+  });
+
+  it('does not generate table of contents for fewer than 10 steps', () => {
+    const actions = Array.from({ length: 9 }, (_, i) =>
+      createAction({
+        id: `action-${i + 1}`,
+        sequenceNumber: i + 1,
+        description: `Step ${i + 1} description`,
+      }),
+    );
+    const html = exportToHtml(createSession({ stoppedAt: 1700000060000 }), actions);
+    expect(html).not.toContain('Table of Contents');
+    expect(html).not.toContain('<nav class="toc">');
+  });
+
+  it('generates TOC for exactly 10 steps', () => {
+    const actions = Array.from({ length: 10 }, (_, i) =>
+      createAction({
+        id: `action-${i + 1}`,
+        sequenceNumber: i + 1,
+        description: `Step ${i + 1} description`,
+      }),
+    );
+    const html = exportToHtml(createSession({ stoppedAt: 1700000060000 }), actions);
+    expect(html).toContain('Table of Contents');
+    expect(html).toContain('href="#step-10"');
+  });
+
+  it('adds id anchors to all steps regardless of TOC', () => {
+    const action = createAction({ sequenceNumber: 1 });
+    const html = exportToHtml(createSession({ stoppedAt: 1700000060000 }), [action]);
+    expect(html).toContain('id="step-1"');
+  });
 });
