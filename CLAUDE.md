@@ -5,8 +5,8 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## Project Overview
 
 Chrome Extension that records and documents web processes for humans and LLMs. Two-part architecture:
-- **Extension** (Phases 1-2C complete): Captures user actions, screenshots, video; stores in IndexedDB; exports to JSON/HTML/Playwright; centralized Zustand state
-- **Backend** (Phase 2D - pending integration): Google ADK agents on Vertex AI that enrich recordings with LLM analysis
+- **Extension** (All phases complete): Captures user actions, screenshots, video; stores in IndexedDB; exports to JSON/HTML/Playwright; centralized Zustand state; session management; multi-tab recording; video playback; JSON import
+- **Backend** (Phase 2D - integrated): Google ADK agents on Vertex AI that enrich recordings with LLM analysis
 
 ## Build & Run Commands
 
@@ -83,7 +83,7 @@ Standalone agents (not in pipeline yet):
 - `lib/capture/event-capture.ts` — DOM listeners (click, input, scroll, submit, change, SPA navigation polling)
 - `lib/capture/selector-generator.ts` — CSS/XPath selector generation with priority cascade and confidence scoring
 - `lib/capture/description-generator.ts` — template-based descriptions (Phase 1; Phase 2D will use LLM)
-- `lib/api/backend-client.ts` — placeholder for Phase 2D backend integration (currently returns null)
+- `lib/api/backend-client.ts` — ADK backend integration (POST /run + GET session state, configurable URL, error handling)
 - `lib/export/json-exporter.ts` — export to ProcessExport JSON schema
 - `lib/export/html-exporter.ts` — export to styled self-contained HTML
 - `lib/export/playwright-exporter.ts` — export to Playwright .spec.ts test with smart native locator cascade
