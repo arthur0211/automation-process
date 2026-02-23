@@ -2,16 +2,27 @@
 
 ## Current State
 
-- **Latest commit**: `fix(extension): accessibility and error handling improvements`
-- **Total commits**: 35
-- **Tests**: 169 passing (extension)
-- **Coverage**: 74.1% statements, 67.5% branches, 73.6% functions, 75.1% lines
+- **Latest commit**: pending (sprint-3 + sprint-5 features)
+- **Total commits**: 35 (pending new commit)
+- **Tests**: 202 passing (extension)
 - **TS errors**: 0
 - **Lint errors**: 0
-- **Extension**: Feature-complete for Phase 1 + 2A + 2B + 2C + 2D (all) + Audit fixes + FUTURE-01 + FUTURE-02 + FUTURE-03 + FUTURE-04
-- **Backend**: ADK agents defined (7 agents), all 7 integrated with extension (pipeline + standalone)
+- **Extension**: Feature-complete for all phases + ROAD-01, ROAD-03, ROAD-04 (sprint-3) + ROAD-11, ROAD-12, ROAD-14 (sprint-5)
+- **Backend**: ADK agents defined (7 agents), all 7 integrated with extension. Backend client now uses inlineData, polling with backoff, and retry logic.
 
 ## Completed This Session
+
+### Sprint 3: UX Features
+- **ROAD-01: Markdown/clipboard export** — Created `markdown-exporter.ts` with Markdown output (headers, descriptions, decision callouts, validation summary). Added Markdown and Copy buttons to ExportPanel with clipboard feedback. 20 new tests.
+- **ROAD-03: Step search and filter** — Added `searchQuery` and `filterType` state to Zustand store. Search input + action type dropdown in StepList. Shows result count ("N of M steps"). Clear filter button. 8 new tests.
+- **ROAD-04: Screenshot thumbnails** — 48x36px thumbnails in StepList with `loading="lazy"`. Gray placeholder when no screenshot. Toggle in Options page (`showThumbnails` in chrome.storage.local).
+
+### Sprint 5: Backend Reliability
+- **ROAD-11: Screenshot inlineData** — `parseScreenshotParts()` extracts mimeType+base64 from data URL, sends as `inlineData` part (not text). Text part no longer includes `screenshotDataUrl`. Fallback: empty parts when invalid URL.
+- **ROAD-12: Session state polling** — `pollSessionState()` with exponential backoff (500ms, 1s, 2s, 4s, 8s). Checks all `outputKeys` exist before returning. Final attempt returns whatever state is available.
+- **ROAD-14: Retry with backoff** — `fetchWithRetry()` retries on 429/503 (max 3 retries). Respects `Retry-After` header. No retry on 400/401/404 client errors. Network errors also retried.
+
+### Previous Session
 
 ### P2 Audit: ESLint + Prettier + CI Improvements
 - Added ESLint 9 flat config with typescript-eslint and eslint-config-prettier
