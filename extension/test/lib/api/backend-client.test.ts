@@ -293,6 +293,62 @@ describe('processActionWithBackend', () => {
     expect(callCount).toBe(1);
   });
 
+  it('sends X-API-Key header when apiKey is provided (ROAD-13)', async () => {
+    setupFetchMock(fetchMock, {
+      description: 'Clicks button',
+      visual_analysis: {},
+      decision_analysis: { isDecisionPoint: false, reason: '', branches: [] },
+    });
+
+    await processActionWithBackend(createAction(), '', BACKEND_URL, 'my-secret-key');
+
+    // Verify POST /run has X-API-Key header
+    const postCalls = fetchMock.mock.calls.filter(
+      ([, opts]: [string, RequestInit?]) => opts?.method === 'POST',
+    );
+    expect(postCalls.length).toBe(1);
+    const headers = postCalls[0][1].headers as Record<string, string>;
+    expect(headers['X-API-Key']).toBe('my-secret-key');
+
+    // Verify GET session state also has X-API-Key header
+    const getCalls = fetchMock.mock.calls.filter(
+      ([, opts]: [string, RequestInit?]) => !opts?.method || opts.method === 'GET',
+    );
+    expect(getCalls.length).toBeGreaterThan(0);
+    const getHeaders = getCalls[0][1]?.headers as Record<string, string> | undefined;
+    expect(getHeaders?.['X-API-Key']).toBe('my-secret-key');
+  });
+
+  it('does not send X-API-Key header when apiKey is omitted (ROAD-13)', async () => {
+    setupFetchMock(fetchMock, {
+      description: 'Clicks button',
+      visual_analysis: {},
+      decision_analysis: { isDecisionPoint: false, reason: '', branches: [] },
+    });
+
+    await processActionWithBackend(createAction(), '', BACKEND_URL);
+
+    // Verify POST /run does NOT have X-API-Key header
+    const postCalls = fetchMock.mock.calls.filter(
+      ([, opts]: [string, RequestInit?]) => opts?.method === 'POST',
+    );
+    const headers = postCalls[0][1].headers as Record<string, string>;
+    expect(headers['X-API-Key']).toBeUndefined();
+  });
+
+  it('returns null on 401 unauthorized response (ROAD-13)', async () => {
+    fetchMock.mockResolvedValue({
+      ok: false,
+      status: 401,
+      headers: new Headers(),
+    });
+
+    const result = await processActionWithBackend(createAction(), '', BACKEND_URL, 'bad-key');
+    expect(result).toBeNull();
+    // 401 is not retryable, so only 1 call
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+  });
+
   it('parses JSON strings in session state output_keys', async () => {
     setupFetchMock(fetchMock, {
       description: 'Fills in the email field',

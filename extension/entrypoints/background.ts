@@ -281,14 +281,16 @@ const COMPLEX_ANALYSIS_CONFIDENCE_THRESHOLD = 0.5;
 
 async function enrichActionInBackground(action: CapturedAction) {
   try {
-    const result = await chrome.storage.local.get('backendUrl');
+    const result = await chrome.storage.local.get(['backendUrl', 'backendApiKey']);
     const backendUrl = result.backendUrl as string | undefined;
     if (!backendUrl) return;
+    const apiKey = result.backendApiKey as string | undefined;
 
     const enriched = await processActionWithBackend(
       action,
       action.screenshotDataUrl || '',
       backendUrl,
+      apiKey,
     );
     if (!enriched) return;
 
@@ -318,9 +320,10 @@ async function enrichActionInBackground(action: CapturedAction) {
 
 async function validateRecordingInBackground(sessionId: string) {
   try {
-    const result = await chrome.storage.local.get('standaloneAgentsUrl');
+    const result = await chrome.storage.local.get(['standaloneAgentsUrl', 'backendApiKey']);
     const agentsUrl = result.standaloneAgentsUrl as string | undefined;
     if (!agentsUrl) return;
+    const apiKey = result.backendApiKey as string | undefined;
 
     await updateSession(sessionId, { validationStatus: 'running' });
     broadcastStatus();
@@ -329,7 +332,7 @@ async function validateRecordingInBackground(sessionId: string) {
     if (!session) return;
     const actions = await getSessionActions(sessionId);
 
-    const validationResult = await validateRecordingWithBackend(session, actions, agentsUrl);
+    const validationResult = await validateRecordingWithBackend(session, actions, agentsUrl, apiKey);
 
     if (validationResult) {
       await updateSession(sessionId, { validationResult, validationStatus: 'done' });
@@ -349,15 +352,17 @@ async function analyzeComplexActionInBackground(
   originalAnalysis: VisualAnalysis,
 ) {
   try {
-    const result = await chrome.storage.local.get('standaloneAgentsUrl');
+    const result = await chrome.storage.local.get(['standaloneAgentsUrl', 'backendApiKey']);
     const agentsUrl = result.standaloneAgentsUrl as string | undefined;
     if (!agentsUrl) return;
+    const apiKey = result.backendApiKey as string | undefined;
 
     const complexResult = await analyzeComplexAction(
       action,
       originalAnalysis,
       action.screenshotDataUrl || '',
       agentsUrl,
+      apiKey,
     );
     if (!complexResult) return;
 

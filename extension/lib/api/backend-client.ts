@@ -40,6 +40,13 @@ function parseScreenshotParts(screenshotDataUrl: string): { text?: string; inlin
   return [];
 }
 
+function buildHeaders(base: Record<string, string>, apiKey?: string): Record<string, string> {
+  if (apiKey) {
+    return { ...base, 'X-API-Key': apiKey };
+  }
+  return base;
+}
+
 async function fetchWithRetry(
   url: string,
   options: RequestInit,
@@ -69,13 +76,19 @@ async function pollSessionState(
   appName: string,
   sessionId: string,
   outputKeys: string[],
+  apiKey?: string,
 ): Promise<Record<string, unknown>> {
+  const headers = buildHeaders({}, apiKey);
+  const fetchOpts: RequestInit = Object.keys(headers).length > 0
+    ? { signal: AbortSignal.timeout(10_000), headers }
+    : { signal: AbortSignal.timeout(10_000) };
+
   for (const delay of POLL_DELAYS) {
     await new Promise(r => setTimeout(r, delay));
     try {
       const res = await fetch(
         `${baseUrl}/apps/${appName}/users/${USER_ID}/sessions/${sessionId}`,
-        { signal: AbortSignal.timeout(10_000) },
+        fetchOpts,
       );
       if (!res.ok) continue;
       const data = await res.json();
@@ -91,7 +104,7 @@ async function pollSessionState(
   try {
     const res = await fetch(
       `${baseUrl}/apps/${appName}/users/${USER_ID}/sessions/${sessionId}`,
-      { signal: AbortSignal.timeout(10_000) },
+      fetchOpts,
     );
     if (res.ok) {
       const data = await res.json();
@@ -105,6 +118,7 @@ export async function processActionWithBackend(
   action: CapturedAction,
   screenshotDataUrl: string,
   backendUrl: string,
+  apiKey?: string,
 ): Promise<EnrichedAction | null> {
   if (!backendUrl) return null;
 
@@ -128,7 +142,7 @@ export async function processActionWithBackend(
     // 1. Send action to ADK backend via POST /run with retry (ROAD-14)
     const runResponse = await fetchWithRetry(`${backendUrl}/run`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: buildHeaders({ 'Content-Type': 'application/json' }, apiKey),
       signal: controller.signal,
       body: JSON.stringify({
         appName: APP_NAME,
@@ -154,6 +168,7 @@ export async function processActionWithBackend(
       APP_NAME,
       action.sessionId,
       ['description', 'visual_analysis', 'decision_analysis'],
+      apiKey,
     );
 
     // 3. Extract enrichment from session state (output_keys from agents)
@@ -185,6 +200,7 @@ export async function validateRecordingWithBackend(
   session: RecordingSession,
   actions: CapturedAction[],
   backendUrl: string,
+  apiKey?: string,
 ): Promise<ValidationResult | null> {
   if (!backendUrl) return null;
 
@@ -212,7 +228,7 @@ export async function validateRecordingWithBackend(
 
     const runResponse = await fetchWithRetry(`${backendUrl}/run`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: buildHeaders({ 'Content-Type': 'application/json' }, apiKey),
       signal: controller.signal,
       body: JSON.stringify({
         appName: VALIDATOR_APP_NAME,
@@ -237,6 +253,7 @@ export async function validateRecordingWithBackend(
       VALIDATOR_APP_NAME,
       session.id,
       ['validation_result'],
+      apiKey,
     );
     const raw = parseJsonSafe(state.validation_result);
 
@@ -273,6 +290,7 @@ export async function analyzeComplexAction(
   originalAnalysis: VisualAnalysis,
   screenshotDataUrl: string,
   backendUrl: string,
+  apiKey?: string,
 ): Promise<ComplexAnalysis | null> {
   if (!backendUrl) return null;
 
@@ -295,7 +313,7 @@ export async function analyzeComplexAction(
 
     const runResponse = await fetchWithRetry(`${backendUrl}/run`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: buildHeaders({ 'Content-Type': 'application/json' }, apiKey),
       signal: controller.signal,
       body: JSON.stringify({
         appName: ANALYZER_APP_NAME,
@@ -320,6 +338,7 @@ export async function analyzeComplexAction(
       ANALYZER_APP_NAME,
       action.sessionId,
       ['complex_analysis'],
+      apiKey,
     );
     const raw = parseJsonSafe(state.complex_analysis);
 

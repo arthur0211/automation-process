@@ -5,6 +5,7 @@ import { DEFAULT_CAPTURE_SETTINGS } from '@/lib/types';
 export function Options() {
   const [settings, setSettings] = useState<CaptureSettings>(DEFAULT_CAPTURE_SETTINGS);
   const [backendUrl, setBackendUrl] = useState('');
+  const [backendApiKey, setBackendApiKey] = useState('');
   const [standaloneAgentsUrl, setStandaloneAgentsUrl] = useState('');
   const [showThumbnails, setShowThumbnails] = useState(true);
   const [githubPat, setGithubPat] = useState('');
@@ -13,13 +14,16 @@ export function Options() {
 
   useEffect(() => {
     chrome.storage.local.get(
-      ['settings', 'backendUrl', 'standaloneAgentsUrl', 'showThumbnails', 'github_pat', 'github_repo'],
+      ['settings', 'backendUrl', 'backendApiKey', 'standaloneAgentsUrl', 'showThumbnails', 'github_pat', 'github_repo'],
       (result) => {
         if (result.settings) {
           setSettings({ ...DEFAULT_CAPTURE_SETTINGS, ...result.settings });
         }
         if (result.backendUrl) {
           setBackendUrl(result.backendUrl as string);
+        }
+        if (result.backendApiKey) {
+          setBackendApiKey(result.backendApiKey as string);
         }
         if (result.standaloneAgentsUrl) {
           setStandaloneAgentsUrl(result.standaloneAgentsUrl as string);
@@ -43,7 +47,7 @@ export function Options() {
   }
 
   function handleSave() {
-    chrome.storage.local.set({ settings, backendUrl, standaloneAgentsUrl, showThumbnails, github_pat: githubPat, github_repo: githubRepo }, () => {
+    chrome.storage.local.set({ settings, backendUrl, backendApiKey, standaloneAgentsUrl, showThumbnails, github_pat: githubPat, github_repo: githubRepo }, () => {
       setSaved(true);
       setTimeout(() => setSaved(false), 2000);
     });
@@ -205,6 +209,30 @@ export function Options() {
               }}
               class="w-full px-3 py-2 text-sm border border-gray-200 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-400"
             />
+          </div>
+          <div>
+            <label class="block text-xs font-medium text-gray-600 mb-1">
+              API Key
+              <span
+                class="inline-flex items-center justify-center w-4 h-4 ml-1 text-[10px] font-bold text-gray-400 bg-gray-100 rounded-full cursor-help align-middle"
+                title="API key for authenticating with the ADK backend. Must match the API_KEY environment variable on the server."
+              >
+                i
+              </span>
+            </label>
+            <input
+              type="password"
+              placeholder="your-api-key"
+              value={backendApiKey}
+              onInput={(e) => {
+                setBackendApiKey((e.target as HTMLInputElement).value);
+                setSaved(false);
+              }}
+              class="w-full px-3 py-2 text-sm border border-gray-200 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-400"
+            />
+            <p class="text-xs text-gray-400 mt-1">
+              Shared between Backend URL and Standalone Agents URL. Leave empty if backend has no authentication.
+            </p>
           </div>
           <div>
             <label class="block text-xs font-medium text-gray-600 mb-1">
