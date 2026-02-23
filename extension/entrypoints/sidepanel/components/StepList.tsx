@@ -57,6 +57,11 @@ export function StepList({ actions, selectedId, onSelect, onReorder }: StepListP
           <div class="flex-1 min-w-0">
             <div class="text-sm text-gray-800 truncate">
               {action.description || `Step ${action.sequenceNumber}`}
+              {action.decisionPoint?.isDecisionPoint && (
+                <span class="inline-block ml-1 px-1 py-0.5 text-[9px] bg-amber-50 text-amber-600 rounded font-medium">
+                  Decision
+                </span>
+              )}
             </div>
             <div class="text-xs text-gray-400 mt-0.5 truncate">
               {action.pageTitle}
