@@ -33,7 +33,7 @@ Backend requires Vertex AI env vars — see `backend/.env.example`.
 ### Tests
 ```bash
 cd extension
-npx vitest run           # run all tests (255 tests, vitest + happy-dom + fake-indexeddb)
+npx vitest run           # run all tests (298 tests, vitest + happy-dom + fake-indexeddb)
 npx vitest               # watch mode
 npx tsc --noEmit         # type check (0 errors expected)
 ```

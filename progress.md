@@ -2,17 +2,17 @@
 
 ## Current State
 
-- **Latest commit**: `feat(extension): add custom branding for HTML exports (ROAD-21)`
-- **Total commits**: 56
-- **Tests**: 286 passing (extension), 15 test files
+- **Latest commit**: `feat(extension): add Playwright + CI export with GitHub Actions workflow (ROAD-20)`
+- **Total commits**: 60
+- **Tests**: 298 passing (extension), 16 test files
 - **TS errors**: 0
 - **Lint errors**: 0
-- **Extension**: Feature-complete — 61 features done, 7 remaining (XL/L scope or external deps)
+- **Extension**: Feature-complete — 49 features done in features.json, 6 remaining (XL/L scope or external deps)
 - **Backend**: ADK agents consolidated (single app), model versions configurable via env vars, Dockerfile fixed, health check, API key auth.
 
 ## Feature Completion Summary
 
-### Done (55 features total)
+### Done (49 features in features.json)
 - **Phase 1** (P1-01 to P1-08): Core capture, selectors, screenshots, video, descriptions, storage, sidepanel, popup — all done
 - **Phase 2A** (P2A-01 to P2A-11): Bugfixes, settings wiring, race conditions, password masking, reorder, delete — all done
 - **Phase 2B** (P2B-01 to P2B-03): Playwright exporter, JSON exporter, HTML exporter — all done
@@ -40,14 +40,15 @@
 - **ROAD-17**: PDF export via print dialog (22 tests)
 - **ROAD-21**: Custom branding — accent color, header/footer, TOC for 10+ steps (9 tests)
 - **ROAD-24**: Playwright test.step() blocks and parameterization (21 tests)
+- **ROAD-20**: Playwright + CI export with GitHub Actions workflow (12 tests)
+- **ROAD-24**: Playwright test.step() blocks and parameterization (21 tests)
 - **ROAD-25**: Cypress test exporter (22 tests)
 
-### Remaining Planned (7 features)
+### Remaining Planned (6 features — all require external infrastructure)
 - **ROAD-02**: Chrome Web Store submission (P0, M) — manual process, needs store assets/privacy policy
 - **ROAD-16**: Cloud sync and sharing (P1, XL) — requires external infrastructure (Supabase/Firebase)
 - **ROAD-18**: Hosted AI enrichment endpoint (P1, L) — requires Cloud Run deployment
 - **ROAD-19**: Team workspace (P2, XL) — requires backend + auth infrastructure
-- **ROAD-20**: CI/CD integration for Playwright tests (P2, L) — requires GitHub Actions template
 - **ROAD-22**: Jira and Linear integration (P2, L) — requires OAuth/API token flow
 - **ROAD-23**: Chrome Built-in AI / Gemini Nano (P2, L) — still in origin trial, not GA
 
@@ -103,15 +104,19 @@
 54. `refactor(backend): pin model versions and consolidate ADK apps (ROAD-15)`
 55. `feat(extension): add PDF export via print dialog (ROAD-17)`
 56. `feat(extension): add custom branding for HTML exports (ROAD-21)`
+57. `chore: update tracking for ROAD-15/17/21 — 61 features done, 286 tests`
+58. `feat(extension): add Playwright + CI export with GitHub Actions workflow (ROAD-20)`
+59. `chore: mark ROAD-20 as done in features.json`
+60. `fix: restrict CORS origins and update test count in CLAUDE.md` (duplicate — merge artifact)
 
 ## 360 Audit Results (Updated)
 
 ### Scores by Area
 | Area | Score | Notes |
 |------|-------|-------|
-| Extension Code | 9.5/10 | 286 tests, 0 TS errors, 0 lint errors, 6 exporters |
-| Tests | A+ | 286 tests across 15 files, all passing |
-| Features | 90% | 61/68 features done, remaining 7 are XL/L scope or need external infra |
+| Extension Code | 9.5/10 | 298 tests, 0 TS errors, 0 lint errors, 8 exporters |
+| Tests | A+ | 298 tests across 16 files, all passing |
+| Features | 89% | 49/55 features done, remaining 6 require external infrastructure |
 | Backend | Deployable | Dockerfile fixed, health check, API auth, env validation, consolidated |
 | Documentation | 8/10 | CLAUDE.md, README, features.json, progress.md all up to date |
 | Automation | 9/10 | GitHub Actions CI, ESLint + Prettier |
