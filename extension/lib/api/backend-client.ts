@@ -10,7 +10,7 @@ export interface EnrichedAction {
   };
 }
 
-const APP_NAME = 'recording_pipeline';
+const APP_NAME = 'action_processor';
 const USER_ID = 'extension-user';
 const TIMEOUT_MS = 30_000;
 const POLL_DELAYS = [500, 1000, 2000, 4000, 8000];

@@ -1,8 +1,10 @@
+import os
+
 from google.adk.agents import LlmAgent
 
 screenshot_analyzer = LlmAgent(
     name="screenshot_analyzer",
-    model="gemini-3-flash-preview",
+    model=os.environ.get("GEMINI_FLASH_MODEL", "gemini-2.0-flash"),
     instruction="""Analyze the screenshot and extract:
 1. All visible UI elements (buttons, inputs, links, text fields)
 2. The element that was interacted with (highlighted or annotated)

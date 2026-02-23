@@ -1,8 +1,10 @@
+import os
+
 from google.adk.agents import LlmAgent
 
 complex_analyzer = LlmAgent(
     name="complex_analyzer",
-    model="claude-sonnet-4-6",
+    model=os.environ.get("CLAUDE_MODEL", "claude-sonnet-4-6"),
     instruction="""You are a senior process analyst specialized in complex edge cases.
 You receive analysis from other agents that had low confidence scores.
 

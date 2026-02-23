@@ -24,7 +24,7 @@ npx wxt zip              # create extension ZIP for distribution
 ```bash
 cd backend
 pip install -r requirements.txt
-adk web                  # local dev server (auto-discovers coordinator_agent from app.py)
+adk web                  # local dev server (auto-discovers root_agent from app.py)
 adk deploy cloud_run --region us-central1  # deploy to Cloud Run
 ```
 
@@ -61,18 +61,18 @@ Messages flow via `chrome.runtime.sendMessage` between:
 
 ### Backend Agent Pipeline
 ```
-coordinator_agent (SequentialAgent)
-  └─ action_processor (ParallelAgent)
-       ├─ screenshot_analyzer  (Gemini 3 Flash)  → visual_analysis
-       ├─ description_generator (Gemini 3 Flash)  → description
-       └─ decision_detector    (Gemini 3 Flash)  → decision_analysis
+root_agent / action_processor (ParallelAgent)
+  ├─ screenshot_analyzer  ($GEMINI_FLASH_MODEL, default gemini-2.0-flash)  → visual_analysis
+  ├─ description_generator ($GEMINI_FLASH_MODEL, default gemini-2.0-flash) → description
+  └─ decision_detector    ($GEMINI_FLASH_MODEL, default gemini-2.0-flash)  → decision_analysis
 
 Standalone agents (not in pipeline yet):
-  ├─ doc_validator      (Gemini 3 Pro)    → validation_result
-  └─ complex_analyzer   (Claude Sonnet 4.6 via Vertex) → complex_analysis
+  ├─ doc_validator      ($GEMINI_PRO_MODEL, default gemini-2.0-pro)        → validation_result
+  └─ complex_analyzer   ($CLAUDE_MODEL, default claude-sonnet-4-6)         → complex_analysis
 ```
 
 `__init__.py` registers Claude in `LLMRegistry` before any agent imports — this order matters.
+Model versions are configurable via environment variables (see `backend/.env.example`).
 
 ### Extension Key Modules
 - `lib/types.ts` — all TypeScript interfaces (`CapturedAction`, `RecordingSession`, `ElementMetadata`, `StatusPayload`, etc.)

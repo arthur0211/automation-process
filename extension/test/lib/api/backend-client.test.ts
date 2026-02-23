@@ -11,7 +11,7 @@ const BACKEND_URL = 'http://localhost:8000';
 function mockSessionState(state: Record<string, unknown>) {
   return {
     id: 'session-1',
-    appName: 'recording_pipeline',
+    appName: 'action_processor',
     userId: 'extension-user',
     state,
   };
@@ -85,7 +85,7 @@ describe('processActionWithBackend', () => {
     );
     expect(postCalls.length).toBe(1);
     const body = JSON.parse(postCalls[0][1].body as string);
-    expect(body.appName).toBe('recording_pipeline');
+    expect(body.appName).toBe('action_processor');
     expect(body.newMessage.parts).toHaveLength(2);
     expect(body.newMessage.parts[0]).toHaveProperty('text');
     expect(body.newMessage.parts[1]).toEqual({

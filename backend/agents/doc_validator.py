@@ -1,8 +1,10 @@
+import os
+
 from google.adk.agents import LlmAgent
 
 doc_validator = LlmAgent(
     name="doc_validator",
-    model="gemini-3-pro-preview",
+    model=os.environ.get("GEMINI_PRO_MODEL", "gemini-2.0-pro"),
     instruction="""Validate the completeness and quality of a recorded process documentation.
 
 Check for:
