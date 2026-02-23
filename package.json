@@ -6,7 +6,8 @@
   "scripts": {
     "dev": "npm run dev --workspace=extension",
     "build": "npm run build --workspace=extension",
-    "zip": "npm run zip --workspace=extension"
+    "zip": "npm run zip --workspace=extension",
+    "test": "npm run test --workspace=extension"
   },
   "workspaces": ["extension"]
 }

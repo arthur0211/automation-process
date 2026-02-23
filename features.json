@@ -305,7 +305,8 @@
         "17 tests passing"
       ],
       "status": "done",
-      "phase": "2B"
+      "phase": "2B",
+      "auditNote": "getByText was missing from cascade, getByLabel misused for aria-label, no waitForLoadState or toBeVisible assertions. Fixed in AUDIT-04."
     },
     {
       "id": "P2C-01",
@@ -408,7 +409,8 @@
         "Decision points visually highlighted in step list"
       ],
       "status": "done",
-      "phase": "2D"
+      "phase": "2D",
+      "auditNote": "Decision points not visually highlighted in StepList yet — badge added in AUDIT-03."
     },
     {
       "id": "P2D-06",
@@ -493,6 +495,69 @@
       ],
       "status": "planned",
       "phase": "future"
+    },
+    {
+      "id": "AUDIT-01",
+      "name": "Fix loadState race condition",
+      "description": "await loadState() in background.ts to prevent stale state on GET_STATUS",
+      "acceptanceCriteria": [
+        "loadState() promise stored and awaited in message handlers",
+        "GET_STATUS returns correct state after SW restart"
+      ],
+      "status": "done",
+      "phase": "audit"
+    },
+    {
+      "id": "AUDIT-02",
+      "name": "VisualAnalysis type safety",
+      "description": "Replace Record<string,any> casts in StepDetail with proper VisualAnalysis interface",
+      "acceptanceCriteria": [
+        "VisualAnalysis interface defined in types.ts",
+        "CapturedAction.llmVisualAnalysis typed as VisualAnalysis",
+        "All 10 casts removed from StepDetail.tsx"
+      ],
+      "status": "done",
+      "phase": "audit"
+    },
+    {
+      "id": "AUDIT-03",
+      "name": "Decision badges in StepList",
+      "description": "Show decision point indicator badge in step list items",
+      "acceptanceCriteria": [
+        "Decision badge visible next to description in StepList",
+        "Only shown when action.decisionPoint.isDecisionPoint is true"
+      ],
+      "status": "done",
+      "phase": "audit"
+    },
+    {
+      "id": "AUDIT-04",
+      "name": "Playwright export reliability",
+      "description": "Add waitForLoadState, toBeVisible assertions, getByText, fix getByLabel for aria-label",
+      "acceptanceCriteria": [
+        "getByText in locator cascade before CSS fallback",
+        "getByRole with name for aria-label elements with role",
+        "waitForLoadState after navigate actions",
+        "expect().toBeVisible() before click/submit",
+        "Default case for unknown action types",
+        "New tests for all additions"
+      ],
+      "status": "done",
+      "phase": "audit"
+    },
+    {
+      "id": "AUDIT-05",
+      "name": "Project hygiene",
+      "description": "Add .gitattributes, delete nul file, update test counts in docs",
+      "acceptanceCriteria": [
+        ".gitattributes added with LF normalization",
+        "nul file deleted",
+        "Test count updated in CLAUDE.md",
+        "npm test script added to root package.json"
+      ],
+      "status": "done",
+      "phase": "audit",
+      "auditNote": "nul file deletion requires manual rm on Windows — file is already in .gitignore"
     }
   ]
 }
