@@ -82,12 +82,20 @@ export function RecordingControls() {
         )}
 
         {status === 'stopped' && (
-          <button
-            onClick={() => send('START_RECORDING')}
-            class="flex-1 px-3 py-1.5 text-sm font-medium text-white bg-red-600 rounded-md hover:bg-red-700 transition-colors"
-          >
-            New Recording
-          </button>
+          <>
+            <button
+              onClick={() => send('START_RECORDING')}
+              class="flex-1 px-3 py-1.5 text-sm font-medium text-white bg-red-600 rounded-md hover:bg-red-700 transition-colors"
+            >
+              New Recording
+            </button>
+            <button
+              onClick={() => send('RESET_RECORDING')}
+              class="flex-1 px-3 py-1.5 text-sm font-medium text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200 transition-colors"
+            >
+              Sessions
+            </button>
+          </>
         )}
       </div>
     </div>

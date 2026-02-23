@@ -455,9 +455,12 @@
       "acceptanceCriteria": [
         "Session list view with all recordings",
         "Rename session functionality",
-        "Delete session with confirmation (cascades to actions and video)"
+        "Delete session with confirmation (cascades to actions and video)",
+        "Three-level navigation: sessions → list → detail",
+        "Back to sessions button when viewing past recordings",
+        "Sessions button in stopped state to return to session list"
       ],
-      "status": "planned",
+      "status": "done",
       "phase": "future"
     },
     {

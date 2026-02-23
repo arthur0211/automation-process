@@ -2,16 +2,26 @@
 
 ## Current State
 
-- **Latest commit**: `chore: project hygiene and documentation updates`
-- **Total commits**: 14
-- **Tests**: 137 passing (extension)
+- **Latest commit**: `feat(ui): add Sessions button to RecordingControls`
+- **Total commits**: 17
+- **Tests**: 146 passing (extension)
 - **TS errors**: 0
-- **Extension**: Feature-complete for Phase 1 + 2A + 2B + 2C + 2D (all) + Audit fixes
+- **Extension**: Feature-complete for Phase 1 + 2A + 2B + 2C + 2D (all) + Audit fixes + FUTURE-02 Session Management
 - **Backend**: ADK agents defined (7 agents), all 7 integrated with extension (pipeline + standalone)
 
 ## Completed This Session
 
-### 360 Audit Fixes (AUDIT-01 to AUDIT-05)
+### FUTURE-02: Session Management
+- Added `sessions` array and `view: 'sessions' | 'list' | 'detail'` to Zustand store
+- Added `setSessions`, `selectSession`, `backToSessions` store actions
+- Added `loadSessions`, `loadSessionActions`, `renameSessionWithDb`, `deleteSessionWithDb` action creators
+- Modified `syncFromBackground` and `handleStatusUpdate` to show sessions view when idle
+- Created `SessionList.tsx` component — lists all recordings with inline rename, delete, date, step count
+- Updated `App.tsx` with three-level navigation: sessions → list → detail with back button
+- Added "Sessions" button in `RecordingControls.tsx` stopped state
+- 9 new tests (5 store + 7 actions, 1 updated) — 146 total passing
+
+### Previous: 360 Audit Fixes (AUDIT-01 to AUDIT-05)
 - Fixed loadState race condition — stateReady promise awaited in GET_STATUS and recording control handlers
 - Added VisualAnalysis interface — replaced 10x Record<string,any> casts in StepDetail with proper types
 - Added decision badges in StepList — amber badge shown for decision point actions
@@ -59,6 +69,9 @@
 11. `feat(extension): add decision badges in StepList` — amber decision badge, getByText in Playwright locator cascade
 12. `fix(extension): improve Playwright export reliability` — getByRole for aria-label+role, waitForLoadState, toBeVisible, default case, 6 new tests
 13. `chore: project hygiene and documentation updates` — .gitattributes, test counts, npm test script
+14. `feat(store): add session management state and actions` — sessions list, three-level nav, CRUD operations, 9 new tests
+15. `feat(ui): add SessionList component and three-level navigation` — SessionList component, App.tsx navigation, back button
+16. `feat(ui): add Sessions button to RecordingControls` — Sessions button in stopped state, features.json + progress.md updated
 
 ## 360 Audit Results
 
