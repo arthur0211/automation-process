@@ -58,7 +58,9 @@ describe('exportToPlaywright', () => {
     ];
     const result = exportToPlaywright(session, actions);
 
-    expect(result).toContain(".fill('hello@test.com');");
+    // Input value is parameterized into testData
+    expect(result).toContain("email: 'hello@test.com',");
+    expect(result).toContain('.fill(testData.email);');
   });
 
   it('generates scroll action with scrollTo', () => {
@@ -326,5 +328,416 @@ describe('exportToPlaywright', () => {
     const result = exportToPlaywright(session, actions);
 
     expect(result).toContain('// Unsupported action type: hover');
+  });
+
+  // ─── test.step() blocks ──────────────────────────────────────────────────
+
+  it('wraps each action in a test.step() block', () => {
+    const session = createSession();
+    const actions = [createAction({ description: 'Clicked the submit button' })];
+    const result = exportToPlaywright(session, actions);
+
+    expect(result).toContain(
+      "await test.step('Step 1: Clicked the submit button', async () => {",
+    );
+    expect(result).toContain('    });');
+  });
+
+  it('wraps multiple actions in separate test.step() blocks', () => {
+    const session = createSession();
+    const actions = [
+      createAction({ id: 'a1', sequenceNumber: 1, description: 'First action' }),
+      createAction({ id: 'a2', sequenceNumber: 2, description: 'Second action' }),
+    ];
+    const result = exportToPlaywright(session, actions);
+
+    expect(result).toContain("await test.step('Step 1: First action', async () => {");
+    expect(result).toContain("await test.step('Step 2: Second action', async () => {");
+  });
+
+  it('uses llmDescription over description in test.step() label', () => {
+    const session = createSession();
+    const actions = [
+      createAction({
+        description: 'Clicked button',
+        llmDescription: 'Click the login button to authenticate',
+      }),
+    ];
+    const result = exportToPlaywright(session, actions);
+
+    expect(result).toContain("Step 1: Click the login button to authenticate");
+    expect(result).not.toContain("Step 1: Clicked button");
+  });
+
+  it('escapes single quotes in test.step() description', () => {
+    const session = createSession();
+    const actions = [
+      createAction({ description: "Click the 'Submit' button" }),
+    ];
+    const result = exportToPlaywright(session, actions);
+
+    expect(result).toContain("Step 1: Click the \\'Submit\\' button");
+  });
+
+  // ─── testData parameterization ──────────────────────────────────────────
+
+  it('generates testData object for input actions', () => {
+    const session = createSession();
+    const actions = [
+      createAction({
+        actionType: 'input',
+        inputValue: 'john@example.com',
+        element: createElementMetadata({ tag: 'input', placeholder: 'Email address' }),
+      }),
+    ];
+    const result = exportToPlaywright(session, actions);
+
+    expect(result).toContain('const testData = {');
+    expect(result).toContain("emailAddress: 'john@example.com',");
+    expect(result).toContain('.fill(testData.emailAddress);');
+  });
+
+  it('generates testData keys from ariaLabel when no placeholder', () => {
+    const session = createSession();
+    const actions = [
+      createAction({
+        actionType: 'input',
+        inputValue: 'John',
+        element: createElementMetadata({
+          tag: 'input',
+          placeholder: '',
+          ariaLabel: 'First name',
+          selectors: createSelector({ testId: undefined }),
+        }),
+      }),
+    ];
+    const result = exportToPlaywright(session, actions);
+
+    expect(result).toContain("firstName: 'John',");
+    expect(result).toContain('.fill(testData.firstName);');
+  });
+
+  it('generates testData keys from element name when no placeholder or ariaLabel', () => {
+    const session = createSession();
+    const actions = [
+      createAction({
+        actionType: 'input',
+        inputValue: 'doe',
+        element: createElementMetadata({
+          tag: 'input',
+          placeholder: '',
+          ariaLabel: '',
+          name: 'last-name',
+          selectors: createSelector({ testId: undefined }),
+        }),
+      }),
+    ];
+    const result = exportToPlaywright(session, actions);
+
+    expect(result).toContain("lastName: 'doe',");
+    expect(result).toContain('.fill(testData.lastName);');
+  });
+
+  it('generates fallback testData key from index', () => {
+    const session = createSession();
+    const actions = [
+      createAction({
+        actionType: 'input',
+        inputValue: 'something',
+        element: createElementMetadata({
+          tag: 'input',
+          placeholder: '',
+          ariaLabel: '',
+          name: '',
+          role: '',
+          text: '',
+          selectors: createSelector({ testId: undefined, css: 'input.custom' }),
+        }),
+      }),
+    ];
+    const result = exportToPlaywright(session, actions);
+
+    expect(result).toContain("input1: 'something',");
+    expect(result).toContain('.fill(testData.input1);');
+  });
+
+  it('does not generate testData when there are no input actions', () => {
+    const session = createSession();
+    const actions = [createAction({ actionType: 'click' })];
+    const result = exportToPlaywright(session, actions);
+
+    expect(result).not.toContain('const testData');
+  });
+
+  it('generates multiple testData entries for multiple inputs', () => {
+    const session = createSession();
+    const actions = [
+      createAction({
+        id: 'a1',
+        sequenceNumber: 1,
+        actionType: 'input',
+        inputValue: 'user@test.com',
+        element: createElementMetadata({ tag: 'input', placeholder: 'Email' }),
+      }),
+      createAction({
+        id: 'a2',
+        sequenceNumber: 2,
+        actionType: 'input',
+        inputValue: 'secret123',
+        element: createElementMetadata({ tag: 'input', placeholder: 'Password', type: 'password' }),
+      }),
+    ];
+    const result = exportToPlaywright(session, actions);
+
+    expect(result).toContain('const testData = {');
+    expect(result).toContain("email: 'user@test.com',");
+    // Password should use process.env
+    expect(result).toContain("password: process.env.PASSWORD ?? '',");
+  });
+
+  // ─── Password field handling ──────────────────────────────────────────────
+
+  it('uses process.env.PASSWORD for password input fields', () => {
+    const session = createSession();
+    const actions = [
+      createAction({
+        actionType: 'input',
+        inputValue: '••••••',
+        element: createElementMetadata({
+          tag: 'input',
+          type: 'password',
+          placeholder: 'Password',
+        }),
+      }),
+    ];
+    const result = exportToPlaywright(session, actions);
+
+    expect(result).toContain("password: process.env.PASSWORD ?? '',");
+    expect(result).toContain('.fill(testData.password);');
+    expect(result).not.toContain("'••••••'");
+  });
+
+  it('uses process.env.PASSWORD regardless of input value for password type', () => {
+    const session = createSession();
+    const actions = [
+      createAction({
+        actionType: 'input',
+        inputValue: 'actualPassword123',
+        element: createElementMetadata({
+          tag: 'input',
+          type: 'password',
+          placeholder: 'Enter password',
+        }),
+      }),
+    ];
+    const result = exportToPlaywright(session, actions);
+
+    expect(result).toContain("enterPassword: process.env.PASSWORD ?? '',");
+    expect(result).not.toContain('actualPassword123');
+  });
+
+  // ─── waitForURL on navigation ─────────────────────────────────────────────
+
+  it('adds waitForURL after click when next action has different URL', () => {
+    const session = createSession();
+    const actions = [
+      createAction({
+        id: 'a1',
+        sequenceNumber: 1,
+        actionType: 'click',
+        url: 'https://example.com/login',
+        description: 'Click login',
+      }),
+      createAction({
+        id: 'a2',
+        sequenceNumber: 2,
+        actionType: 'click',
+        url: 'https://example.com/dashboard',
+        description: 'Click settings',
+      }),
+    ];
+    const result = exportToPlaywright(session, actions);
+
+    expect(result).toContain(
+      "await page.waitForURL('https://example.com/dashboard');",
+    );
+  });
+
+  it('does not add waitForURL when next action has the same URL', () => {
+    const session = createSession();
+    const actions = [
+      createAction({
+        id: 'a1',
+        sequenceNumber: 1,
+        actionType: 'click',
+        url: 'https://example.com/page',
+        description: 'Click first',
+      }),
+      createAction({
+        id: 'a2',
+        sequenceNumber: 2,
+        actionType: 'click',
+        url: 'https://example.com/page',
+        description: 'Click second',
+      }),
+    ];
+    const result = exportToPlaywright(session, actions);
+
+    expect(result).not.toContain('waitForURL');
+  });
+
+  it('does not add waitForURL for the last action (no next action)', () => {
+    const session = createSession();
+    const actions = [
+      createAction({
+        actionType: 'click',
+        url: 'https://example.com/page',
+        description: 'Click something',
+      }),
+    ];
+    const result = exportToPlaywright(session, actions);
+
+    expect(result).not.toContain('waitForURL');
+  });
+
+  it('adds waitForURL after submit when next action has different URL', () => {
+    const session = createSession();
+    const actions = [
+      createAction({
+        id: 'a1',
+        sequenceNumber: 1,
+        actionType: 'submit',
+        url: 'https://example.com/form',
+        description: 'Submit form',
+      }),
+      createAction({
+        id: 'a2',
+        sequenceNumber: 2,
+        actionType: 'click',
+        url: 'https://example.com/success',
+        description: 'Click continue',
+      }),
+    ];
+    const result = exportToPlaywright(session, actions);
+
+    expect(result).toContain(
+      "await page.waitForURL('https://example.com/success');",
+    );
+  });
+
+  it('does not add waitForURL for non-click/submit actions', () => {
+    const session = createSession();
+    const actions = [
+      createAction({
+        id: 'a1',
+        sequenceNumber: 1,
+        actionType: 'input',
+        inputValue: 'test',
+        url: 'https://example.com/page1',
+        element: createElementMetadata({ tag: 'input', placeholder: 'Search' }),
+      }),
+      createAction({
+        id: 'a2',
+        sequenceNumber: 2,
+        actionType: 'click',
+        url: 'https://example.com/page2',
+        description: 'Click next',
+      }),
+    ];
+    const result = exportToPlaywright(session, actions);
+
+    // waitForURL should NOT be inside the input step
+    // It should only appear if a click/submit triggers the navigation
+    const inputStepMatch = result.match(
+      /await test\.step\('Step 1:.*?', async \(\) => \{([\s\S]*?)\}\);/,
+    );
+    expect(inputStepMatch).toBeTruthy();
+    expect(inputStepMatch![1]).not.toContain('waitForURL');
+  });
+
+  // ─── Integration: full flow ───────────────────────────────────────────────
+
+  it('generates a complete test with all features combined', () => {
+    const session = createSession({ name: 'Login Flow', url: 'https://app.com/login' });
+    const actions = [
+      createAction({
+        id: 'a1',
+        sequenceNumber: 1,
+        actionType: 'input',
+        inputValue: 'admin@app.com',
+        url: 'https://app.com/login',
+        description: 'Enter email',
+        element: createElementMetadata({
+          tag: 'input',
+          placeholder: 'Email',
+          type: 'email',
+        }),
+      }),
+      createAction({
+        id: 'a2',
+        sequenceNumber: 2,
+        actionType: 'input',
+        inputValue: 'secret',
+        url: 'https://app.com/login',
+        description: 'Enter password',
+        element: createElementMetadata({
+          tag: 'input',
+          placeholder: 'Password',
+          type: 'password',
+        }),
+      }),
+      createAction({
+        id: 'a3',
+        sequenceNumber: 3,
+        actionType: 'click',
+        url: 'https://app.com/login',
+        description: 'Click login button',
+        element: createElementMetadata({
+          tag: 'button',
+          role: 'button',
+          text: 'Log in',
+          selectors: createSelector({ testId: 'login-btn' }),
+        }),
+      }),
+      createAction({
+        id: 'a4',
+        sequenceNumber: 4,
+        actionType: 'click',
+        url: 'https://app.com/dashboard',
+        description: 'Click profile',
+        element: createElementMetadata({
+          tag: 'a',
+          role: 'link',
+          text: 'Profile',
+          selectors: createSelector({ testId: undefined }),
+        }),
+      }),
+    ];
+    const result = exportToPlaywright(session, actions);
+
+    // Structure
+    expect(result).toContain("test.describe('Login Flow'");
+    expect(result).toContain("await page.goto('https://app.com/login');");
+
+    // testData
+    expect(result).toContain('const testData = {');
+    expect(result).toContain("email: 'admin@app.com',");
+    expect(result).toContain("password: process.env.PASSWORD ?? '',");
+
+    // test.step blocks
+    expect(result).toContain("await test.step('Step 1: Enter email', async () => {");
+    expect(result).toContain("await test.step('Step 2: Enter password', async () => {");
+    expect(result).toContain("await test.step('Step 3: Click login button', async () => {");
+    expect(result).toContain("await test.step('Step 4: Click profile', async () => {");
+
+    // Parameterized inputs
+    expect(result).toContain('.fill(testData.email);');
+    expect(result).toContain('.fill(testData.password);');
+
+    // waitForURL after login click (page changes from /login to /dashboard)
+    expect(result).toContain("await page.waitForURL('https://app.com/dashboard');");
+
+    // No secret value leaked
+    expect(result).not.toContain("'secret'");
   });
 });
