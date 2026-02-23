@@ -5,7 +5,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## Project Overview
 
 Chrome Extension that records and documents web processes for humans and LLMs. Two-part architecture:
-- **Extension** (All phases complete): Captures user actions, screenshots, video; stores in IndexedDB; exports to JSON/HTML/Playwright; centralized Zustand state; session management; multi-tab recording; video playback; JSON import
+- **Extension** (All phases complete): Captures user actions, screenshots, video; stores in IndexedDB; exports to JSON/HTML/Markdown/Playwright/Cypress/PDF/GitHub Issues; centralized Zustand state; session management; multi-tab recording; video playback; JSON import
 - **Backend** (Phase 2D - integrated): Google ADK agents on Vertex AI that enrich recordings with LLM analysis
 
 ## Build & Run Commands
@@ -62,12 +62,12 @@ Messages flow via `chrome.runtime.sendMessage` between:
 ### Backend Agent Pipeline
 ```
 root_agent / action_processor (ParallelAgent)
-  ├─ screenshot_analyzer  ($GEMINI_FLASH_MODEL, default gemini-2.0-flash)  → visual_analysis
-  ├─ description_generator ($GEMINI_FLASH_MODEL, default gemini-2.0-flash) → description
-  └─ decision_detector    ($GEMINI_FLASH_MODEL, default gemini-2.0-flash)  → decision_analysis
+  ├─ screenshot_analyzer  ($GEMINI_FLASH_MODEL, default gemini-3-flash-preview)  → visual_analysis
+  ├─ description_generator ($GEMINI_FLASH_MODEL, default gemini-3-flash-preview) → description
+  └─ decision_detector    ($GEMINI_FLASH_MODEL, default gemini-3-flash-preview)  → decision_analysis
 
 Standalone agents (not in pipeline yet):
-  ├─ doc_validator      ($GEMINI_PRO_MODEL, default gemini-2.0-pro)        → validation_result
+  ├─ doc_validator      ($GEMINI_PRO_MODEL, default gemini-3-pro-preview)        → validation_result
   └─ complex_analyzer   ($CLAUDE_MODEL, default claude-sonnet-4-6)         → complex_analysis
 ```
 
@@ -85,8 +85,13 @@ Model versions are configurable via environment variables (see `backend/.env.exa
 - `lib/capture/description-generator.ts` — template-based descriptions (Phase 1; Phase 2D will use LLM)
 - `lib/api/backend-client.ts` — ADK backend integration (POST /run + GET session state, configurable URL, error handling)
 - `lib/export/json-exporter.ts` — export to ProcessExport JSON schema
-- `lib/export/html-exporter.ts` — export to styled self-contained HTML
-- `lib/export/playwright-exporter.ts` — export to Playwright .spec.ts test with smart native locator cascade
+- `lib/export/html-exporter.ts` — export to styled self-contained HTML with custom branding
+- `lib/export/markdown-exporter.ts` — export to Markdown with clipboard copy support
+- `lib/export/playwright-exporter.ts` — export to Playwright .spec.ts test with smart native locator cascade, test.step() blocks, testData parameterization
+- `lib/export/playwright-ci-exporter.ts` — Playwright test + GitHub Actions CI workflow YAML
+- `lib/export/cypress-exporter.ts` — export to Cypress .cy.ts test with locator cascade
+- `lib/export/pdf-exporter.ts` — PDF export via print dialog with cover page and page breaks
+- `lib/export/github-exporter.ts` — create GitHub Issues via API with PAT authentication
 - `shared/types/process-schema.json` — JSON Schema v7 defining the export format
 
 ### Tech Stack

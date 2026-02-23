@@ -4,7 +4,7 @@ from google.adk.agents import LlmAgent
 
 decision_detector = LlmAgent(
     name="decision_detector",
-    model=os.environ.get("GEMINI_FLASH_MODEL", "gemini-2.0-flash"),
+    model=os.environ.get("GEMINI_FLASH_MODEL", "gemini-3-flash-preview"),
     instruction="""Analyze the action sequence and identify if this step represents a decision point.
 
 Look for:

@@ -4,7 +4,7 @@ from google.adk.agents import LlmAgent
 
 description_generator = LlmAgent(
     name="description_generator",
-    model=os.environ.get("GEMINI_FLASH_MODEL", "gemini-2.0-flash"),
+    model=os.environ.get("GEMINI_FLASH_MODEL", "gemini-3-flash-preview"),
     instruction="""Generate a clear, non-technical description of the user action.
 Use business language, not technical jargon.
 

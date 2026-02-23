@@ -2,17 +2,17 @@
 
 ## Current State
 
-- **Latest commit**: `feat(extension): add Playwright + CI export with GitHub Actions workflow (ROAD-20)`
-- **Total commits**: 60
+- **Latest commit**: `fix(test): increase timeout for retry tests to prevent flaky failures`
+- **Total commits**: 67
 - **Tests**: 298 passing (extension), 16 test files
 - **TS errors**: 0
 - **Lint errors**: 0
-- **Extension**: Feature-complete — 49 features done in features.json, 6 remaining (XL/L scope or external deps)
+- **Extension**: Feature-complete — 62 features done in features.json, 6 remaining (XL/L scope or external deps)
 - **Backend**: ADK agents consolidated (single app), model versions configurable via env vars, Dockerfile fixed, health check, API key auth.
 
 ## Feature Completion Summary
 
-### Done (49 features in features.json)
+### Done (62 features in features.json)
 - **Phase 1** (P1-01 to P1-08): Core capture, selectors, screenshots, video, descriptions, storage, sidepanel, popup — all done
 - **Phase 2A** (P2A-01 to P2A-11): Bugfixes, settings wiring, race conditions, password masking, reorder, delete — all done
 - **Phase 2B** (P2B-01 to P2B-03): Playwright exporter, JSON exporter, HTML exporter — all done
@@ -41,7 +41,6 @@
 - **ROAD-21**: Custom branding — accent color, header/footer, TOC for 10+ steps (9 tests)
 - **ROAD-24**: Playwright test.step() blocks and parameterization (21 tests)
 - **ROAD-20**: Playwright + CI export with GitHub Actions workflow (12 tests)
-- **ROAD-24**: Playwright test.step() blocks and parameterization (21 tests)
 - **ROAD-25**: Cypress test exporter (22 tests)
 
 ### Remaining Planned (6 features — all require external infrastructure)
@@ -108,6 +107,8 @@
 58. `feat(extension): add Playwright + CI export with GitHub Actions workflow (ROAD-20)`
 59. `chore: mark ROAD-20 as done in features.json`
 60. `fix: restrict CORS origins and update test count in CLAUDE.md` (duplicate — merge artifact)
+61-66. CI, tracking, ROAD-20, ROAD-21, ROAD-17, ROAD-15 commits
+67. `fix(test): increase timeout for retry tests to prevent flaky failures`
 
 ## 360 Audit Results (Updated)
 
@@ -116,17 +117,17 @@
 |------|-------|-------|
 | Extension Code | 9.5/10 | 298 tests, 0 TS errors, 0 lint errors, 8 exporters |
 | Tests | A+ | 298 tests across 16 files, all passing |
-| Features | 89% | 49/55 features done, remaining 6 require external infrastructure |
+| Features | 91% | 62/68 features done, remaining 6 require external infrastructure |
 | Backend | Deployable | Dockerfile fixed, health check, API auth, env validation, consolidated |
-| Documentation | 8/10 | CLAUDE.md, README, features.json, progress.md all up to date |
+| Documentation | 9/10 | CLAUDE.md, README, features.json, progress.md all up to date |
 | Automation | 9/10 | GitHub Actions CI, ESLint + Prettier |
-| Product | 9.5/10 | Complete workflow: capture → enrich → manage → export (5 formats) → integrate (GitHub) |
+| Product | 9.5/10 | Complete workflow: capture → enrich → manage → export (8 formats) → integrate (GitHub) |
 
 ## Known Issues
 
 - **Build EBUSY error** (Windows): `npx wxt build` occasionally fails with `EBUSY: resource busy or locked` on `.output/` directory. Workaround: close Chrome extension devtools.
 - **Offscreen document**: Chrome sometimes reports offscreen document already exists on rapid start/stop cycles. Handled with try/catch.
-- **Backend flaky test**: `backend-client.test.ts` "retries on 503" occasionally times out in full suite (passes in isolation). Timing issue with fetchWithRetry mock delays.
+- **Backend flaky test**: `backend-client.test.ts` retry tests use real timer delays via `shouldAdvanceTime`. Timeout increased to 15s (commit 322cf41).
 
 ## Architecture Decisions
 
