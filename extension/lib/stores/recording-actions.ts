@@ -61,6 +61,13 @@ export async function deleteSessionWithDb(id: string): Promise<void> {
   }
 }
 
+export async function importSessionFromJson(jsonString: string): Promise<void> {
+  const { importFromJson } = await import('../export/json-importer');
+  const { session } = await importFromJson(jsonString);
+  await loadSessions();
+  await loadSessionActions(session);
+}
+
 export async function syncFromBackground(): Promise<void> {
   return new Promise<void>((resolve) => {
     chrome.runtime.sendMessage({ type: 'GET_STATUS' }, async (response) => {

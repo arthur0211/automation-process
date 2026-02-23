@@ -8,6 +8,7 @@ import {
   loadSessionActions,
   renameSessionWithDb,
   deleteSessionWithDb,
+  importSessionFromJson,
 } from '@/lib/stores/recording-actions';
 import { RecordingControls } from './components/RecordingControls';
 import { StepList } from './components/StepList';
@@ -91,6 +92,7 @@ export function App() {
           onSelect={loadSessionActions}
           onRename={renameSessionWithDb}
           onDelete={deleteSessionWithDb}
+          onImport={importSessionFromJson}
         />
       )}
 
