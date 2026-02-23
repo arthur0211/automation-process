@@ -98,4 +98,24 @@ describe('exportToJson', () => {
     expect(result.steps[0].stepNumber).toBe(1);
     expect(result.steps[1].stepNumber).toBe(2);
   });
+
+  // ─── Multi-tab ──────────────────────────────────────────────────────────
+
+  it('includes tabId and tabTitle when present on action', () => {
+    const session = createSession({ stoppedAt: 1700000060000 });
+    const actions = [createAction({ tabId: 42, tabTitle: 'Settings Page' })];
+    const result = JSON.parse(exportToJson(session, actions)) as ProcessExport;
+
+    expect(result.steps[0].tabId).toBe(42);
+    expect(result.steps[0].tabTitle).toBe('Settings Page');
+  });
+
+  it('omits tabId and tabTitle when not present', () => {
+    const session = createSession({ stoppedAt: 1700000060000 });
+    const actions = [createAction()];
+    const result = JSON.parse(exportToJson(session, actions)) as ProcessExport;
+
+    expect(result.steps[0].tabId).toBeUndefined();
+    expect(result.steps[0].tabTitle).toBeUndefined();
+  });
 });

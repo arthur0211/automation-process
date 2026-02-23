@@ -12,6 +12,8 @@ function actionToStep(action: CapturedAction, index: number): ProcessStep {
     screenshotDataUrl: action.screenshotDataUrl,
     decisionPoint: action.decisionPoint,
     timestamp: action.timestamp,
+    ...(action.tabId !== undefined && { tabId: action.tabId }),
+    ...(action.tabTitle && { tabTitle: action.tabTitle }),
   };
 }
 

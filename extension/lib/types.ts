@@ -114,6 +114,8 @@ export interface CapturedAction {
   decisionPoint: DecisionPoint;
   llmDescription?: string;
   llmVisualAnalysis?: VisualAnalysis;
+  tabId?: number;
+  tabTitle?: string;
 }
 
 // ─── Recording Session ──────────────────────────────────────────────────────
@@ -145,6 +147,8 @@ export interface ProcessStep {
   screenshotDataUrl?: string;
   decisionPoint: DecisionPoint;
   timestamp: number;
+  tabId?: number;
+  tabTitle?: string;
 }
 
 export interface ProcessExport {

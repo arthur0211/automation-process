@@ -81,6 +81,7 @@ async function startRecording(tabId: number) {
   currentSettings = { ...DEFAULT_CAPTURE_SETTINGS, ...(stored.settings as Partial<CaptureSettings>) };
 
   const tab = await chrome.tabs.get(tabId);
+  lastActiveTabId = tabId;
   const sessionId = generateSessionId();
 
   currentSession = {
@@ -96,11 +97,16 @@ async function startRecording(tabId: number) {
   actionCount = 0;
   status = 'recording';
 
-  // Tell content script to start capturing (with settings)
-  chrome.tabs.sendMessage(tabId, {
-    type: 'START_RECORDING',
-    payload: { sessionId, settings: currentSettings },
-  });
+  // Tell ALL tabs to start capturing (multi-tab support)
+  const allTabs = await chrome.tabs.query({});
+  for (const t of allTabs) {
+    if (t.id) {
+      chrome.tabs.sendMessage(t.id, {
+        type: 'START_RECORDING',
+        payload: { sessionId, settings: currentSettings },
+      }).catch(() => {}); // Tab may not have content script
+    }
+  }
 
   // Start tab video capture
   await startTabCapture(tabId);
@@ -114,29 +120,38 @@ async function startRecording(tabId: number) {
   saveState();
 }
 
-async function pauseRecording(tabId: number) {
+async function sendToAllTabs(message: { type: string }) {
+  const allTabs = await chrome.tabs.query({});
+  for (const t of allTabs) {
+    if (t.id) {
+      chrome.tabs.sendMessage(t.id, message).catch(() => {});
+    }
+  }
+}
+
+async function pauseRecording(_tabId: number) {
   if (status !== 'recording') return;
   status = 'paused';
 
-  chrome.tabs.sendMessage(tabId, { type: 'PAUSE_RECORDING' });
+  await sendToAllTabs({ type: 'PAUSE_RECORDING' });
   broadcastStatus();
   saveState();
 }
 
-async function resumeRecording(tabId: number) {
+async function resumeRecording(_tabId: number) {
   if (status !== 'paused') return;
   status = 'recording';
 
-  chrome.tabs.sendMessage(tabId, { type: 'RESUME_RECORDING' });
+  await sendToAllTabs({ type: 'RESUME_RECORDING' });
   broadcastStatus();
   saveState();
 }
 
-async function stopRecording(tabId: number) {
+async function stopRecording(_tabId: number) {
   if (status === 'idle') return;
   status = 'stopped';
 
-  chrome.tabs.sendMessage(tabId, { type: 'STOP_RECORDING' });
+  await sendToAllTabs({ type: 'STOP_RECORDING' });
 
   // Stop tab capture and save video
   await stopTabCapture();
@@ -213,11 +228,13 @@ async function stopTabCapture() {
 
 // ─── Action Processing ──────────────────────────────────────────────────────
 
-async function processAction(payload: ActionCapturedPayload) {
+async function processAction(payload: ActionCapturedPayload, senderTabId?: number, senderTabTitle?: string) {
   if (!currentSession || status !== 'recording') return;
 
   const action = payload.action as CapturedAction;
   action.sessionId = currentSession.id;
+  if (senderTabId) action.tabId = senderTabId;
+  if (senderTabTitle) action.tabTitle = senderTabTitle;
 
   // Generate template description
   action.description = generateDescription(action);
@@ -340,6 +357,69 @@ async function analyzeComplexActionInBackground(
   }
 }
 
+// ─── Tab Switch Detection ────────────────────────────────────────────────────
+
+function emptyElementMetadata(): CapturedAction['element'] {
+  return {
+    tag: 'document',
+    id: '',
+    classes: [],
+    text: '',
+    role: '',
+    ariaLabel: '',
+    name: '',
+    type: '',
+    href: '',
+    placeholder: '',
+    boundingBox: { x: 0, y: 0, width: 0, height: 0 },
+    selectors: { css: 'html', xpath: '/html' },
+  };
+}
+
+let lastActiveTabId: number | null = null;
+
+async function handleTabSwitch(activeInfo: { tabId: number; windowId: number }) {
+  if (status !== 'recording' || !currentSession) return;
+  if (activeInfo.tabId === lastActiveTabId) return;
+  lastActiveTabId = activeInfo.tabId;
+
+  try {
+    const tab = await chrome.tabs.get(activeInfo.tabId);
+    const action: CapturedAction = {
+      id: `action_${Date.now()}_${Math.random().toString(36).slice(2, 9)}`,
+      sessionId: currentSession.id,
+      timestamp: Date.now(),
+      sequenceNumber: ++actionCount,
+      actionType: 'navigate',
+      url: tab.url || '',
+      pageTitle: tab.title || '',
+      element: emptyElementMetadata(),
+      description: '',
+      note: '',
+      decisionPoint: { isDecisionPoint: false, reason: '', branches: [] },
+      tabId: tab.id,
+      tabTitle: tab.title,
+    };
+
+    action.description = generateDescription(action);
+
+    // Take screenshot of new tab
+    try {
+      const screenshotDataUrl = await captureScreenshot(currentSettings.screenshotQuality);
+      action.screenshotDataUrl = screenshotDataUrl;
+    } catch {
+      // Screenshot may fail during tab switch
+    }
+
+    await addAction(action);
+    await updateSession(currentSession.id, { actionCount });
+    broadcastStatus();
+    saveState();
+  } catch {
+    // Tab may have been closed during switch
+  }
+}
+
 // ─── Message Handler ────────────────────────────────────────────────────────
 
 export default defineBackground({
@@ -355,7 +435,11 @@ export default defineBackground({
         switch (message.type) {
           // ─── Sync handlers (content script & status queries) ──────────
           case 'ACTION_CAPTURED':
-            processAction(message.payload as ActionCapturedPayload);
+            processAction(
+              message.payload as ActionCapturedPayload,
+              sender.tab?.id,
+              sender.tab?.title,
+            );
             return false;
 
           case 'GET_STATUS':
@@ -416,6 +500,9 @@ export default defineBackground({
         }
       },
     );
+
+    // Tab switch detection for multi-tab recording
+    chrome.tabs.onActivated.addListener(handleTabSwitch);
 
     // Keyboard shortcuts
     chrome.commands.onCommand.addListener(async (command) => {

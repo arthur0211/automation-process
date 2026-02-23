@@ -54,6 +54,7 @@ export function exportToHtml(
       <div class="step-meta">
         <span>URL: ${escapeHtml(action.url)}</span>
         <span>Element: <code>${escapeHtml(action.element.selectors.css)}</code></span>
+        ${action.tabTitle ? `<span>Tab: ${escapeHtml(action.tabTitle)}</span>` : ''}
       </div>
     </div>`;
     })

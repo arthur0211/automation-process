@@ -174,4 +174,18 @@ describe('exportToHtml', () => {
     expect(html).not.toContain('seekVideo(');
     expect(html).not.toContain('Play from here');
   });
+
+  // ─── Multi-tab ──────────────────────────────────────────────────────────
+
+  it('renders tab title when action has tabTitle', () => {
+    const action = createAction({ tabTitle: 'Settings Page' });
+    const html = exportToHtml(createSession({ stoppedAt: 1700000060000 }), [action]);
+    expect(html).toContain('Tab: Settings Page');
+  });
+
+  it('omits tab info when action has no tabTitle', () => {
+    const action = createAction();
+    const html = exportToHtml(createSession({ stoppedAt: 1700000060000 }), [action]);
+    expect(html).not.toContain('Tab:');
+  });
 });
