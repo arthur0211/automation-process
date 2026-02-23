@@ -1,6 +1,6 @@
 // ─── Action Types ───────────────────────────────────────────────────────────
 
-export type ActionType = 'click' | 'input' | 'scroll' | 'navigate' | 'submit';
+export type ActionType = 'click' | 'input' | 'scroll' | 'navigate' | 'submit' | 'hover' | 'contextmenu';
 
 // ─── Element Metadata ───────────────────────────────────────────────────────
 
@@ -170,12 +170,14 @@ export interface CaptureSettings {
   screenshotQuality: number;
   scrollThrottleMs: number;
   inputDebounceMs: number;
+  captureHover: boolean;
 }
 
 export const DEFAULT_CAPTURE_SETTINGS: CaptureSettings = {
   screenshotQuality: 80,
   scrollThrottleMs: 1000,
   inputDebounceMs: 500,
+  captureHover: false,
 };
 
 // ─── Messages (between extension components) ────────────────────────────────

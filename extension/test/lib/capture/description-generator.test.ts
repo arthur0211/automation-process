@@ -149,6 +149,22 @@ describe('generateDescription', () => {
     expect(generateDescription(action)).toBe('Submitted form on example.com (/page)');
   });
 
+  it('describes hover over an element', () => {
+    const action = createAction({
+      actionType: 'hover',
+      element: createElementMetadata({ tag: 'button', text: 'Menu' }),
+    });
+    expect(generateDescription(action)).toBe("Hovered over 'Menu' on example.com (/page)");
+  });
+
+  it('describes right-click on an element', () => {
+    const action = createAction({
+      actionType: 'contextmenu',
+      element: createElementMetadata({ tag: 'div', text: 'File item', role: '' }),
+    });
+    expect(generateDescription(action)).toBe("Right-clicked 'File item' on example.com (/page)");
+  });
+
   // ─── describeElement fallback chain ─────────────────────────────────────────
 
   it('uses ariaLabel first', () => {

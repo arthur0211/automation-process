@@ -72,6 +72,12 @@ export function generateDescription(action: CapturedAction): string {
     case 'submit':
       return `Submitted form on ${page}`;
 
+    case 'hover':
+      return `Hovered over ${target} on ${page}`;
+
+    case 'contextmenu':
+      return `Right-clicked ${target} on ${page}`;
+
     default:
       return `Performed action on ${page}`;
   }

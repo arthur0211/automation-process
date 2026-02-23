@@ -97,6 +97,52 @@ describe('exportToPlaywright', () => {
     expect(result).toContain('.click();');
   });
 
+  it('generates hover action with page.hover()', () => {
+    const session = createSession();
+    const actions = [
+      createAction({
+        actionType: 'hover',
+        element: createElementMetadata({
+          tag: 'button',
+          role: 'button',
+          text: 'Menu',
+          ariaLabel: '',
+          selectors: createSelector({ testId: 'menu-btn' }),
+        }),
+      }),
+    ];
+    const result = exportToPlaywright(session, actions);
+
+    expect(result).toContain("page.getByTestId('menu-btn')");
+    expect(result).toContain('.hover();');
+    expect(result).toContain('toBeVisible()');
+    // hover() should come after toBeVisible()
+    const visibleIdx = result.indexOf('toBeVisible()');
+    const hoverIdx = result.indexOf('.hover()');
+    expect(visibleIdx).toBeLessThan(hoverIdx);
+  });
+
+  it('generates contextmenu action with right-click', () => {
+    const session = createSession();
+    const actions = [
+      createAction({
+        actionType: 'contextmenu',
+        element: createElementMetadata({
+          tag: 'div',
+          role: '',
+          text: 'File item',
+          ariaLabel: '',
+          selectors: createSelector({ testId: undefined, css: '.file-item' }),
+        }),
+      }),
+    ];
+    const result = exportToPlaywright(session, actions);
+
+    expect(result).toContain("page.getByText('File item')");
+    expect(result).toContain(".click({ button: 'right' });");
+    expect(result).toContain('toBeVisible()');
+  });
+
   it('uses getByTestId when testId is available', () => {
     const session = createSession();
     const actions = [
@@ -324,10 +370,10 @@ describe('exportToPlaywright', () => {
   it('adds comment for unsupported action type', () => {
     const session = createSession();
     // Force an unsupported action type via cast
-    const actions = [createAction({ actionType: 'hover' as unknown as ActionType })];
+    const actions = [createAction({ actionType: 'unknown' as unknown as ActionType })];
     const result = exportToPlaywright(session, actions);
 
-    expect(result).toContain('// Unsupported action type: hover');
+    expect(result).toContain('// Unsupported action type: unknown');
   });
 
   // ─── test.step() blocks ──────────────────────────────────────────────────

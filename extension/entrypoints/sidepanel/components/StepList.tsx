@@ -15,6 +15,8 @@ const actionIcons: Record<string, string> = {
   scroll: '↕',
   navigate: '🔗',
   submit: '📤',
+  hover: '👆',
+  contextmenu: '🖱️',
 };
 
 const filterOptions: { value: ActionType | ''; label: string }[] = [
@@ -24,6 +26,8 @@ const filterOptions: { value: ActionType | ''; label: string }[] = [
   { value: 'scroll', label: 'Scroll' },
   { value: 'navigate', label: 'Navigate' },
   { value: 'submit', label: 'Submit' },
+  { value: 'hover', label: 'Hover' },
+  { value: 'contextmenu', label: 'Right-click' },
 ];
 
 export function StepList({ actions, selectedId, onSelect, onReorder }: StepListProps) {

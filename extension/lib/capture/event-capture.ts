@@ -165,6 +165,81 @@ function handleSubmit(event: Event) {
   sendAction(buildAction('submit', target));
 }
 
+// Right-click / context menu
+function handleContextMenu(event: MouseEvent) {
+  if (!isCapturing) return;
+  const target = event.target as Element;
+  if (!target || target === document.documentElement || target === document.body) return;
+
+  const action = buildAction('contextmenu', target, {
+    clickCoordinates: {
+      x: event.clientX,
+      y: event.clientY,
+      pageX: event.pageX,
+      pageY: event.pageY,
+    },
+  });
+  sendAction(action);
+}
+
+// Hover capture — only for elements with tooltip-related attributes or interactive dropdown triggers
+let hoverTimer: ReturnType<typeof setTimeout> | null = null;
+let lastHoverTarget: Element | null = null;
+
+function isHoverWorthy(element: Element): boolean {
+  // Has title or tooltip attributes
+  if (element.getAttribute('title')) return true;
+  if (element.getAttribute('data-tooltip')) return true;
+  if (element.getAttribute('aria-describedby')) return true;
+
+  // Is an interactive element that may trigger a dropdown/menu
+  const tag = element.tagName.toLowerCase();
+  const role = element.getAttribute('role') || '';
+  const isInteractive =
+    tag === 'button' ||
+    tag === 'a' ||
+    role === 'button' ||
+    role === 'menuitem';
+
+  if (isInteractive) {
+    // Check for child or sibling that looks like a dropdown/menu indicator
+    const hasDropdownChild = element.querySelector(
+      '[class*="dropdown"], [class*="caret"], [class*="arrow"], [class*="chevron"], [role="menu"], [role="listbox"]',
+    );
+    if (hasDropdownChild) return true;
+
+    const nextSibling = element.nextElementSibling;
+    if (
+      nextSibling &&
+      (nextSibling.getAttribute('role') === 'menu' ||
+        nextSibling.getAttribute('role') === 'listbox' ||
+        (nextSibling.className && /dropdown|menu|popover/i.test(nextSibling.className)))
+    ) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
+function handleMouseOver(event: MouseEvent) {
+  if (!isCapturing) return;
+  const target = event.target as Element;
+  if (!target || target === document.documentElement || target === document.body) return;
+  if (target === lastHoverTarget) return;
+
+  if (hoverTimer) clearTimeout(hoverTimer);
+
+  hoverTimer = setTimeout(() => {
+    hoverTimer = null;
+    if (!isCapturing) return;
+    if (!isHoverWorthy(target)) return;
+
+    lastHoverTarget = target;
+    sendAction(buildAction('hover', target));
+  }, 500);
+}
+
 // Capture change events for select, date/time, color, range inputs
 function handleChange(event: Event) {
   if (!isCapturing) return;
@@ -217,6 +292,11 @@ export function startCapturing(sessionId: string, settings?: Partial<CaptureSett
   document.addEventListener('scroll', handleScroll, { passive: true, capture: true });
   document.addEventListener('submit', handleSubmit, true);
   document.addEventListener('change', handleChange, true);
+  document.addEventListener('contextmenu', handleContextMenu, true);
+
+  if (captureSettings.captureHover) {
+    document.addEventListener('mouseover', handleMouseOver, true);
+  }
 
   // Poll for SPA navigation changes
   navigationInterval = setInterval(checkNavigation, 500);
@@ -230,6 +310,8 @@ export function stopCapturing() {
   document.removeEventListener('scroll', handleScroll, true);
   document.removeEventListener('submit', handleSubmit, true);
   document.removeEventListener('change', handleChange, true);
+  document.removeEventListener('contextmenu', handleContextMenu, true);
+  document.removeEventListener('mouseover', handleMouseOver, true);
 
   if (navigationInterval) {
     clearInterval(navigationInterval);
@@ -246,6 +328,12 @@ export function stopCapturing() {
     clearTimeout(scrollTimer);
     scrollTimer = null;
   }
+
+  if (hoverTimer) {
+    clearTimeout(hoverTimer);
+    hoverTimer = null;
+  }
+  lastHoverTarget = null;
 }
 
 export function pauseCapturing() {

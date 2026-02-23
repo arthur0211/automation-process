@@ -111,6 +111,19 @@ function actionToCode(ctx: ActionCodeContext): string {
       lines.push(`${indent}await page.goto('${escapeSingleQuotes(action.url)}');`);
       lines.push(`${indent}await page.waitForLoadState('networkidle');`);
       break;
+    case 'hover':
+      lines.push(`${indent}await expect(${locator}).toBeVisible();`);
+      lines.push(`${indent}await ${locator}.hover();`);
+      break;
+    case 'contextmenu':
+      lines.push(`${indent}await expect(${locator}).toBeVisible();`);
+      lines.push(`${indent}await ${locator}.click({ button: 'right' });`);
+      if (nextAction && nextAction.url !== action.url) {
+        lines.push(
+          `${indent}await page.waitForURL('${escapeSingleQuotes(nextAction.url)}');`,
+        );
+      }
+      break;
     default:
       lines.push(`${indent}// Unsupported action type: ${action.actionType}`);
       break;
