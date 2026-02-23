@@ -80,9 +80,7 @@ export function SessionList({
 
   function handleDelete(e: Event, id: string) {
     e.stopPropagation();
-    if (confirm('Delete this recording and all its steps?')) {
-      onDelete(id);
-    }
+    onDelete(id);
   }
 
   if (sessions.length === 0) {

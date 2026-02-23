@@ -1,5 +1,6 @@
-import type { CapturedAction } from '@/lib/types';
-import { useRecordingStore } from '@/lib/stores/recording-store';
+import { useState, useRef, useCallback } from 'preact/hooks';
+import type { CapturedAction, RecordingSession } from '@/lib/types';
+import { useRecordingStore, recordingStore } from '@/lib/stores/recording-store';
 import { useBackgroundSync } from '@/lib/hooks/use-background-sync';
 import {
   updateActionWithDb,
@@ -17,6 +18,13 @@ import { ExportPanel } from './components/ExportPanel';
 import { ValidationPanel } from './components/ValidationPanel';
 import { VideoPlayer } from './components/VideoPlayer';
 import { SessionList } from './components/SessionList';
+import { UndoToast } from './components/UndoToast';
+
+type PendingDelete =
+  | { type: 'action'; id: string; item: CapturedAction }
+  | { type: 'session'; id: string; item: RecordingSession };
+
+const UNDO_DURATION = 5000;
 
 export function App() {
   useBackgroundSync();
@@ -30,6 +38,10 @@ export function App() {
   const selectAction = useRecordingStore((s) => s.selectAction);
   const clearSelection = useRecordingStore((s) => s.clearSelection);
   const backToSessions = useRecordingStore((s) => s.backToSessions);
+
+  const [pendingDelete, setPendingDelete] = useState<PendingDelete | null>(null);
+  const pendingRef = useRef(pendingDelete);
+  pendingRef.current = pendingDelete;
 
   function handleSelect(id: string) {
     selectAction(id);
@@ -49,10 +61,56 @@ export function App() {
     }
   }
 
-  async function handleDelete(id: string) {
-    if (!confirm('Delete this step?')) return;
-    await deleteActionWithDb(id);
+  function handleDeleteAction(id: string) {
+    const item = actions.find((a) => a.id === id);
+    if (!item) return;
+    // Optimistically remove from UI
+    const { removeAction } = recordingStore.getState();
+    removeAction(id);
+    clearSelection();
+    setPendingDelete({ type: 'action', id, item });
   }
+
+  function handleDeleteSession(id: string) {
+    const item = sessions.find((s) => s.id === id);
+    if (!item) return;
+    // Optimistically remove from UI
+    const state = recordingStore.getState();
+    state.setSessions(sessions.filter((s) => s.id !== id));
+    if (session?.id === id) {
+      state.backToSessions();
+    }
+    setPendingDelete({ type: 'session', id, item });
+  }
+
+  const handleUndoDismiss = useCallback(async () => {
+    const pending = pendingRef.current;
+    if (!pending) return;
+    setPendingDelete(null);
+    // Commit the actual DB delete
+    if (pending.type === 'action') {
+      await deleteActionWithDb(pending.id);
+    } else {
+      await deleteSessionWithDb(pending.id);
+    }
+  }, []);
+
+  const handleUndo = useCallback(() => {
+    const pending = pendingRef.current;
+    if (!pending) return;
+    setPendingDelete(null);
+    // Restore the item to the store
+    if (pending.type === 'action') {
+      const { actions: currentActions } = recordingStore.getState();
+      const restored = [...currentActions, pending.item].sort(
+        (a, b) => a.sequenceNumber - b.sequenceNumber,
+      );
+      recordingStore.getState().setActions(restored);
+    } else {
+      const { sessions: currentSessions } = recordingStore.getState();
+      recordingStore.getState().setSessions([...currentSessions, pending.item]);
+    }
+  }, []);
 
   const selectedAction = actions.find((a) => a.id === selectedActionId);
 
@@ -68,7 +126,7 @@ export function App() {
           >
             &larr; Back to steps
           </button>
-          <StepDetail action={selectedAction} onUpdate={handleUpdate} onDelete={handleDelete} />
+          <StepDetail action={selectedAction} onUpdate={handleUpdate} onDelete={handleDeleteAction} />
         </div>
       ) : view === 'list' ? (
         <>
@@ -92,7 +150,7 @@ export function App() {
           sessions={sessions}
           onSelect={loadSessionActions}
           onRename={renameSessionWithDb}
-          onDelete={deleteSessionWithDb}
+          onDelete={handleDeleteSession}
           onImport={importSessionFromJson}
         />
       )}
@@ -102,6 +160,17 @@ export function App() {
       )}
       <ValidationPanel session={session} />
       <ExportPanel session={session} actions={actions} />
+
+      {pendingDelete && (
+        <UndoToast
+          message={
+            pendingDelete.type === 'action' ? 'Step deleted' : 'Recording deleted'
+          }
+          onUndo={handleUndo}
+          onDismiss={handleUndoDismiss}
+          duration={UNDO_DURATION}
+        />
+      )}
     </div>
   );
 }
