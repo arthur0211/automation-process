@@ -2,13 +2,13 @@
 
 ## Current State
 
-- **Latest commit**: `feat(extension): add Cypress test exporter (ROAD-25)`
-- **Total commits**: 49
-- **Tests**: 255 passing (extension), 14 test files
+- **Latest commit**: `feat(extension): add custom branding for HTML exports (ROAD-21)`
+- **Total commits**: 56
+- **Tests**: 286 passing (extension), 15 test files
 - **TS errors**: 0
 - **Lint errors**: 0
-- **Extension**: Feature-complete for all phases + 15 ROAD features done
-- **Backend**: ADK agents defined (7 agents), all integrated. Dockerfile fixed, health check, API key auth, non-root user.
+- **Extension**: Feature-complete — 61 features done, 7 remaining (XL/L scope or external deps)
+- **Backend**: ADK agents consolidated (single app), model versions configurable via env vars, Dockerfile fixed, health check, API key auth.
 
 ## Feature Completion Summary
 
@@ -36,20 +36,20 @@
 - **ROAD-12**: Session state polling with exponential backoff
 - **ROAD-13**: Backend API key authentication
 - **ROAD-14**: Retry with exponential backoff (429/503)
+- **ROAD-15**: Pin model versions, consolidate ADK apps, remove redundant entry points
+- **ROAD-17**: PDF export via print dialog (22 tests)
+- **ROAD-21**: Custom branding — accent color, header/footer, TOC for 10+ steps (9 tests)
 - **ROAD-24**: Playwright test.step() blocks and parameterization (21 tests)
 - **ROAD-25**: Cypress test exporter (22 tests)
 
-### Remaining Planned
-- **ROAD-02**: Chrome Web Store submission (P0, M) — manual process, needs assets
-- **ROAD-15**: Pin model versions and consolidate ADK apps (P1, M)
-- **ROAD-16**: Cloud sync and sharing (P1, XL) — large scope
-- **ROAD-17**: PDF export (P2, M)
-- **ROAD-18**: Hosted AI enrichment endpoint (P1, L)
-- **ROAD-19**: Team workspace (P2, XL) — large scope
-- **ROAD-20**: CI/CD integration for Playwright tests (P2, L)
-- **ROAD-21**: Custom branding for exports (P2, M)
-- **ROAD-22**: Jira and Linear integration (P2, L)
-- **ROAD-23**: Chrome Built-in AI / Gemini Nano (P2, L) — origin trial risk
+### Remaining Planned (7 features)
+- **ROAD-02**: Chrome Web Store submission (P0, M) — manual process, needs store assets/privacy policy
+- **ROAD-16**: Cloud sync and sharing (P1, XL) — requires external infrastructure (Supabase/Firebase)
+- **ROAD-18**: Hosted AI enrichment endpoint (P1, L) — requires Cloud Run deployment
+- **ROAD-19**: Team workspace (P2, XL) — requires backend + auth infrastructure
+- **ROAD-20**: CI/CD integration for Playwright tests (P2, L) — requires GitHub Actions template
+- **ROAD-22**: Jira and Linear integration (P2, L) — requires OAuth/API token flow
+- **ROAD-23**: Chrome Built-in AI / Gemini Nano (P2, L) — still in origin trial, not GA
 
 ## Completed This Session
 
@@ -73,6 +73,11 @@
 - **ROAD-12**: pollSessionState() with exponential backoff
 - **ROAD-13**: X-API-Key header on all requests, middleware in server.py, API key in Options
 - **ROAD-14**: fetchWithRetry() for 429/503 with Retry-After support
+- **ROAD-15**: Model versions configurable via env vars, consolidated single ADK app, removed redundant entry points
+
+### Sprint 6: Export Enhancement
+- **ROAD-17**: PDF export via print dialog — cover page, page breaks, print-optimized HTML (22 tests)
+- **ROAD-21**: Custom branding — accent color picker, header/footer text, TOC for 10+ steps, step anchors (9 tests)
 
 ## Commit History
 
@@ -92,16 +97,22 @@
 48. `feat(extension): add export preview panel (ROAD-08)`
 49. `feat(extension): replace confirm dialogs with undo toast (ROAD-09)`
 50. `feat(extension): add Cypress test exporter (ROAD-25)`
+51. `chore: update tracking for ROAD-08/09/25 and refresh progress.md`
+52. `fix: restrict CORS origins and update test count in CLAUDE.md`
+53. `chore: upgrade CI to Node 22 (Node 20 EOL April 2026)`
+54. `refactor(backend): pin model versions and consolidate ADK apps (ROAD-15)`
+55. `feat(extension): add PDF export via print dialog (ROAD-17)`
+56. `feat(extension): add custom branding for HTML exports (ROAD-21)`
 
 ## 360 Audit Results (Updated)
 
 ### Scores by Area
 | Area | Score | Notes |
 |------|-------|-------|
-| Extension Code | 9.5/10 | 255 tests, 0 TS errors, 0 lint errors, comprehensive exporters |
-| Tests | A+ | 255 tests across 14 files, all passing |
-| Features | 98% | 55/65 features done, remaining are P2 or XL scope |
-| Backend | Deployable | Dockerfile fixed, health check, API auth, env validation |
+| Extension Code | 9.5/10 | 286 tests, 0 TS errors, 0 lint errors, 6 exporters |
+| Tests | A+ | 286 tests across 15 files, all passing |
+| Features | 90% | 61/68 features done, remaining 7 are XL/L scope or need external infra |
+| Backend | Deployable | Dockerfile fixed, health check, API auth, env validation, consolidated |
 | Documentation | 8/10 | CLAUDE.md, README, features.json, progress.md all up to date |
 | Automation | 9/10 | GitHub Actions CI, ESLint + Prettier |
 | Product | 9.5/10 | Complete workflow: capture → enrich → manage → export (5 formats) → integrate (GitHub) |

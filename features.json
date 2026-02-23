@@ -615,7 +615,7 @@
         "Single Dockerfile and Cloud Run service",
         "Remove validator_app.py and analyzer_app.py entry points"
       ],
-      "status": "planned",
+      "status": "done",
       "phase": "sprint-5",
       "priority": "P1",
       "effort": "M",
@@ -653,7 +653,7 @@
         "Print-optimized layout (no video, no interactive elements)",
         "File size reasonable (<10MB for 20-step recording)"
       ],
-      "status": "planned",
+      "status": "done",
       "phase": "sprint-6",
       "priority": "P2",
       "effort": "M",
@@ -724,7 +724,7 @@
         "Logo and branding applied to HTML and PDF exports",
         "Table of contents for recordings with 10+ steps"
       ],
-      "status": "planned",
+      "status": "done",
       "phase": "sprint-7",
       "priority": "P2",
       "effort": "M",
