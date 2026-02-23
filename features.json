@@ -527,7 +527,7 @@
         "Non-root user in container",
         ".dockerignore excludes .env, __pycache__, *.pyc"
       ],
-      "status": "planned",
+      "status": "done",
       "phase": "sprint-5",
       "priority": "P0",
       "effort": "M",
@@ -780,7 +780,7 @@
         "Add page.waitForSelector() for dynamic content",
         "Optional: generate Page Object Model (POM) structure"
       ],
-      "status": "planned",
+      "status": "done",
       "phase": "sprint-4",
       "priority": "P1",
       "effort": "M",
