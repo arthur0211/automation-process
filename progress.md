@@ -2,14 +2,36 @@
 
 ## Current State
 
-- **Latest commit**: `feat(extension): add JSON import for recording sessions`
-- **Total commits**: 19
-- **Tests**: 158 passing (extension)
+- **Latest commit**: `fix(extension): address multi-tab review issues`
+- **Total commits**: 25
+- **Tests**: 169 passing (extension)
 - **TS errors**: 0
-- **Extension**: Feature-complete for Phase 1 + 2A + 2B + 2C + 2D (all) + Audit fixes + FUTURE-02 + FUTURE-03
+- **Extension**: Feature-complete for Phase 1 + 2A + 2B + 2C + 2D (all) + Audit fixes + FUTURE-01 + FUTURE-02 + FUTURE-03 + FUTURE-04
 - **Backend**: ADK agents defined (7 agents), all 7 integrated with extension (pipeline + standalone)
 
 ## Completed This Session
+
+### README Update
+- Updated README.md with current project state (158→169 tests, Phase 2D complete, FUTURE-02/03)
+
+### FUTURE-01: Video Playback and Export
+- Created VideoPlayer.tsx — collapsible video player in sidepanel, loads WebM blob from IndexedDB
+- Updated html-exporter.ts — embeds `<video>` with controls + play-from-here buttons per step
+- Updated ExportPanel.tsx — loads video blob, converts to data URL for HTML export
+- XSS prevention: sanitize videoDataUrl (reject non-data:video/ URLs)
+- MIME type extracted from data URL instead of hardcoded
+- Graceful fallback when video unavailable (try/catch in ExportPanel)
+- 6 new tests (video embed, no video, play buttons, XSS, timestamp clamping, no play)
+
+### FUTURE-04: Multi-tab Recording
+- Added tabId, tabTitle fields to CapturedAction and ProcessStep
+- Background sends START/STOP/PAUSE/RESUME to all tabs (sendToAllTabs helper)
+- processAction extracts sender.tab?.id and sender.tab?.title
+- Tab switch detection via chrome.tabs.onActivated → creates navigate events with screenshot
+- Background owns sequence numbering (prevents multi-tab collisions)
+- Tab info included in JSON and HTML exports
+- Counter rollback on tab-switch failure
+- 5 new tests (tab info in HTML/JSON exports, XSS in tabTitle)
 
 ### FUTURE-02: Session Management
 - Added `sessions` array and `view: 'sessions' | 'list' | 'detail'` to Zustand store
@@ -85,6 +107,13 @@
 16. `feat(ui): add Sessions button to RecordingControls` — Sessions button in stopped state, features.json + progress.md updated
 17. `fix(ui): add ErrorBoundary to popup entry point` — Popup wrapped in ErrorBoundary like sidepanel
 18. `feat(extension): add JSON import for recording sessions` — json-importer, Import button, 12 tests
+19. `chore: update tracking for FUTURE-03 and ErrorBoundary fix` — features.json + progress.md
+20. `docs: update README with current project state` — test counts, Phase 2D, session management
+21. `feat(ui): add VideoPlayer component to sidepanel` — collapsible video player from IndexedDB
+22. `feat(export): embed video in HTML export with timeline sync` — video embed, play buttons, ExportPanel video, 4 tests
+23. `fix(export): address code review issues for video feature` — XSS sanitization, MIME type, error handling, 2 tests
+24. `feat(extension): add multi-tab recording support` — tabId/tabTitle, sendToAllTabs, tab switch detection, 4 tests
+25. `fix(extension): address multi-tab review issues` — central sequencing, counter rollback, type safety, 1 test
 
 ## 360 Audit Results
 
@@ -127,11 +156,11 @@
 - **P2**: CI/CD, linting, backend deploy (future sessions)
 
 ### Future Backlog
-- FUTURE-01: Video playback/export in HTML report
+- ~~FUTURE-01: Video playback/export in HTML report~~ ✅
 - ~~FUTURE-02: Session management (list, rename, delete)~~ ✅
 - ~~FUTURE-03: Import recordings from JSON~~ ✅
-- FUTURE-04: Multi-tab recording
-- FUTURE-05: Cloud sync / sharing
+- ~~FUTURE-04: Multi-tab recording~~ ✅
+- FUTURE-05: Cloud sync / sharing (planned, not in scope for current sprint)
 
 ## Known Issues
 

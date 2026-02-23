@@ -443,9 +443,12 @@
       "acceptanceCriteria": [
         "Video blob embedded or linked in HTML export",
         "Playback controls in HTML report",
-        "Timeline synced with step list"
+        "Timeline synced with step list",
+        "VideoPlayer component in sidepanel (collapsible)",
+        "XSS sanitization for video data URLs",
+        "Graceful fallback when video unavailable"
       ],
-      "status": "planned",
+      "status": "done",
       "phase": "future"
     },
     {
@@ -485,10 +488,12 @@
       "description": "Record actions across multiple browser tabs in a single session",
       "acceptanceCriteria": [
         "Content script injected in all tabs during recording",
-        "Actions tagged with tab identifier",
-        "Tab switches captured as navigation events"
+        "Actions tagged with tab identifier (tabId, tabTitle)",
+        "Tab switches captured as navigation events via chrome.tabs.onActivated",
+        "Background owns sequence numbering (prevents multi-tab collisions)",
+        "Tab info included in JSON and HTML exports"
       ],
-      "status": "planned",
+      "status": "done",
       "phase": "future"
     },
     {
