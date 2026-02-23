@@ -11,11 +11,12 @@ describe('recordingStore', () => {
     const state = recordingStore.getState();
     expect(state.status).toBe('idle');
     expect(state.session).toBeNull();
+    expect(state.sessions).toEqual([]);
     expect(state.actions).toEqual([]);
     expect(state.actionCount).toBe(0);
     expect(state.error).toBeNull();
     expect(state.selectedActionId).toBeNull();
-    expect(state.view).toBe('list');
+    expect(state.view).toBe('sessions');
   });
 
   it('setStatus updates the status', () => {
@@ -114,11 +115,48 @@ describe('recordingStore', () => {
     const state = recordingStore.getState();
     expect(state.status).toBe('idle');
     expect(state.session).toBeNull();
+    expect(state.sessions).toEqual([]);
     expect(state.actions).toEqual([]);
     expect(state.actionCount).toBe(0);
     expect(state.error).toBeNull();
     expect(state.selectedActionId).toBeNull();
+    expect(state.view).toBe('sessions');
+  });
+
+  it('setSessions updates sessions list', () => {
+    const s1 = createSession({ id: 's1' });
+    const s2 = createSession({ id: 's2' });
+    recordingStore.getState().setSessions([s1, s2]);
+
+    expect(recordingStore.getState().sessions).toHaveLength(2);
+    expect(recordingStore.getState().sessions[0].id).toBe('s1');
+  });
+
+  it('selectSession sets session and view to list', () => {
+    const session = createSession({ id: 's1' });
+    recordingStore.getState().selectAction('some-action');
+    recordingStore.getState().selectSession(session);
+
+    const state = recordingStore.getState();
+    expect(state.session?.id).toBe('s1');
     expect(state.view).toBe('list');
+    expect(state.selectedActionId).toBeNull();
+  });
+
+  it('backToSessions clears and returns to sessions view', () => {
+    const session = createSession({ id: 's1' });
+    recordingStore.getState().setSession(session);
+    recordingStore.getState().addAction(createAction());
+    recordingStore.getState().selectAction('action-1');
+
+    recordingStore.getState().backToSessions();
+
+    const state = recordingStore.getState();
+    expect(state.session).toBeNull();
+    expect(state.actions).toEqual([]);
+    expect(state.actionCount).toBe(0);
+    expect(state.selectedActionId).toBeNull();
+    expect(state.view).toBe('sessions');
   });
 
   it('selectAction sets selectedActionId and view to detail', () => {

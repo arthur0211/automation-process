@@ -7,6 +7,10 @@ import {
   reorderActionsWithDb,
   handleStatusUpdate,
   syncFromBackground,
+  loadSessions,
+  loadSessionActions,
+  renameSessionWithDb,
+  deleteSessionWithDb,
 } from '@/lib/stores/recording-actions';
 import { createAction, createSession } from '../../fixtures';
 
@@ -92,12 +96,16 @@ describe('recording-actions', () => {
     expect(recordingStore.getState().actions).toHaveLength(1);
   });
 
-  it('handleStatusUpdate without sessionId only updates status', async () => {
+  it('handleStatusUpdate without sessionId loads sessions when idle', async () => {
+    const s1 = createSession({ id: 's1', status: 'stopped' });
+    await db.sessions.add(s1);
+
     await handleStatusUpdate({ status: 'idle', actionCount: 0 });
 
     expect(recordingStore.getState().status).toBe('idle');
-    expect(recordingStore.getState().session).toBeNull();
-    expect(recordingStore.getState().actions).toEqual([]);
+    expect(recordingStore.getState().sessions).toHaveLength(1);
+    expect(recordingStore.getState().sessions[0].id).toBe('s1');
+    expect(recordingStore.getState().view).toBe('sessions');
   });
 
   it('syncFromBackground sends GET_STATUS and populates store', async () => {
@@ -116,5 +124,87 @@ describe('recording-actions', () => {
     expect(recordingStore.getState().status).toBe('recording');
     expect(recordingStore.getState().session?.id).toBe('s1');
     expect(recordingStore.getState().actions).toHaveLength(1);
+    expect(recordingStore.getState().view).toBe('list');
+  });
+
+  it('syncFromBackground shows sessions view when idle (no sessionId)', async () => {
+    const s1 = createSession({ id: 's1', status: 'stopped' });
+    await db.sessions.add(s1);
+
+    mockSendMessage.mockImplementation((_msg, callback) => {
+      callback({ status: 'idle', actionCount: 0 });
+    });
+
+    await syncFromBackground();
+
+    expect(recordingStore.getState().status).toBe('idle');
+    expect(recordingStore.getState().view).toBe('sessions');
+    expect(recordingStore.getState().sessions).toHaveLength(1);
+  });
+
+  it('loadSessions populates sessions from DB', async () => {
+    const s1 = createSession({ id: 's1', startedAt: 2000 });
+    const s2 = createSession({ id: 's2', startedAt: 1000 });
+    await db.sessions.bulkAdd([s1, s2]);
+
+    await loadSessions();
+
+    expect(recordingStore.getState().sessions).toHaveLength(2);
+  });
+
+  it('loadSessionActions loads actions and selects session', async () => {
+    const session = createSession({ id: 's1' });
+    const action = createAction({ id: 'a1', sessionId: 's1' });
+    await db.sessions.add(session);
+    await db.actions.add(action);
+
+    await loadSessionActions(session);
+
+    expect(recordingStore.getState().session?.id).toBe('s1');
+    expect(recordingStore.getState().actions).toHaveLength(1);
+    expect(recordingStore.getState().view).toBe('list');
+  });
+
+  it('renameSessionWithDb updates DB and store', async () => {
+    const session = createSession({ id: 's1', name: 'Old Name' });
+    await db.sessions.add(session);
+    recordingStore.getState().setSessions([session]);
+    recordingStore.getState().setSession(session);
+
+    await renameSessionWithDb('s1', 'New Name');
+
+    expect(recordingStore.getState().sessions[0].name).toBe('New Name');
+    expect(recordingStore.getState().session?.name).toBe('New Name');
+    const dbSession = await db.sessions.get('s1');
+    expect(dbSession?.name).toBe('New Name');
+  });
+
+  it('deleteSessionWithDb removes from DB and store', async () => {
+    const s1 = createSession({ id: 's1' });
+    const s2 = createSession({ id: 's2' });
+    await db.sessions.bulkAdd([s1, s2]);
+    recordingStore.getState().setSessions([s1, s2]);
+    recordingStore.getState().setSession(s2);
+
+    await deleteSessionWithDb('s1');
+
+    expect(recordingStore.getState().sessions).toHaveLength(1);
+    expect(recordingStore.getState().sessions[0].id).toBe('s2');
+    expect(recordingStore.getState().session?.id).toBe('s2');
+    const dbSession = await db.sessions.get('s1');
+    expect(dbSession).toBeUndefined();
+  });
+
+  it('deleteSessionWithDb navigates back if deleting current session', async () => {
+    const session = createSession({ id: 's1' });
+    await db.sessions.add(session);
+    recordingStore.getState().setSessions([session]);
+    recordingStore.getState().setSession(session);
+
+    await deleteSessionWithDb('s1');
+
+    expect(recordingStore.getState().sessions).toHaveLength(0);
+    expect(recordingStore.getState().session).toBeNull();
+    expect(recordingStore.getState().view).toBe('sessions');
   });
 });

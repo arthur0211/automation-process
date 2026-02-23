@@ -6,6 +6,9 @@ import {
   reorderActions as dbReorderActions,
   getSession,
   getSessionActions,
+  getAllSessions,
+  deleteSession as dbDeleteSession,
+  updateSession as dbUpdateSession,
 } from '../storage/db';
 
 export async function updateActionWithDb(id: string, changes: Partial<CapturedAction>): Promise<void> {
@@ -29,6 +32,35 @@ export async function reorderActionsWithDb(sessionId: string, fromIndex: number,
   await dbReorderActions(sessionId, reordered.map((a) => a.id));
 }
 
+export async function loadSessions(): Promise<void> {
+  const sessions = await getAllSessions();
+  recordingStore.getState().setSessions(sessions);
+}
+
+export async function loadSessionActions(session: import('../types').RecordingSession): Promise<void> {
+  const actions = await getSessionActions(session.id);
+  recordingStore.getState().selectSession(session);
+  recordingStore.getState().setActions(actions);
+}
+
+export async function renameSessionWithDb(id: string, name: string): Promise<void> {
+  await dbUpdateSession(id, { name });
+  const { sessions, session } = recordingStore.getState();
+  recordingStore.getState().setSessions(sessions.map((s) => (s.id === id ? { ...s, name } : s)));
+  if (session?.id === id) {
+    recordingStore.getState().setSession({ ...session, name });
+  }
+}
+
+export async function deleteSessionWithDb(id: string): Promise<void> {
+  await dbDeleteSession(id);
+  const { sessions, session } = recordingStore.getState();
+  recordingStore.getState().setSessions(sessions.filter((s) => s.id !== id));
+  if (session?.id === id) {
+    recordingStore.getState().backToSessions();
+  }
+}
+
 export async function syncFromBackground(): Promise<void> {
   return new Promise<void>((resolve) => {
     chrome.runtime.sendMessage({ type: 'GET_STATUS' }, async (response) => {
@@ -41,8 +73,10 @@ export async function syncFromBackground(): Promise<void> {
           ]);
           if (session) recordingStore.getState().setSession(session);
           recordingStore.getState().setActions(actions);
-        } else if (response.actionCount !== undefined) {
-          recordingStore.setState({ actionCount: response.actionCount });
+          recordingStore.setState({ view: 'list' });
+        } else {
+          await loadSessions();
+          recordingStore.setState({ view: 'sessions' });
         }
       }
       resolve();
@@ -59,5 +93,8 @@ export async function handleStatusUpdate(payload: StatusPayload): Promise<void> 
     ]);
     if (session) recordingStore.getState().setSession(session);
     recordingStore.getState().setActions(actions);
+  } else if (payload.status === 'idle') {
+    await loadSessions();
+    recordingStore.setState({ view: 'sessions' });
   }
 }

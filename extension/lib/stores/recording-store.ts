@@ -5,16 +5,20 @@ import type { RecordingStatus, CapturedAction, RecordingSession } from '../types
 export interface RecordingState {
   status: RecordingStatus;
   session: RecordingSession | null;
+  sessions: RecordingSession[];
   actions: CapturedAction[];
   actionCount: number;
   error: string | null;
   selectedActionId: string | null;
-  view: 'list' | 'detail';
+  view: 'sessions' | 'list' | 'detail';
 }
 
 export interface RecordingActions {
   setStatus: (status: RecordingStatus) => void;
   setSession: (session: RecordingSession | null) => void;
+  setSessions: (sessions: RecordingSession[]) => void;
+  selectSession: (session: RecordingSession) => void;
+  backToSessions: () => void;
   addAction: (action: CapturedAction) => void;
   updateAction: (id: string, changes: Partial<CapturedAction>) => void;
   removeAction: (id: string) => void;
@@ -29,11 +33,12 @@ export interface RecordingActions {
 const initialState: RecordingState = {
   status: 'idle',
   session: null,
+  sessions: [],
   actions: [],
   actionCount: 0,
   error: null,
   selectedActionId: null,
-  view: 'list',
+  view: 'sessions',
 };
 
 export const recordingStore = createStore<RecordingState & RecordingActions>()((set) => ({
@@ -42,6 +47,12 @@ export const recordingStore = createStore<RecordingState & RecordingActions>()((
   setStatus: (status) => set({ status }),
 
   setSession: (session) => set({ session }),
+
+  setSessions: (sessions) => set({ sessions }),
+
+  selectSession: (session) => set({ session, view: 'list', selectedActionId: null }),
+
+  backToSessions: () => set({ session: null, actions: [], actionCount: 0, selectedActionId: null, view: 'sessions' }),
 
   addAction: (action) =>
     set((state) => ({
