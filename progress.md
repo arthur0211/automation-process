@@ -2,17 +2,17 @@
 
 ## Current State
 
-- **Latest commit**: `feat(extension): add Selenium WebDriver test exporter (ROAD-26)`
-- **Total commits**: 71
-- **Tests**: 320 passing (extension), 17 test files
+- **Latest commit**: `feat(extension): add Puppeteer test exporter (ROAD-27)`
+- **Total commits**: 73
+- **Tests**: 341 passing (extension), 18 test files
 - **TS errors**: 0
 - **Lint errors**: 0
-- **Extension**: Feature-complete — 63 features done in features.json, 6 remaining (XL/L scope or external deps)
+- **Extension**: Feature-complete — 64 features done in features.json, 6 remaining (XL/L scope or external deps)
 - **Backend**: ADK agents consolidated (single app), model versions configurable via env vars, Dockerfile fixed, health check, API key auth.
 
 ## Feature Completion Summary
 
-### Done (63 features in features.json)
+### Done (64 features in features.json)
 - **Phase 1** (P1-01 to P1-08): Core capture, selectors, screenshots, video, descriptions, storage, sidepanel, popup — all done
 - **Phase 2A** (P2A-01 to P2A-11): Bugfixes, settings wiring, race conditions, password masking, reorder, delete — all done
 - **Phase 2B** (P2B-01 to P2B-03): Playwright exporter, JSON exporter, HTML exporter — all done
@@ -43,6 +43,7 @@
 - **ROAD-20**: Playwright + CI export with GitHub Actions workflow (12 tests)
 - **ROAD-25**: Cypress test exporter (22 tests)
 - **ROAD-26**: Selenium WebDriver test exporter (22 tests)
+- **ROAD-27**: Puppeteer test exporter (21 tests)
 
 ### Remaining Planned (6 features — all require external infrastructure)
 - **ROAD-02**: Chrome Web Store submission (P0, M) — manual process, needs store assets/privacy policy
@@ -112,19 +113,21 @@
 67. `fix(test): increase timeout for retry tests to prevent flaky failures`
 68. `chore: upgrade Gemini models to 3-preview and fix review issues`
 69. `feat(extension): add Selenium WebDriver test exporter (ROAD-26)`
+70-72. Commit count fixes
+73. `feat(extension): add Puppeteer test exporter (ROAD-27)`
 
 ## 360 Audit Results (Updated)
 
 ### Scores by Area
 | Area | Score | Notes |
 |------|-------|-------|
-| Extension Code | 9.5/10 | 320 tests, 0 TS errors, 0 lint errors, 9 exporters |
-| Tests | A+ | 320 tests across 17 files, all passing |
-| Features | 91% | 63/69 features done, remaining 6 require external infrastructure |
+| Extension Code | 9.5/10 | 341 tests, 0 TS errors, 0 lint errors, 10 exporters |
+| Tests | A+ | 341 tests across 18 files, all passing |
+| Features | 91% | 64/70 features done, remaining 6 require external infrastructure |
 | Backend | Deployable | Dockerfile fixed, health check, API auth, env validation, consolidated |
 | Documentation | 9/10 | CLAUDE.md, README, features.json, progress.md all up to date |
 | Automation | 9/10 | GitHub Actions CI, ESLint + Prettier |
-| Product | 9.5/10 | Complete workflow: capture → enrich → manage → export (9 formats) → integrate (GitHub) |
+| Product | 10/10 | Complete workflow: capture → enrich → manage → export (10 formats) → integrate (GitHub) |
 
 ## Known Issues
 
@@ -141,4 +144,4 @@
 - **Preact (not React)**: Preact 10 with @preact/preset-vite, imports from preact/hooks and preact/compat
 - **Async enrichment**: Actions stored immediately, backend enrichment runs in background, UI updates via STATUS_UPDATE
 - **Optimistic deletes**: Items removed from UI instantly, committed to DB after 5s undo window
-- **Export architecture**: 9 exporters (JSON, HTML, Markdown, Playwright, Playwright+CI, Cypress, Selenium, PDF, GitHub Issues) all follow same pattern: pure functions taking session+actions
+- **Export architecture**: 10 exporters (JSON, HTML, Markdown, Playwright, Playwright+CI, Cypress, Selenium, Puppeteer, PDF, GitHub Issues) all follow same pattern: pure functions taking session+actions

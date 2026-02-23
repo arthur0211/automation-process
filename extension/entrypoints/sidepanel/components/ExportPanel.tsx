@@ -89,6 +89,12 @@ export function ExportPanel({ session, actions }: ExportPanelProps) {
     downloadFile(code, `${session!.name}.selenium.js`, 'text/plain');
   }
 
+  async function exportPuppeteer() {
+    const { exportToPuppeteer } = await import('@/lib/export/puppeteer-exporter');
+    const code = exportToPuppeteer(session!, actions);
+    downloadFile(code, `${session!.name}.puppeteer.js`, 'text/plain');
+  }
+
   async function exportPlaywrightCI() {
     const { exportPlaywrightWithCI } = await import('@/lib/export/playwright-ci-exporter');
     const { testFile, workflowFile } = exportPlaywrightWithCI(session!, actions);
@@ -215,6 +221,12 @@ export function ExportPanel({ session, actions }: ExportPanelProps) {
           class="flex-1 px-3 py-1.5 text-xs font-medium text-orange-700 bg-orange-50 rounded-md hover:bg-orange-100 transition-colors"
         >
           Selenium (.js)
+        </button>
+        <button
+          onClick={exportPuppeteer}
+          class="flex-1 px-3 py-1.5 text-xs font-medium text-yellow-700 bg-yellow-50 rounded-md hover:bg-yellow-100 transition-colors"
+        >
+          Puppeteer (.js)
         </button>
         <button
           onClick={exportPlaywrightCI}

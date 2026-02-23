@@ -823,6 +823,25 @@
       "effort": "M",
       "riceScore": 60,
       "source": "market-analyst"
+    },
+    {
+      "id": "ROAD-27",
+      "name": "Puppeteer test exporter",
+      "description": "Export recording as Puppeteer test script, completing the big 4 browser automation frameworks (Playwright, Cypress, Selenium, Puppeteer)",
+      "acceptanceCriteria": [
+        "Generates valid Puppeteer .js test file with Mocha structure",
+        "Selector cascade: [data-testid] > #id > [aria-label] > CSS",
+        "page.goto() for navigation, type() for input, click() for clicks",
+        "page.evaluate() for scroll, hover/contextmenu via element methods",
+        "Promise.all for click + waitForNavigation to avoid race conditions",
+        "process.env.PASSWORD for password fields"
+      ],
+      "status": "done",
+      "phase": "sprint-7",
+      "priority": "P2",
+      "effort": "M",
+      "riceScore": 50,
+      "source": "market-analyst"
     }
   ]
 }

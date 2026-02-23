@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'preact/hooks';
 import type { CapturedAction, RecordingSession } from '@/lib/types';
 
-export type ExportFormat = 'json' | 'html' | 'playwright' | 'markdown' | 'cypress' | 'selenium';
+export type ExportFormat = 'json' | 'html' | 'playwright' | 'markdown' | 'cypress' | 'selenium' | 'puppeteer';
 
 interface ExportPreviewProps {
   session: RecordingSession;
@@ -17,10 +17,11 @@ const FORMAT_CONFIG: Record<ExportFormat, { label: string; ext: string; mime: st
   playwright: { label: 'Playwright', ext: '.spec.ts', mime: 'text/plain' },
   cypress: { label: 'Cypress', ext: '.cy.ts', mime: 'text/plain' },
   selenium: { label: 'Selenium', ext: '.selenium.js', mime: 'text/plain' },
+  puppeteer: { label: 'Puppeteer', ext: '.puppeteer.js', mime: 'text/plain' },
   markdown: { label: 'Markdown', ext: '.md', mime: 'text/markdown' },
 };
 
-const FORMATS: ExportFormat[] = ['json', 'html', 'playwright', 'cypress', 'selenium', 'markdown'];
+const FORMATS: ExportFormat[] = ['json', 'html', 'playwright', 'cypress', 'selenium', 'puppeteer', 'markdown'];
 
 export function ExportPreview({
   session,
@@ -62,6 +63,11 @@ export function ExportPreview({
           case 'selenium': {
             const { exportToSelenium } = await import('@/lib/export/selenium-exporter');
             setContent(exportToSelenium(session, actions));
+            break;
+          }
+          case 'puppeteer': {
+            const { exportToPuppeteer } = await import('@/lib/export/puppeteer-exporter');
+            setContent(exportToPuppeteer(session, actions));
             break;
           }
           case 'markdown': {
