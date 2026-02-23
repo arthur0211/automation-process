@@ -1,5 +1,6 @@
-import { useState, useEffect } from 'preact/hooks';
-import type { CapturedAction, RecordingSession } from '@/lib/types';
+import { useState, useEffect, useRef } from 'preact/hooks';
+import type { CapturedAction, RecordingSession, BrandingSettings } from '@/lib/types';
+import { DEFAULT_BRANDING_SETTINGS } from '@/lib/types';
 import { getVideoBlob } from '@/lib/storage/db';
 import { OnboardingTooltip } from './OnboardingTooltip';
 import { ExportPreview } from './ExportPreview';
@@ -30,6 +31,15 @@ export function ExportPanel({ session, actions }: ExportPanelProps) {
   const [ghSubmitting, setGhSubmitting] = useState(false);
   const [ghResult, setGhResult] = useState<{ url: string; number: number } | null>(null);
   const [ghError, setGhError] = useState('');
+  const brandingRef = useRef<BrandingSettings>(DEFAULT_BRANDING_SETTINGS);
+
+  useEffect(() => {
+    chrome.storage.local.get(['brandingSettings'], (result) => {
+      if (result.brandingSettings) {
+        brandingRef.current = { ...DEFAULT_BRANDING_SETTINGS, ...(result.brandingSettings as BrandingSettings) };
+      }
+    });
+  }, []);
 
   useEffect(() => {
     if (showGitHubForm) {
@@ -57,7 +67,7 @@ export function ExportPanel({ session, actions }: ExportPanelProps) {
     } catch {
       // Non-fatal: export without video
     }
-    const html = exportToHtml(session!, actions, videoDataUrl);
+    const html = exportToHtml(session!, actions, videoDataUrl, brandingRef.current);
     downloadFile(html, `${session!.name}.html`, 'text/html');
   }
 
@@ -71,6 +81,11 @@ export function ExportPanel({ session, actions }: ExportPanelProps) {
     const { exportToCypress } = await import('@/lib/export/cypress-exporter');
     const code = exportToCypress(session!, actions);
     downloadFile(code, `${session!.name}.cy.ts`, 'text/plain');
+  }
+
+  async function exportPdf() {
+    const { exportToPdf } = await import('@/lib/export/pdf-exporter');
+    exportToPdf(session!, actions);
   }
 
   async function exportMarkdown() {
@@ -179,6 +194,12 @@ export function ExportPanel({ session, actions }: ExportPanelProps) {
         </button>
       </div>
       <div class="flex gap-2 mt-2">
+        <button
+          onClick={exportPdf}
+          class="flex-1 px-3 py-1.5 text-xs font-medium text-red-700 bg-red-50 rounded-md hover:bg-red-100 transition-colors"
+        >
+          PDF (Print)
+        </button>
         <button
           onClick={exportMarkdown}
           class="flex-1 px-3 py-1.5 text-xs font-medium text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200 transition-colors"
