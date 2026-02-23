@@ -2,8 +2,8 @@
 
 ## Current State
 
-- **Latest commit**: `chore: add ESLint + Prettier config and CI lint/coverage`
-- **Total commits**: 28
+- **Latest commit**: `docs: update CLAUDE.md with current project state`
+- **Total commits**: 30
 - **Tests**: 169 passing (extension)
 - **TS errors**: 0
 - **Extension**: Feature-complete for Phase 1 + 2A + 2B + 2C + 2D (all) + Audit fixes + FUTURE-01 + FUTURE-02 + FUTURE-03 + FUTURE-04
@@ -13,12 +13,18 @@
 
 ### P2 Audit: ESLint + Prettier + CI Improvements
 - Added ESLint 9 flat config with typescript-eslint and eslint-config-prettier
-- Added Prettier config (.prettierrc.json)
+- Added Prettier config (.prettierrc.json) with endOfLine: lf
 - Formatted entire codebase (33 files)
 - Removed stale eslint-disable comment (jsx-a11y/no-autofocus)
-- Added lint, format, format:check scripts to package.json
-- Added lint step and coverage flag to CI workflow
+- Added lint, lint:fix, format, format:check scripts to package.json
+- Added format check, lint step, and coverage to CI workflow
+- Fixed unused import (db in db.test.ts) and any cast (playwright-exporter.test.ts)
+- Refined ESLint ignores (explicit paths instead of *.config.*)
+- Code review applied: 6 fixes from code-reviewer agent
 - 0 lint errors, 0 TS errors, 169 tests passing
+
+### Documentation Fixes
+- Updated CLAUDE.md: Phase 2D marked as integrated (was "pending"), backend-client.ts description updated
 
 ### README Update
 - Updated README.md with current project state (158→169 tests, Phase 2D complete, FUTURE-02/03)
@@ -126,7 +132,8 @@
 26. `chore: update tracking for FUTURE-01 and FUTURE-04 completion` — features.json + progress.md
 27. `docs: update README with FUTURE-01 and FUTURE-04 features` — video playback, multi-tab in docs
 28. `chore: add GitHub Actions CI workflow` — tsc --noEmit + vitest run on push/PR
-29. `chore: add ESLint + Prettier config and CI lint/coverage` — ESLint 9 flat config, Prettier, formatted codebase, lint + coverage in CI
+29. `chore: add ESLint + Prettier config with CI integration` — ESLint 9 flat config, Prettier, formatted codebase, code review fixes, CI format+lint+coverage
+30. `docs: update CLAUDE.md with current project state` — Phase 2D integrated, backend-client.ts description
 
 ## 360 Audit Results
 
@@ -155,18 +162,18 @@
 - No .gitattributes — LF/CRLF inconsistencies on Windows
 - `nul` file exists at root (Windows artifact)
 
-**P2 — Nice to have**
-- No CI/CD pipeline (GitHub Actions)
-- No ESLint/Prettier config
-- Backend not deployable (no Dockerfile, no health checks)
-- README outdated
+**P2 — Nice to have** (ALL RESOLVED)
+- ~~No CI/CD pipeline~~ ✅ GitHub Actions added
+- ~~No ESLint/Prettier config~~ ✅ ESLint 9 + Prettier added
+- Backend deployment hardening (Dockerfile exists, needs health checks)
+- ~~README outdated~~ ✅ Updated
 
 ## Next Steps
 
-### Audit Roadmap
-- **P0**: AUDIT-01 through AUDIT-04 (this session)
-- **P1**: AUDIT-05, ErrorBoundary, coverage config (this session if time)
-- **P2**: CI/CD, linting, backend deploy (future sessions)
+### Audit Roadmap (ALL COMPLETE)
+- **P0**: AUDIT-01 through AUDIT-04 ✅
+- **P1**: AUDIT-05, ErrorBoundary, coverage config ✅
+- **P2**: CI/CD, linting ✅ (backend deploy is future work)
 
 ### Future Backlog
 - ~~FUTURE-01: Video playback/export in HTML report~~ ✅
