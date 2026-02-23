@@ -245,7 +245,90 @@ describe('exportToPlaywright', () => {
 
     // Should not use getByRole because text > 50 chars
     expect(result).not.toContain('getByRole');
-    // Should fall back to CSS locator
+    // Should fall back to CSS locator (text > 30 chars, so getByText also skipped)
     expect(result).toContain("page.locator('.long-btn')");
+  });
+
+  it('uses getByRole with name for aria-label element with role', () => {
+    const session = createSession();
+    const actions = [
+      createAction({
+        element: createElementMetadata({
+          role: 'button',
+          text: '',
+          ariaLabel: 'Close dialog',
+          selectors: createSelector({ testId: undefined }),
+        }),
+      }),
+    ];
+    const result = exportToPlaywright(session, actions);
+
+    expect(result).toContain("page.getByRole('button', { name: 'Close dialog' })");
+  });
+
+  it('adds waitForLoadState after navigate action', () => {
+    const session = createSession();
+    const actions = [
+      createAction({
+        actionType: 'navigate',
+        url: 'https://example.com/next',
+      }),
+    ];
+    const result = exportToPlaywright(session, actions);
+
+    expect(result).toContain("await page.goto('https://example.com/next');");
+    expect(result).toContain("await page.waitForLoadState('networkidle');");
+  });
+
+  it('adds expect().toBeVisible() before click', () => {
+    const session = createSession();
+    const actions = [createAction({ actionType: 'click' })];
+    const result = exportToPlaywright(session, actions);
+
+    expect(result).toContain('toBeVisible()');
+    expect(result).toContain('.click()');
+    // toBeVisible should come before click
+    const visibleIdx = result.indexOf('toBeVisible()');
+    const clickIdx = result.indexOf('.click()');
+    expect(visibleIdx).toBeLessThan(clickIdx);
+  });
+
+  it('uses getByText for short text without role', () => {
+    const session = createSession();
+    const actions = [
+      createAction({
+        element: createElementMetadata({
+          role: '',
+          text: 'Learn more',
+          ariaLabel: '',
+          placeholder: '',
+          selectors: createSelector({ testId: undefined, css: 'a.link' }),
+        }),
+      }),
+    ];
+    const result = exportToPlaywright(session, actions);
+
+    expect(result).toContain("page.getByText('Learn more')");
+  });
+
+  it('adds waitForLoadState after initial page.goto', () => {
+    const session = createSession({ url: 'https://app.test' });
+    const actions = [createAction()];
+    const result = exportToPlaywright(session, actions);
+
+    // The initial goto should be followed by waitForLoadState
+    const gotoIdx = result.indexOf("await page.goto('https://app.test')");
+    const waitIdx = result.indexOf("await page.waitForLoadState('networkidle')");
+    expect(gotoIdx).toBeGreaterThan(-1);
+    expect(waitIdx).toBeGreaterThan(gotoIdx);
+  });
+
+  it('adds comment for unsupported action type', () => {
+    const session = createSession();
+    // Force an unsupported action type via cast
+    const actions = [createAction({ actionType: 'hover' as any })];
+    const result = exportToPlaywright(session, actions);
+
+    expect(result).toContain('// Unsupported action type: hover');
   });
 });
