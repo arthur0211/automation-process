@@ -1,22 +1,33 @@
 import type { CapturedAction } from '@/lib/types';
 import { useRecordingStore } from '@/lib/stores/recording-store';
 import { useBackgroundSync } from '@/lib/hooks/use-background-sync';
-import { updateActionWithDb, deleteActionWithDb, reorderActionsWithDb } from '@/lib/stores/recording-actions';
+import {
+  updateActionWithDb,
+  deleteActionWithDb,
+  reorderActionsWithDb,
+  loadSessionActions,
+  renameSessionWithDb,
+  deleteSessionWithDb,
+} from '@/lib/stores/recording-actions';
 import { RecordingControls } from './components/RecordingControls';
 import { StepList } from './components/StepList';
 import { StepDetail } from './components/StepDetail';
 import { ExportPanel } from './components/ExportPanel';
 import { ValidationPanel } from './components/ValidationPanel';
+import { SessionList } from './components/SessionList';
 
 export function App() {
   useBackgroundSync();
 
   const session = useRecordingStore((s) => s.session);
+  const sessions = useRecordingStore((s) => s.sessions);
   const actions = useRecordingStore((s) => s.actions);
   const selectedActionId = useRecordingStore((s) => s.selectedActionId);
   const view = useRecordingStore((s) => s.view);
+  const status = useRecordingStore((s) => s.status);
   const selectAction = useRecordingStore((s) => s.selectAction);
   const clearSelection = useRecordingStore((s) => s.clearSelection);
+  const backToSessions = useRecordingStore((s) => s.backToSessions);
 
   function handleSelect(id: string) {
     selectAction(id);
@@ -57,12 +68,29 @@ export function App() {
           </button>
           <StepDetail action={selectedAction} onUpdate={handleUpdate} onDelete={handleDelete} />
         </div>
+      ) : view === 'list' ? (
+        <>
+          {(status === 'idle' || status === 'stopped') && (
+            <button
+              onClick={backToSessions}
+              class="px-3 py-2 text-xs text-blue-600 hover:text-blue-800 flex items-center gap-1 border-b border-gray-100"
+            >
+              &larr; All recordings
+            </button>
+          )}
+          <StepList
+            actions={actions}
+            selectedId={selectedActionId}
+            onSelect={handleSelect}
+            onReorder={handleReorder}
+          />
+        </>
       ) : (
-        <StepList
-          actions={actions}
-          selectedId={selectedActionId}
-          onSelect={handleSelect}
-          onReorder={handleReorder}
+        <SessionList
+          sessions={sessions}
+          onSelect={loadSessionActions}
+          onRename={renameSessionWithDb}
+          onDelete={deleteSessionWithDb}
         />
       )}
 
