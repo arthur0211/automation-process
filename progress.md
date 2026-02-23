@@ -2,8 +2,8 @@
 
 ## Current State
 
-- **Latest commit**: `fix(extension): add react-hooks lint plugin, fix dragIndex bug`
-- **Total commits**: 32
+- **Latest commit**: `fix(extension): accessibility and error handling improvements`
+- **Total commits**: 35
 - **Tests**: 169 passing (extension)
 - **Coverage**: 74.1% statements, 67.5% branches, 73.6% functions, 75.1% lines
 - **TS errors**: 0
@@ -28,6 +28,12 @@
 - Promoted no-unused-vars from warn to error
 - Added CI permissions: contents: read
 - 0 lint errors, 0 TS errors, 169 tests passing, 74.1% coverage
+
+### Quality Audit Fixes
+- Added ARIA attributes to decision toggle (role="switch", aria-checked, aria-label)
+- Added .catch() to loadState() promise (prevents unhandled rejection)
+- Added screenshotQuality bounds clamping (10-100) after loading settings
+- Added coverage/ to .gitignore
 
 ### Documentation Fixes
 - Updated CLAUDE.md: Phase 2D marked as integrated (was "pending"), backend-client.ts description updated
@@ -142,6 +148,9 @@
 30. `docs: update CLAUDE.md with current project state` — Phase 2D integrated, backend-client.ts description
 31. `chore: update progress.md with final session state` — audit roadmap marked complete, commit history updated
 32. `fix(extension): add react-hooks lint plugin, fix dragIndex bug` — eslint-plugin-react-hooks, useRef fix, no-unused-vars error, CI permissions
+33. `chore: update progress.md with coverage and lint improvements` — coverage stats, lint plugin details
+34. `chore: add coverage/ to .gitignore` — exclude coverage output from git
+35. `fix(extension): accessibility and error handling improvements` — ARIA toggle, loadState catch, settings validation
 
 ## 360 Audit Results
 
