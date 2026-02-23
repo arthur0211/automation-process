@@ -1,6 +1,7 @@
-import { useState } from 'preact/hooks';
+import { useState, useEffect } from 'preact/hooks';
 import type { CapturedAction, RecordingSession } from '@/lib/types';
 import { getVideoBlob } from '@/lib/storage/db';
+import { OnboardingTooltip } from './OnboardingTooltip';
 
 function blobToDataUrl(blob: Blob): Promise<string> {
   return new Promise((resolve, reject) => {
@@ -18,6 +19,23 @@ interface ExportPanelProps {
 
 export function ExportPanel({ session, actions }: ExportPanelProps) {
   const [copied, setCopied] = useState(false);
+  const [showGitHubForm, setShowGitHubForm] = useState(false);
+  const [ghRepo, setGhRepo] = useState('');
+  const [ghTitle, setGhTitle] = useState('');
+  const [ghLabels, setGhLabels] = useState('');
+  const [ghAssignee, setGhAssignee] = useState('');
+  const [ghSubmitting, setGhSubmitting] = useState(false);
+  const [ghResult, setGhResult] = useState<{ url: string; number: number } | null>(null);
+  const [ghError, setGhError] = useState('');
+
+  useEffect(() => {
+    if (showGitHubForm) {
+      chrome.storage.local.get(['github_repo'], (result) => {
+        if (result.github_repo) setGhRepo(result.github_repo as string);
+      });
+      if (session) setGhTitle(session.name);
+    }
+  }, [showGitHubForm, session]);
 
   if (!session || actions.length === 0) return null;
 
@@ -64,6 +82,49 @@ export function ExportPanel({ session, actions }: ExportPanelProps) {
     }
   }
 
+  async function handleGitHubSubmit() {
+    setGhError('');
+    setGhResult(null);
+    setGhSubmitting(true);
+
+    try {
+      const stored = await chrome.storage.local.get('github_pat');
+      const token = stored.github_pat as string | undefined;
+      if (!token) {
+        setGhError('GitHub PAT not configured. Set it in extension Options.');
+        setGhSubmitting(false);
+        return;
+      }
+      if (!ghRepo || !ghRepo.includes('/')) {
+        setGhError('Enter a valid repository in "owner/repo" format.');
+        setGhSubmitting(false);
+        return;
+      }
+
+      const { exportToMarkdown } = await import('@/lib/export/markdown-exporter');
+      const body = exportToMarkdown(session!, actions);
+
+      const { createGitHubIssue } = await import('@/lib/export/github-exporter');
+      const labels = ghLabels
+        .split(',')
+        .map((l) => l.trim())
+        .filter(Boolean);
+      const result = await createGitHubIssue({
+        token,
+        repo: ghRepo,
+        title: ghTitle || session!.name,
+        body,
+        labels: labels.length > 0 ? labels : undefined,
+        assignee: ghAssignee.trim() || undefined,
+      });
+      setGhResult(result);
+    } catch (err) {
+      setGhError(err instanceof Error ? err.message : 'Unknown error');
+    } finally {
+      setGhSubmitting(false);
+    }
+  }
+
   function downloadFile(content: string, filename: string, mimeType: string) {
     const blob = new Blob([content], { type: mimeType });
     const url = URL.createObjectURL(blob);
@@ -77,6 +138,11 @@ export function ExportPanel({ session, actions }: ExportPanelProps) {
   return (
     <div class="p-3 border-t border-gray-200 bg-white">
       <label class="block text-xs font-medium text-gray-500 mb-2">Export</label>
+      <OnboardingTooltip storageKey="onboarding_export_seen">
+        <strong>Export your recording:</strong> <strong>JSON</strong> for LLM processing,{' '}
+        <strong>HTML</strong> for a visual step-by-step guide, or{' '}
+        <strong>Playwright</strong> to generate an automated test script.
+      </OnboardingTooltip>
       <div class="flex gap-2">
         <button
           onClick={exportJson}
@@ -111,6 +177,88 @@ export function ExportPanel({ session, actions }: ExportPanelProps) {
           {copied ? 'Copied!' : 'Copy'}
         </button>
       </div>
+      <div class="mt-2">
+        <button
+          onClick={() => {
+            setShowGitHubForm(!showGitHubForm);
+            setGhResult(null);
+            setGhError('');
+          }}
+          class="w-full px-3 py-1.5 text-xs font-medium text-purple-700 bg-purple-50 rounded-md hover:bg-purple-100 transition-colors"
+        >
+          {showGitHubForm ? 'Cancel' : 'Create GitHub Issue'}
+        </button>
+      </div>
+      {showGitHubForm && (
+        <div class="mt-2 p-3 bg-gray-50 rounded-md space-y-2">
+          <div>
+            <label class="block text-xs font-medium text-gray-600 mb-0.5">Repository</label>
+            <input
+              type="text"
+              placeholder="owner/repo"
+              value={ghRepo}
+              onInput={(e) => setGhRepo((e.target as HTMLInputElement).value)}
+              class="w-full px-2 py-1 text-xs border border-gray-200 rounded focus:outline-none focus:ring-1 focus:ring-purple-400"
+            />
+          </div>
+          <div>
+            <label class="block text-xs font-medium text-gray-600 mb-0.5">Title</label>
+            <input
+              type="text"
+              placeholder="Issue title"
+              value={ghTitle}
+              onInput={(e) => setGhTitle((e.target as HTMLInputElement).value)}
+              class="w-full px-2 py-1 text-xs border border-gray-200 rounded focus:outline-none focus:ring-1 focus:ring-purple-400"
+            />
+          </div>
+          <div>
+            <label class="block text-xs font-medium text-gray-600 mb-0.5">
+              Labels{' '}
+              <span class="text-gray-400 font-normal">(comma-separated, optional)</span>
+            </label>
+            <input
+              type="text"
+              placeholder="bug, documentation"
+              value={ghLabels}
+              onInput={(e) => setGhLabels((e.target as HTMLInputElement).value)}
+              class="w-full px-2 py-1 text-xs border border-gray-200 rounded focus:outline-none focus:ring-1 focus:ring-purple-400"
+            />
+          </div>
+          <div>
+            <label class="block text-xs font-medium text-gray-600 mb-0.5">
+              Assignee <span class="text-gray-400 font-normal">(optional)</span>
+            </label>
+            <input
+              type="text"
+              placeholder="username"
+              value={ghAssignee}
+              onInput={(e) => setGhAssignee((e.target as HTMLInputElement).value)}
+              class="w-full px-2 py-1 text-xs border border-gray-200 rounded focus:outline-none focus:ring-1 focus:ring-purple-400"
+            />
+          </div>
+          <button
+            onClick={handleGitHubSubmit}
+            disabled={ghSubmitting}
+            class="w-full px-3 py-1.5 text-xs font-medium text-white bg-purple-600 rounded-md hover:bg-purple-700 disabled:opacity-50 transition-colors"
+          >
+            {ghSubmitting ? 'Creating...' : 'Create Issue'}
+          </button>
+          {ghResult && (
+            <div class="text-xs text-green-700 bg-green-50 p-2 rounded">
+              Issue #{ghResult.number} created.{' '}
+              <a
+                href={ghResult.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                class="underline font-medium"
+              >
+                Open on GitHub
+              </a>
+            </div>
+          )}
+          {ghError && <div class="text-xs text-red-600 bg-red-50 p-2 rounded">{ghError}</div>}
+        </div>
+      )}
     </div>
   );
 }
