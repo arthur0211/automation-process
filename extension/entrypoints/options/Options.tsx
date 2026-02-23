@@ -7,11 +7,13 @@ export function Options() {
   const [backendUrl, setBackendUrl] = useState('');
   const [standaloneAgentsUrl, setStandaloneAgentsUrl] = useState('');
   const [showThumbnails, setShowThumbnails] = useState(true);
+  const [githubPat, setGithubPat] = useState('');
+  const [githubRepo, setGithubRepo] = useState('');
   const [saved, setSaved] = useState(false);
 
   useEffect(() => {
     chrome.storage.local.get(
-      ['settings', 'backendUrl', 'standaloneAgentsUrl', 'showThumbnails'],
+      ['settings', 'backendUrl', 'standaloneAgentsUrl', 'showThumbnails', 'github_pat', 'github_repo'],
       (result) => {
         if (result.settings) {
           setSettings({ ...DEFAULT_CAPTURE_SETTINGS, ...result.settings });
@@ -25,6 +27,12 @@ export function Options() {
         if (result.showThumbnails !== undefined) {
           setShowThumbnails(result.showThumbnails as boolean);
         }
+        if (result.github_pat) {
+          setGithubPat(result.github_pat as string);
+        }
+        if (result.github_repo) {
+          setGithubRepo(result.github_repo as string);
+        }
       },
     );
   }, []);
@@ -35,7 +43,7 @@ export function Options() {
   }
 
   function handleSave() {
-    chrome.storage.local.set({ settings, backendUrl, standaloneAgentsUrl, showThumbnails }, () => {
+    chrome.storage.local.set({ settings, backendUrl, standaloneAgentsUrl, showThumbnails, github_pat: githubPat, github_repo: githubRepo }, () => {
       setSaved(true);
       setTimeout(() => setSaved(false), 2000);
     });
@@ -61,7 +69,15 @@ export function Options() {
 
         <div>
           <label class="flex items-center justify-between">
-            <span class="text-sm text-gray-600">Screenshot Quality</span>
+            <span class="text-sm text-gray-600">
+              Screenshot Quality
+              <span
+                class="inline-flex items-center justify-center w-4 h-4 ml-1 text-[10px] font-bold text-gray-400 bg-gray-100 rounded-full cursor-help align-middle"
+                title="JPEG quality for captured screenshots. Lower values save storage but reduce clarity."
+              >
+                i
+              </span>
+            </span>
             <span class="text-sm text-gray-400">{settings.screenshotQuality}%</span>
           </label>
           <input
@@ -79,7 +95,15 @@ export function Options() {
 
         <div>
           <label class="flex items-center justify-between">
-            <span class="text-sm text-gray-600">Scroll Throttle</span>
+            <span class="text-sm text-gray-600">
+              Scroll Throttle
+              <span
+                class="inline-flex items-center justify-center w-4 h-4 ml-1 text-[10px] font-bold text-gray-400 bg-gray-100 rounded-full cursor-help align-middle"
+                title="Minimum time between captured scroll events. Higher values reduce noise from fast scrolling."
+              >
+                i
+              </span>
+            </span>
             <span class="text-sm text-gray-400">{settings.scrollThrottleMs}ms</span>
           </label>
           <input
@@ -97,7 +121,15 @@ export function Options() {
 
         <div>
           <label class="flex items-center justify-between">
-            <span class="text-sm text-gray-600">Input Debounce</span>
+            <span class="text-sm text-gray-600">
+              Input Debounce
+              <span
+                class="inline-flex items-center justify-center w-4 h-4 ml-1 text-[10px] font-bold text-gray-400 bg-gray-100 rounded-full cursor-help align-middle"
+                title="Delay before capturing text input. Waits for the user to stop typing before recording the value."
+              >
+                i
+              </span>
+            </span>
             <span class="text-sm text-gray-400">{settings.inputDebounceMs}ms</span>
           </label>
           <input
@@ -124,7 +156,15 @@ export function Options() {
               }}
               class="rounded border-gray-300"
             />
-            <span class="text-sm text-gray-600">Show screenshot thumbnails in step list</span>
+            <span class="text-sm text-gray-600">
+              Show screenshot thumbnails in step list
+              <span
+                class="inline-flex items-center justify-center w-4 h-4 ml-1 text-[10px] font-bold text-gray-400 bg-gray-100 rounded-full cursor-help align-middle"
+                title="Display small screenshot previews next to each recorded step. Disable to save space."
+              >
+                i
+              </span>
+            </span>
           </label>
         </div>
 
@@ -136,39 +176,109 @@ export function Options() {
         </button>
       </div>
 
+      <details class="bg-white rounded-lg shadow-sm">
+        <summary class="px-5 py-4 text-sm font-semibold text-gray-700 cursor-pointer select-none hover:bg-gray-50 rounded-lg">
+          Advanced
+        </summary>
+        <div class="space-y-4 px-5 pb-5">
+          <p class="text-xs text-gray-400">
+            Connect to an ADK backend for LLM-powered enrichment. Leave empty for template-only
+            mode.
+          </p>
+          <div>
+            <label class="block text-xs font-medium text-gray-600 mb-1">
+              Backend URL
+              <span
+                class="inline-flex items-center justify-center w-4 h-4 ml-1 text-[10px] font-bold text-gray-400 bg-gray-100 rounded-full cursor-help align-middle"
+                title="URL of the ADK coordinator agent. Used to enrich recordings with LLM-generated descriptions."
+              >
+                i
+              </span>
+            </label>
+            <input
+              type="url"
+              placeholder="http://localhost:8000"
+              value={backendUrl}
+              onInput={(e) => {
+                setBackendUrl((e.target as HTMLInputElement).value);
+                setSaved(false);
+              }}
+              class="w-full px-3 py-2 text-sm border border-gray-200 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-400"
+            />
+          </div>
+          <div>
+            <label class="block text-xs font-medium text-gray-600 mb-1">
+              Standalone Agents URL
+              <span
+                class="inline-flex items-center justify-center w-4 h-4 ml-1 text-[10px] font-bold text-gray-400 bg-gray-100 rounded-full cursor-help align-middle"
+                title="URL for standalone agents (doc_validator, complex_analyzer). Separate from the main pipeline."
+              >
+                i
+              </span>
+            </label>
+            <input
+              type="url"
+              placeholder="http://localhost:8001"
+              value={standaloneAgentsUrl}
+              onInput={(e) => {
+                setStandaloneAgentsUrl((e.target as HTMLInputElement).value);
+                setSaved(false);
+              }}
+              class="w-full px-3 py-2 text-sm border border-gray-200 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-400"
+            />
+            <p class="text-xs text-gray-400 mt-1">
+              For doc_validator and complex_analyzer agents. Leave empty to disable.
+            </p>
+          </div>
+        </div>
+      </details>
+
       <div class="space-y-4 bg-white p-5 rounded-lg shadow-sm">
-        <h2 class="text-sm font-semibold text-gray-700">Backend Integration</h2>
+        <h2 class="text-sm font-semibold text-gray-700">GitHub Integration</h2>
         <p class="text-xs text-gray-400">
-          Connect to an ADK backend for LLM-powered enrichment. Leave empty for template-only mode.
+          Configure a Personal Access Token to create GitHub Issues directly from recordings.
         </p>
         <div>
-          <label class="block text-xs font-medium text-gray-600 mb-1">Backend URL</label>
+          <label class="block text-xs font-medium text-gray-600 mb-1">
+            Personal Access Token
+            <span
+              class="inline-flex items-center justify-center w-4 h-4 ml-1 text-[10px] font-bold text-gray-400 bg-gray-100 rounded-full cursor-help align-middle"
+              title="GitHub PAT with 'repo' scope. Create one at github.com/settings/tokens."
+            >
+              i
+            </span>
+          </label>
           <input
-            type="url"
-            placeholder="http://localhost:8000"
-            value={backendUrl}
+            type="password"
+            placeholder="ghp_..."
+            value={githubPat}
             onInput={(e) => {
-              setBackendUrl((e.target as HTMLInputElement).value);
+              setGithubPat((e.target as HTMLInputElement).value);
               setSaved(false);
             }}
             class="w-full px-3 py-2 text-sm border border-gray-200 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-400"
           />
         </div>
         <div>
-          <label class="block text-xs font-medium text-gray-600 mb-1">Standalone Agents URL</label>
+          <label class="block text-xs font-medium text-gray-600 mb-1">
+            Default Repository
+            <span
+              class="inline-flex items-center justify-center w-4 h-4 ml-1 text-[10px] font-bold text-gray-400 bg-gray-100 rounded-full cursor-help align-middle"
+              title="Default repository for new issues. Can be overridden when creating an issue."
+            >
+              i
+            </span>
+          </label>
           <input
-            type="url"
-            placeholder="http://localhost:8001"
-            value={standaloneAgentsUrl}
+            type="text"
+            placeholder="owner/repo"
+            value={githubRepo}
             onInput={(e) => {
-              setStandaloneAgentsUrl((e.target as HTMLInputElement).value);
+              setGithubRepo((e.target as HTMLInputElement).value);
               setSaved(false);
             }}
             class="w-full px-3 py-2 text-sm border border-gray-200 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-400"
           />
-          <p class="text-xs text-gray-400 mt-1">
-            For doc_validator and complex_analyzer agents. Leave empty to disable.
-          </p>
         </div>
       </div>
 

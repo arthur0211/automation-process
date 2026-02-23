@@ -1,5 +1,6 @@
 import type { RecordingStatus } from '@/lib/types';
 import { useRecordingStore } from '@/lib/stores/recording-store';
+import { OnboardingTooltip } from './OnboardingTooltip';
 
 export function RecordingControls() {
   const status = useRecordingStore((s) => s.status);
@@ -32,6 +33,13 @@ export function RecordingControls() {
         </div>
         {status !== 'idle' && <span class="text-xs text-gray-500">{actionCount} steps</span>}
       </div>
+
+      {status === 'idle' && (
+        <OnboardingTooltip storageKey="onboarding_welcome_seen">
+          Welcome! Click <strong>Start Recording</strong> to capture your first web process.
+          Every click, input and navigation will be documented automatically.
+        </OnboardingTooltip>
+      )}
 
       <div class="flex gap-2">
         {status === 'idle' && (
