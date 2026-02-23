@@ -2,6 +2,8 @@ import { useState, useEffect } from 'preact/hooks';
 import type { CapturedAction, RecordingSession } from '@/lib/types';
 import { getVideoBlob } from '@/lib/storage/db';
 import { OnboardingTooltip } from './OnboardingTooltip';
+import { ExportPreview } from './ExportPreview';
+import type { ExportFormat } from './ExportPreview';
 
 function blobToDataUrl(blob: Blob): Promise<string> {
   return new Promise((resolve, reject) => {
@@ -19,6 +21,7 @@ interface ExportPanelProps {
 
 export function ExportPanel({ session, actions }: ExportPanelProps) {
   const [copied, setCopied] = useState(false);
+  const [previewFormat, setPreviewFormat] = useState<ExportFormat | null>(null);
   const [showGitHubForm, setShowGitHubForm] = useState(false);
   const [ghRepo, setGhRepo] = useState('');
   const [ghTitle, setGhTitle] = useState('');
@@ -62,6 +65,12 @@ export function ExportPanel({ session, actions }: ExportPanelProps) {
     const { exportToPlaywright } = await import('@/lib/export/playwright-exporter');
     const code = exportToPlaywright(session!, actions);
     downloadFile(code, `${session!.name}.spec.ts`, 'text/plain');
+  }
+
+  async function exportCypress() {
+    const { exportToCypress } = await import('@/lib/export/cypress-exporter');
+    const code = exportToCypress(session!, actions);
+    downloadFile(code, `${session!.name}.cy.ts`, 'text/plain');
   }
 
   async function exportMarkdown() {
@@ -162,6 +171,12 @@ export function ExportPanel({ session, actions }: ExportPanelProps) {
         >
           Playwright (.spec.ts)
         </button>
+        <button
+          onClick={exportCypress}
+          class="flex-1 px-3 py-1.5 text-xs font-medium text-teal-700 bg-teal-50 rounded-md hover:bg-teal-100 transition-colors"
+        >
+          Cypress (.cy.ts)
+        </button>
       </div>
       <div class="flex gap-2 mt-2">
         <button
@@ -175,6 +190,14 @@ export function ExportPanel({ session, actions }: ExportPanelProps) {
           class="flex-1 px-3 py-1.5 text-xs font-medium text-blue-700 bg-blue-50 rounded-md hover:bg-blue-100 transition-colors"
         >
           {copied ? 'Copied!' : 'Copy'}
+        </button>
+      </div>
+      <div class="mt-2">
+        <button
+          onClick={() => setPreviewFormat('json')}
+          class="w-full px-3 py-1.5 text-xs font-medium text-indigo-700 bg-indigo-50 rounded-md hover:bg-indigo-100 transition-colors"
+        >
+          Preview Export
         </button>
       </div>
       <div class="mt-2">
@@ -258,6 +281,15 @@ export function ExportPanel({ session, actions }: ExportPanelProps) {
           )}
           {ghError && <div class="text-xs text-red-600 bg-red-50 p-2 rounded">{ghError}</div>}
         </div>
+      )}
+      {previewFormat && (
+        <ExportPreview
+          session={session}
+          actions={actions}
+          initialFormat={previewFormat}
+          onClose={() => setPreviewFormat(null)}
+          onDownload={downloadFile}
+        />
       )}
     </div>
   );
