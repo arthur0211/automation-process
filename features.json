@@ -1,6 +1,12 @@
 {
-  "version": "1.0.0",
-  "lastUpdated": "2026-02-22",
+  "version": "2.0.0",
+  "lastUpdated": "2026-02-23",
+  "analysisDate": "2026-02-23",
+  "analysisSources": [
+    "backend-analyst: ADK pipeline, scalability, security, deployment",
+    "product-analyst: UX, features, monetization, RICE prioritization",
+    "market-analyst: competitive landscape, pricing, market sizing"
+  ],
   "features": [
     {
       "id": "P1-01",
@@ -165,411 +171,638 @@
     {
       "id": "P2A-01",
       "name": "Wire user settings to capture pipeline",
-      "description": "Connect chrome.storage.local settings to event capture and screenshot pipeline",
-      "acceptanceCriteria": [
-        "Settings loaded on recording start",
-        "Screenshot quality, scroll throttle, input debounce use stored settings",
-        "Falls back to DEFAULT_CAPTURE_SETTINGS if no stored settings"
-      ],
       "status": "done",
       "phase": "2A"
     },
     {
       "id": "P2A-02",
       "name": "Fix stop-to-idle race condition",
-      "description": "Recording stays in stopped state for review instead of immediately going idle",
-      "acceptanceCriteria": [
-        "Status transitions to stopped (not idle) on stop",
-        "Last session remains visible for review",
-        "New recording starts fresh from stopped state"
-      ],
       "status": "done",
       "phase": "2A"
     },
     {
       "id": "P2A-03",
       "name": "Password input masking",
-      "description": "Mask password field values before storing in IndexedDB",
-      "acceptanceCriteria": [
-        "Input type=password captured as masked value",
-        "Actual password never stored in IndexedDB or exports"
-      ],
       "status": "done",
       "phase": "2A"
     },
     {
       "id": "P2A-04",
       "name": "Push-based STATUS_UPDATE",
-      "description": "Replace polling-based status checks with push-based STATUS_UPDATE broadcasts from background",
-      "acceptanceCriteria": [
-        "Background broadcasts STATUS_UPDATE on every state change",
-        "SidePanel and Popup listen for STATUS_UPDATE messages",
-        "No interval-based polling for status"
-      ],
       "status": "done",
       "phase": "2A"
     },
     {
       "id": "P2A-05",
       "name": "Persist drag reorder to IndexedDB",
-      "description": "Save step reorder changes to IndexedDB with updated sequenceNumbers",
-      "acceptanceCriteria": [
-        "Drag reorder updates sequenceNumber in DB via transaction",
-        "Reloading side panel preserves step order"
-      ],
       "status": "done",
       "phase": "2A"
     },
     {
       "id": "P2A-06",
       "name": "Unified message listener",
-      "description": "Consolidate multiple chrome.runtime.onMessage listeners into single switch handler",
-      "acceptanceCriteria": [
-        "Single onMessage.addListener in background.ts",
-        "Switch/case pattern for message routing",
-        "Async handlers return true for sendResponse"
-      ],
       "status": "done",
       "phase": "2A"
     },
     {
       "id": "P2A-07",
       "name": "Service worker state persistence",
-      "description": "Persist recording state to chrome.storage.session to survive MV3 service worker termination",
-      "acceptanceCriteria": [
-        "Status, sessionId, actionCount saved to chrome.storage.session",
-        "State restored on service worker restart via loadState()",
-        "Active session recoverable after SW termination"
-      ],
       "status": "done",
       "phase": "2A"
     },
     {
       "id": "P2A-08",
       "name": "Prioritize data-testid in selectors",
-      "description": "Add data-testid and data-test-id as highest priority selector strategy",
-      "acceptanceCriteria": [
-        "data-testid checked before id in CSS selector generation",
-        "data-test-id as alias also supported",
-        "Confidence score 0.95 for data-testid selectors"
-      ],
       "status": "done",
       "phase": "2A"
     },
     {
       "id": "P2A-09",
       "name": "Change events for special inputs",
-      "description": "Capture change events for select, date, time, color, range inputs",
-      "acceptanceCriteria": [
-        "Select element changes captured",
-        "Date/time/datetime-local/month/week input changes captured",
-        "Color picker and range slider changes captured"
-      ],
       "status": "done",
       "phase": "2A"
     },
     {
       "id": "P2A-10",
       "name": "Confidence scoring for selectors",
-      "description": "Assign stability confidence scores to generated CSS selectors",
-      "acceptanceCriteria": [
-        "Scores: data-testid 0.95, id 0.90, aria-label 0.85, name 0.80, class 0.60, nth-of-type 0.20",
-        "Score stored in ElementSelector.confidence",
-        "Used by Playwright exporter for locator selection"
-      ],
       "status": "done",
       "phase": "2A"
     },
     {
       "id": "P2A-11",
       "name": "Delete step with confirmation",
-      "description": "Allow deleting individual steps from the recording with confirmation dialog",
-      "acceptanceCriteria": [
-        "Delete button on step detail view",
-        "Confirmation dialog before delete",
-        "Step removed from IndexedDB and UI"
-      ],
       "status": "done",
       "phase": "2A"
     },
     {
       "id": "P2B-01",
       "name": "Playwright test exporter",
-      "description": "Export recording as executable Playwright test script with smart native locator cascade",
-      "acceptanceCriteria": [
-        "Generates valid .spec.ts Playwright test file",
-        "Locator cascade: getByTestId > getByRole > getByLabel > getByPlaceholder > getByText > locator(css)",
-        "Handles click, input, scroll, navigate, submit action types",
-        "Password inputs use fill with masked placeholder",
-        "Confidence scores included as comments",
-        "17 tests passing"
-      ],
       "status": "done",
-      "phase": "2B",
-      "auditNote": "getByText was missing from cascade, getByLabel misused for aria-label, no waitForLoadState or toBeVisible assertions. Fixed in AUDIT-04."
+      "phase": "2B"
     },
     {
       "id": "P2C-01",
       "name": "Zustand store as single source of truth",
-      "description": "Centralized Zustand store replacing duplicated local state in 3 UI components",
-      "acceptanceCriteria": [
-        "recordingStore with zustand/vanilla createStore",
-        "useRecordingStore hook via useSyncExternalStore (Preact compat)",
-        "State: status, session, actions, actionCount, error, selectedActionId, view",
-        "App.tsx, RecordingControls.tsx, Popup.tsx use store instead of local state",
-        "~60 lines of duplicated state eliminated"
-      ],
       "status": "done",
       "phase": "2C"
     },
     {
       "id": "P2C-02",
       "name": "Action creators with DB sync",
-      "description": "Async action creators that sync Zustand store mutations to IndexedDB",
-      "acceptanceCriteria": [
-        "updateActionWithDb: updates DB then store",
-        "deleteActionWithDb: deletes from DB, removes from store, clears selection",
-        "reorderActionsWithDb: reorders in store and persists to DB",
-        "syncFromBackground: sends GET_STATUS and populates store from DB",
-        "handleStatusUpdate: processes STATUS_UPDATE messages into store"
-      ],
       "status": "done",
       "phase": "2C"
     },
     {
       "id": "P2C-03",
       "name": "useBackgroundSync hook",
-      "description": "Preact hook that syncs UI state with background service worker on mount and listens for STATUS_UPDATE",
-      "acceptanceCriteria": [
-        "Calls syncFromBackground on mount",
-        "Listens for STATUS_UPDATE messages via chrome.runtime.onMessage",
-        "Cleans up listener on unmount",
-        "Used by both SidePanel App.tsx and Popup.tsx entry points"
-      ],
       "status": "done",
       "phase": "2C"
     },
     {
       "id": "P2D-01",
       "name": "Implement backend-client.ts",
-      "description": "Connect extension to ADK backend for LLM-powered action enrichment",
-      "acceptanceCriteria": [
-        "POST action + screenshot to backend API endpoint",
-        "Receive enriched description, visual analysis, decision analysis",
-        "Handle network errors and timeouts gracefully",
-        "Configurable backend URL from chrome.storage.local"
-      ],
       "status": "done",
       "phase": "2D"
     },
     {
       "id": "P2D-02",
       "name": "Backend URL configuration",
-      "description": "Add backend URL setting to Options page",
-      "acceptanceCriteria": [
-        "Text input for backend URL in Options page",
-        "URL validated before save",
-        "Stored in chrome.storage.local",
-        "backend-client.ts reads URL from storage"
-      ],
       "status": "done",
       "phase": "2D"
     },
     {
       "id": "P2D-03",
       "name": "LLM description enrichment",
-      "description": "Enrich action descriptions with LLM-generated natural language via Gemini description_generator agent",
-      "acceptanceCriteria": [
-        "llmDescription field populated from description_generator agent response",
-        "Displayed alongside template description in step detail UI",
-        "Graceful fallback to template if backend unavailable"
-      ],
       "status": "done",
       "phase": "2D"
     },
     {
       "id": "P2D-04",
       "name": "Visual analysis from Gemini",
-      "description": "Analyze screenshots with Gemini vision via screenshot_analyzer agent",
-      "acceptanceCriteria": [
-        "llmVisualAnalysis field populated from screenshot_analyzer agent response",
-        "Visual context includes UI elements, page context, layout type",
-        "Analysis results viewable in step detail"
-      ],
       "status": "done",
       "phase": "2D"
     },
     {
       "id": "P2D-05",
       "name": "Intelligent decision point detection",
-      "description": "Use decision_detector agent to identify decision points and document alternative branches",
-      "acceptanceCriteria": [
-        "DecisionPoint populated with isDecisionPoint, reason, branches from agent",
-        "Replaces manual toggle with intelligent detection",
-        "Decision points visually highlighted in step list"
-      ],
       "status": "done",
-      "phase": "2D",
-      "auditNote": "Decision points not visually highlighted in StepList yet — badge added in AUDIT-03."
+      "phase": "2D"
     },
     {
       "id": "P2D-06",
       "name": "Process documentation validation",
-      "description": "Validate completeness and quality of recorded process via doc_validator agent (Gemini Pro)",
-      "acceptanceCriteria": [
-        "doc_validator reviews full recording after stop",
-        "Reports missing steps, unclear descriptions, quality score",
-        "Validation results displayed in export panel"
-      ],
       "status": "done",
       "phase": "2D"
     },
     {
       "id": "P2D-07",
       "name": "Complex analysis for edge cases",
-      "description": "Use complex_analyzer agent (Claude Sonnet via Vertex) for deep analysis of ambiguous actions",
-      "acceptanceCriteria": [
-        "Triggered for low-confidence actions from primary pipeline",
-        "Claude Sonnet 4.6 via Vertex AI LLMRegistry",
-        "Higher confidence results replace primary analysis"
-      ],
       "status": "done",
       "phase": "2D"
     },
     {
       "id": "FUTURE-01",
       "name": "Video playback and export",
-      "description": "Embed recorded tab video in HTML export with playback controls",
-      "acceptanceCriteria": [
-        "Video blob embedded or linked in HTML export",
-        "Playback controls in HTML report",
-        "Timeline synced with step list",
-        "VideoPlayer component in sidepanel (collapsible)",
-        "XSS sanitization for video data URLs",
-        "Graceful fallback when video unavailable"
-      ],
       "status": "done",
       "phase": "future"
     },
     {
       "id": "FUTURE-02",
       "name": "Session management",
-      "description": "List, rename, and delete recording sessions from the side panel",
-      "acceptanceCriteria": [
-        "Session list view with all recordings",
-        "Rename session functionality",
-        "Delete session with confirmation (cascades to actions and video)",
-        "Three-level navigation: sessions → list → detail",
-        "Back to sessions button when viewing past recordings",
-        "Sessions button in stopped state to return to session list"
-      ],
       "status": "done",
       "phase": "future"
     },
     {
       "id": "FUTURE-03",
       "name": "Import recordings",
-      "description": "Import previously exported JSON recordings back into the extension",
-      "acceptanceCriteria": [
-        "File picker for JSON import",
-        "Validate against ProcessExport schema v1.0.0",
-        "Create session and actions in IndexedDB",
-        "Import button in SessionList header and empty state",
-        "Error messages shown inline on failure",
-        "Handles missing element/decisionPoint gracefully",
-        "Preserves validation results from export"
-      ],
       "status": "done",
       "phase": "future"
     },
     {
       "id": "FUTURE-04",
       "name": "Multi-tab recording",
-      "description": "Record actions across multiple browser tabs in a single session",
-      "acceptanceCriteria": [
-        "Content script injected in all tabs during recording",
-        "Actions tagged with tab identifier (tabId, tabTitle)",
-        "Tab switches captured as navigation events via chrome.tabs.onActivated",
-        "Background owns sequence numbering (prevents multi-tab collisions)",
-        "Tab info included in JSON and HTML exports"
-      ],
       "status": "done",
-      "phase": "future"
-    },
-    {
-      "id": "FUTURE-05",
-      "name": "Cloud sync and sharing",
-      "description": "Sync recordings to cloud storage and share with team members",
-      "acceptanceCriteria": [
-        "Cloud storage backend for recordings",
-        "Share links for individual recordings",
-        "Team workspace with shared recordings"
-      ],
-      "status": "planned",
       "phase": "future"
     },
     {
       "id": "AUDIT-01",
       "name": "Fix loadState race condition",
-      "description": "await loadState() in background.ts to prevent stale state on GET_STATUS",
-      "acceptanceCriteria": [
-        "loadState() promise stored and awaited in message handlers",
-        "GET_STATUS returns correct state after SW restart"
-      ],
       "status": "done",
       "phase": "audit"
     },
     {
       "id": "AUDIT-02",
       "name": "VisualAnalysis type safety",
-      "description": "Replace Record<string,any> casts in StepDetail with proper VisualAnalysis interface",
-      "acceptanceCriteria": [
-        "VisualAnalysis interface defined in types.ts",
-        "CapturedAction.llmVisualAnalysis typed as VisualAnalysis",
-        "All 10 casts removed from StepDetail.tsx"
-      ],
       "status": "done",
       "phase": "audit"
     },
     {
       "id": "AUDIT-03",
       "name": "Decision badges in StepList",
-      "description": "Show decision point indicator badge in step list items",
-      "acceptanceCriteria": [
-        "Decision badge visible next to description in StepList",
-        "Only shown when action.decisionPoint.isDecisionPoint is true"
-      ],
       "status": "done",
       "phase": "audit"
     },
     {
       "id": "AUDIT-04",
       "name": "Playwright export reliability",
-      "description": "Add waitForLoadState, toBeVisible assertions, getByText, fix getByLabel for aria-label",
-      "acceptanceCriteria": [
-        "getByText in locator cascade before CSS fallback",
-        "getByRole with name for aria-label elements with role",
-        "waitForLoadState after navigate actions",
-        "expect().toBeVisible() before click/submit",
-        "Default case for unknown action types",
-        "New tests for all additions"
-      ],
       "status": "done",
       "phase": "audit"
     },
     {
       "id": "AUDIT-05",
       "name": "Project hygiene",
-      "description": "Add .gitattributes, delete nul file, update test counts in docs",
-      "acceptanceCriteria": [
-        ".gitattributes added with LF normalization",
-        "nul file deleted",
-        "Test count updated in CLAUDE.md",
-        "npm test script added to root package.json"
-      ],
       "status": "done",
-      "phase": "audit",
-      "auditNote": "nul file deletion requires manual rm on Windows — file is already in .gitignore"
+      "phase": "audit"
+    },
+
+    {
+      "id": "ROAD-01",
+      "name": "Markdown and clipboard export",
+      "description": "Export recording as Markdown text or copy to clipboard for quick sharing in Notion, Confluence, Slack, GitHub issues",
+      "acceptanceCriteria": [
+        "Export to Markdown (.md) with step headers, descriptions, and inline screenshot links",
+        "Copy to clipboard button that copies Markdown-formatted text",
+        "Screenshots referenced as data URLs or excluded via option",
+        "Clipboard notification toast on success"
+      ],
+      "status": "planned",
+      "phase": "sprint-3",
+      "priority": "P0",
+      "effort": "S",
+      "riceScore": 315,
+      "source": "product-analyst"
+    },
+    {
+      "id": "ROAD-02",
+      "name": "Chrome Web Store submission",
+      "description": "Prepare and submit extension to Chrome Web Store for public distribution",
+      "acceptanceCriteria": [
+        "Privacy policy page (hosted URL)",
+        "Store listing: description, screenshots (5+), promo images",
+        "Icons: 128x128 store icon, 48x48 toolbar icon",
+        "Permissions justification for activeTab, tabs, storage, sidePanel, offscreen",
+        "Content Security Policy compliant",
+        "Passes Chrome Web Store review"
+      ],
+      "status": "planned",
+      "phase": "sprint-3",
+      "priority": "P0",
+      "effort": "M",
+      "riceScore": 300,
+      "source": "product-analyst, market-analyst"
+    },
+    {
+      "id": "ROAD-03",
+      "name": "Step search and filter",
+      "description": "Add text search and action type filter within a recording session",
+      "acceptanceCriteria": [
+        "Search input at top of step list",
+        "Filters steps by description text match",
+        "Action type filter dropdown (click, input, scroll, navigate, submit)",
+        "Clear filter button",
+        "Result count displayed"
+      ],
+      "status": "planned",
+      "phase": "sprint-3",
+      "priority": "P0",
+      "effort": "S",
+      "riceScore": 220,
+      "source": "product-analyst"
+    },
+    {
+      "id": "ROAD-04",
+      "name": "Screenshot thumbnails in step list",
+      "description": "Show small screenshot preview in the step list view for quick visual scanning",
+      "acceptanceCriteria": [
+        "Thumbnail (48x36px) shown to the right of each step in StepList",
+        "Lazy-loaded to avoid memory issues with 100+ steps",
+        "Click thumbnail opens step detail",
+        "Toggle thumbnails on/off via setting"
+      ],
+      "status": "planned",
+      "phase": "sprint-3",
+      "priority": "P0",
+      "effort": "S",
+      "riceScore": 216,
+      "source": "product-analyst"
+    },
+    {
+      "id": "ROAD-05",
+      "name": "First-run onboarding experience",
+      "description": "Guide new users through their first recording with tooltips and contextual help",
+      "acceptanceCriteria": [
+        "Welcome tooltip on first install pointing to Start Recording",
+        "Info icons (i) next to Options settings with explanatory tooltips",
+        "After first recording: overlay explaining the 3 export formats",
+        "Hide backend URL in collapsible Advanced section",
+        "Onboarding state tracked in chrome.storage.local"
+      ],
+      "status": "planned",
+      "phase": "sprint-3",
+      "priority": "P1",
+      "effort": "M",
+      "riceScore": 149,
+      "source": "product-analyst"
+    },
+    {
+      "id": "ROAD-06",
+      "name": "Hover and right-click event capture",
+      "description": "Capture hover (mouseover on interactive elements) and right-click (contextmenu) events for complete workflow documentation",
+      "acceptanceCriteria": [
+        "Hover events captured on elements with title, tooltip, or dropdown triggers",
+        "Right-click/contextmenu events captured with target element",
+        "New action type icons for hover and contextmenu",
+        "Configurable: can disable hover capture to reduce noise",
+        "Playwright exporter generates page.hover() for hover actions"
+      ],
+      "status": "planned",
+      "phase": "sprint-4",
+      "priority": "P1",
+      "effort": "M",
+      "riceScore": 42,
+      "source": "product-analyst, market-analyst"
+    },
+    {
+      "id": "ROAD-07",
+      "name": "GitHub Issue export",
+      "description": "Export recording as a GitHub issue with steps to reproduce, screenshots, and metadata",
+      "acceptanceCriteria": [
+        "Create GitHub Issue button in export panel",
+        "GitHub personal access token stored in chrome.storage.local",
+        "Issue body: numbered steps with descriptions and inline screenshots",
+        "Repository selector (owner/repo)",
+        "Labels and assignee optional fields",
+        "Success notification with link to created issue"
+      ],
+      "status": "planned",
+      "phase": "sprint-4",
+      "priority": "P1",
+      "effort": "M",
+      "riceScore": 100,
+      "source": "product-analyst, market-analyst"
+    },
+    {
+      "id": "ROAD-08",
+      "name": "Export preview panel",
+      "description": "Show a preview of the export output before downloading",
+      "acceptanceCriteria": [
+        "Preview modal/panel showing rendered HTML snippet",
+        "Toggle between JSON, HTML, Playwright preview",
+        "Copy to clipboard from preview",
+        "Download button within preview"
+      ],
+      "status": "planned",
+      "phase": "sprint-4",
+      "priority": "P2",
+      "effort": "M",
+      "riceScore": 80,
+      "source": "product-analyst"
+    },
+    {
+      "id": "ROAD-09",
+      "name": "Undo toast for destructive actions",
+      "description": "Replace confirm() dialogs with undo toast notifications for delete operations",
+      "acceptanceCriteria": [
+        "Delete step shows undo toast instead of confirm dialog",
+        "Delete session shows undo toast with 5-second countdown",
+        "Undo restores deleted item from a temporary buffer",
+        "Toast auto-dismisses and commits delete after countdown"
+      ],
+      "status": "planned",
+      "phase": "sprint-4",
+      "priority": "P2",
+      "effort": "M",
+      "riceScore": 60,
+      "source": "product-analyst"
+    },
+    {
+      "id": "ROAD-10",
+      "name": "Fix backend Dockerfile and deployment",
+      "description": "Fix critical deployment issues: Dockerfile CMD, health check, startup validation, workers",
+      "acceptanceCriteria": [
+        "Dockerfile CMD uses correct ADK startup command (not uvicorn app:app)",
+        "Health check endpoint returns 200 on /health",
+        "Startup validates GOOGLE_CLOUD_PROJECT, GOOGLE_CLOUD_LOCATION env vars",
+        "uvicorn runs with --workers 4",
+        "Non-root user in container",
+        ".dockerignore excludes .env, __pycache__, *.pyc"
+      ],
+      "status": "planned",
+      "phase": "sprint-5",
+      "priority": "P0",
+      "effort": "M",
+      "riceScore": 200,
+      "source": "backend-analyst"
+    },
+    {
+      "id": "ROAD-11",
+      "name": "Fix screenshot data format for vision models",
+      "description": "Send screenshot as inlineData image parts instead of base64 text string in ADK API calls",
+      "acceptanceCriteria": [
+        "backend-client.ts sends screenshot as inlineData with mimeType and base64 data",
+        "screenshot_analyzer receives actual image for visual analysis",
+        "Fallback to text-only if screenshot unavailable",
+        "Tests verify correct message format"
+      ],
+      "status": "planned",
+      "phase": "sprint-5",
+      "priority": "P0",
+      "effort": "S",
+      "riceScore": 250,
+      "source": "backend-analyst"
+    },
+    {
+      "id": "ROAD-12",
+      "name": "Fix ADK session state race condition",
+      "description": "Poll session state with backoff after /run instead of immediate GET to avoid reading stale data",
+      "acceptanceCriteria": [
+        "After POST /run returns 200, poll GET session state with exponential backoff",
+        "Max 5 retries with 500ms, 1s, 2s, 4s, 8s delays",
+        "Check output_keys exist before returning response",
+        "Timeout after 15s returns null gracefully"
+      ],
+      "status": "planned",
+      "phase": "sprint-5",
+      "priority": "P0",
+      "effort": "S",
+      "riceScore": 200,
+      "source": "backend-analyst"
+    },
+    {
+      "id": "ROAD-13",
+      "name": "Backend API authentication",
+      "description": "Add authentication to ADK backend endpoints to prevent unauthorized access",
+      "acceptanceCriteria": [
+        "API key header validation (X-API-Key) on all endpoints",
+        "API key configurable in Options page alongside backend URL",
+        "backend-client.ts sends API key header with every request",
+        "401 response on missing/invalid key",
+        "Environment variable for API key on server side"
+      ],
+      "status": "planned",
+      "phase": "sprint-5",
+      "priority": "P0",
+      "effort": "M",
+      "riceScore": 180,
+      "source": "backend-analyst"
+    },
+    {
+      "id": "ROAD-14",
+      "name": "Backend retry with exponential backoff",
+      "description": "Add retry logic to backend-client.ts for transient failures (429, 503, network errors)",
+      "acceptanceCriteria": [
+        "Retry on 429 (rate limit) and 503 (service unavailable) with exponential backoff",
+        "Max 3 retries per request",
+        "Respect Retry-After header if present",
+        "No retry on 400/401/404 (client errors)",
+        "UI indicator when enrichment is retrying"
+      ],
+      "status": "planned",
+      "phase": "sprint-5",
+      "priority": "P1",
+      "effort": "S",
+      "riceScore": 120,
+      "source": "backend-analyst"
+    },
+    {
+      "id": "ROAD-15",
+      "name": "Pin model versions and consolidate ADK apps",
+      "description": "Replace preview model IDs with versioned GA IDs and consolidate 3 ADK apps into 1",
+      "acceptanceCriteria": [
+        "Model IDs use versioned format (gemini-3-flash-001 instead of gemini-3-flash-preview)",
+        "Model names configurable via environment variables",
+        "Single ADK app exposes all agents via appName routing",
+        "Single Dockerfile and Cloud Run service",
+        "Remove validator_app.py and analyzer_app.py entry points"
+      ],
+      "status": "planned",
+      "phase": "sprint-5",
+      "priority": "P1",
+      "effort": "M",
+      "riceScore": 100,
+      "source": "backend-analyst"
+    },
+    {
+      "id": "ROAD-16",
+      "name": "Cloud sync and sharing",
+      "description": "Sync recordings to cloud storage and generate shareable links for team collaboration",
+      "acceptanceCriteria": [
+        "Cloud storage backend for recordings (Supabase or Firebase)",
+        "User authentication (Google Sign-In or email/password)",
+        "Upload recording to cloud on demand (not auto-sync)",
+        "Generate shareable read-only link for a recording",
+        "View shared recording in browser without extension installed",
+        "Delete cloud recording",
+        "Sync indicator in session list (local-only vs cloud)"
+      ],
+      "status": "planned",
+      "phase": "sprint-6",
+      "priority": "P1",
+      "effort": "XL",
+      "riceScore": 46,
+      "source": "product-analyst, market-analyst"
+    },
+    {
+      "id": "ROAD-17",
+      "name": "PDF export",
+      "description": "Export recording as a downloadable PDF document for non-technical stakeholders",
+      "acceptanceCriteria": [
+        "PDF generated from HTML export template",
+        "Page breaks between steps or every 3-4 steps",
+        "Cover page with session name, date, step count",
+        "Print-optimized layout (no video, no interactive elements)",
+        "File size reasonable (<10MB for 20-step recording)"
+      ],
+      "status": "planned",
+      "phase": "sprint-6",
+      "priority": "P2",
+      "effort": "M",
+      "riceScore": 72,
+      "source": "product-analyst, market-analyst"
+    },
+    {
+      "id": "ROAD-18",
+      "name": "Hosted AI enrichment endpoint",
+      "description": "Managed Vertex AI backend so users don't need to deploy their own ADK instance",
+      "acceptanceCriteria": [
+        "Hosted endpoint on Cloud Run with API key auth",
+        "Rate limiting per API key (100 actions/day free, paid plans for more)",
+        "Usage dashboard showing API calls and costs",
+        "Extension defaults to hosted endpoint (no setup needed)",
+        "Opt-out to self-hosted via Advanced settings"
+      ],
+      "status": "planned",
+      "phase": "sprint-6",
+      "priority": "P1",
+      "effort": "L",
+      "riceScore": 102,
+      "source": "product-analyst, backend-analyst"
+    },
+    {
+      "id": "ROAD-19",
+      "name": "Team workspace with shared recordings",
+      "description": "Team-based workspace where members can share, annotate, and manage recordings collaboratively",
+      "acceptanceCriteria": [
+        "Create team workspace with invite link",
+        "Team members see shared session library",
+        "Role-based access: admin, editor, viewer",
+        "Annotations and comments on individual steps",
+        "Activity feed showing team recording activity"
+      ],
+      "status": "planned",
+      "phase": "sprint-7",
+      "priority": "P2",
+      "effort": "XL",
+      "riceScore": 30,
+      "source": "product-analyst, market-analyst"
+    },
+    {
+      "id": "ROAD-20",
+      "name": "CI/CD integration (GitHub Actions)",
+      "description": "GitHub Actions plugin that runs exported Playwright tests automatically on PR/push",
+      "acceptanceCriteria": [
+        "Export Playwright test directly to a GitHub repository",
+        "GitHub Actions workflow template included in export",
+        "Test results reported back to the extension or as PR comment",
+        "Configuration for base URL, browser, and test timeout"
+      ],
+      "status": "planned",
+      "phase": "sprint-7",
+      "priority": "P2",
+      "effort": "L",
+      "riceScore": 42,
+      "source": "product-analyst"
+    },
+    {
+      "id": "ROAD-21",
+      "name": "Custom branding for HTML/PDF exports",
+      "description": "Allow users to customize HTML and PDF exports with company logo, colors, and header/footer",
+      "acceptanceCriteria": [
+        "Logo upload in Options page (stored in chrome.storage.local)",
+        "Primary color picker for export accent color",
+        "Custom header text and footer text",
+        "Logo and branding applied to HTML and PDF exports",
+        "Table of contents for recordings with 10+ steps"
+      ],
+      "status": "planned",
+      "phase": "sprint-7",
+      "priority": "P2",
+      "effort": "M",
+      "riceScore": 50,
+      "source": "product-analyst, market-analyst"
+    },
+    {
+      "id": "ROAD-22",
+      "name": "Jira and Linear integration",
+      "description": "Create tickets in Jira or Linear directly from a recording with steps to reproduce",
+      "acceptanceCriteria": [
+        "Jira Cloud integration via OAuth or API token",
+        "Linear integration via API key",
+        "Create issue with numbered steps, screenshots, and metadata",
+        "Project/board selector",
+        "Link to recording attached to ticket"
+      ],
+      "status": "planned",
+      "phase": "sprint-7",
+      "priority": "P2",
+      "effort": "L",
+      "riceScore": 30,
+      "source": "product-analyst, market-analyst"
+    },
+    {
+      "id": "ROAD-23",
+      "name": "Edge inference with Chrome Built-in AI",
+      "description": "Use Chrome Prompt API (Gemini Nano) for description generation and decision detection locally, reducing backend dependency and cost",
+      "acceptanceCriteria": [
+        "Detect Chrome AI availability via window.ai.languageModel",
+        "Use Gemini Nano for description_generator (text-only, no vision needed)",
+        "Use Gemini Nano for decision_detector (text-only reasoning)",
+        "Keep screenshot_analyzer on Vertex AI (vision model required)",
+        "Graceful fallback to backend if Chrome AI unavailable",
+        "~60% cost reduction per recording"
+      ],
+      "status": "planned",
+      "phase": "sprint-7",
+      "priority": "P2",
+      "effort": "L",
+      "riceScore": 80,
+      "source": "backend-analyst"
+    },
+    {
+      "id": "ROAD-24",
+      "name": "Playwright test.step() blocks and parameterization",
+      "description": "Improve Playwright export with test.step() blocks, data-driven testing, and waitForNavigation",
+      "acceptanceCriteria": [
+        "Group related actions into test.step() blocks",
+        "Parameterize input values via test fixtures",
+        "Password fields use environment variables instead of masked placeholders",
+        "Add page.waitForNavigation() around click actions that trigger page changes",
+        "Add page.waitForSelector() for dynamic content",
+        "Optional: generate Page Object Model (POM) structure"
+      ],
+      "status": "planned",
+      "phase": "sprint-4",
+      "priority": "P1",
+      "effort": "M",
+      "riceScore": 90,
+      "source": "product-analyst"
+    },
+    {
+      "id": "ROAD-25",
+      "name": "Cypress test exporter",
+      "description": "Export recording as Cypress test script for teams using Cypress instead of Playwright",
+      "acceptanceCriteria": [
+        "Generates valid .cy.ts Cypress test file",
+        "Locator cascade adapted for Cypress: cy.get('[data-testid]') > cy.contains() > cy.get(css)",
+        "cy.visit() for navigation, cy.type() for input, cy.click() for clicks",
+        "cy.intercept() for API-dependent actions"
+      ],
+      "status": "planned",
+      "phase": "sprint-7",
+      "priority": "P2",
+      "effort": "M",
+      "riceScore": 45,
+      "source": "market-analyst"
     }
   ]
 }
