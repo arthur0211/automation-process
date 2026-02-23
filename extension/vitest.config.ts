@@ -6,5 +6,16 @@ export default defineConfig({
   test: {
     environment: 'happy-dom',
     setupFiles: ['./test/setup.ts'],
+    coverage: {
+      provider: 'v8',
+      include: ['lib/**/*.ts'],
+      exclude: ['lib/**/*.d.ts'],
+      thresholds: {
+        statements: 60,
+        branches: 50,
+        functions: 60,
+        lines: 60,
+      },
+    },
   },
 });
