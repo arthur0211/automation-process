@@ -706,7 +706,7 @@
         "Test results reported back to the extension or as PR comment",
         "Configuration for base URL, browser, and test timeout"
       ],
-      "status": "planned",
+      "status": "done",
       "phase": "sprint-7",
       "priority": "P2",
       "effort": "L",
