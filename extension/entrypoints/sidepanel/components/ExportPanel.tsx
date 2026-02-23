@@ -83,6 +83,16 @@ export function ExportPanel({ session, actions }: ExportPanelProps) {
     downloadFile(code, `${session!.name}.cy.ts`, 'text/plain');
   }
 
+  async function exportPlaywrightCI() {
+    const { exportPlaywrightWithCI } = await import('@/lib/export/playwright-ci-exporter');
+    const { testFile, workflowFile } = exportPlaywrightWithCI(session!, actions);
+    downloadFile(testFile, `${session!.name}.spec.ts`, 'text/plain');
+    // Small delay so the browser does not block the second download
+    setTimeout(() => {
+      downloadFile(workflowFile, 'playwright.yml', 'text/yaml');
+    }, 100);
+  }
+
   async function exportPdf() {
     const { exportToPdf } = await import('@/lib/export/pdf-exporter');
     exportToPdf(session!, actions);
@@ -191,6 +201,14 @@ export function ExportPanel({ session, actions }: ExportPanelProps) {
           class="flex-1 px-3 py-1.5 text-xs font-medium text-teal-700 bg-teal-50 rounded-md hover:bg-teal-100 transition-colors"
         >
           Cypress (.cy.ts)
+        </button>
+      </div>
+      <div class="flex gap-2 mt-2">
+        <button
+          onClick={exportPlaywrightCI}
+          class="flex-1 px-3 py-1.5 text-xs font-medium text-green-700 bg-green-50 rounded-md hover:bg-green-100 transition-colors"
+        >
+          Playwright + CI
         </button>
       </div>
       <div class="flex gap-2 mt-2">
