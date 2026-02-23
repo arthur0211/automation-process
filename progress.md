@@ -2,10 +2,12 @@
 
 ## Current State
 
-- **Latest commit**: `docs: update CLAUDE.md with current project state`
-- **Total commits**: 30
+- **Latest commit**: `fix(extension): add react-hooks lint plugin, fix dragIndex bug`
+- **Total commits**: 32
 - **Tests**: 169 passing (extension)
+- **Coverage**: 74.1% statements, 67.5% branches, 73.6% functions, 75.1% lines
 - **TS errors**: 0
+- **Lint errors**: 0
 - **Extension**: Feature-complete for Phase 1 + 2A + 2B + 2C + 2D (all) + Audit fixes + FUTURE-01 + FUTURE-02 + FUTURE-03 + FUTURE-04
 - **Backend**: ADK agents defined (7 agents), all 7 integrated with extension (pipeline + standalone)
 
@@ -21,7 +23,11 @@
 - Fixed unused import (db in db.test.ts) and any cast (playwright-exporter.test.ts)
 - Refined ESLint ignores (explicit paths instead of *.config.*)
 - Code review applied: 6 fixes from code-reviewer agent
-- 0 lint errors, 0 TS errors, 169 tests passing
+- Added eslint-plugin-react-hooks for hook dependency checking
+- Fixed StepList dragIndex bug: reassigned variable → useRef (real bug caught by lint)
+- Promoted no-unused-vars from warn to error
+- Added CI permissions: contents: read
+- 0 lint errors, 0 TS errors, 169 tests passing, 74.1% coverage
 
 ### Documentation Fixes
 - Updated CLAUDE.md: Phase 2D marked as integrated (was "pending"), backend-client.ts description updated
@@ -134,6 +140,8 @@
 28. `chore: add GitHub Actions CI workflow` — tsc --noEmit + vitest run on push/PR
 29. `chore: add ESLint + Prettier config with CI integration` — ESLint 9 flat config, Prettier, formatted codebase, code review fixes, CI format+lint+coverage
 30. `docs: update CLAUDE.md with current project state` — Phase 2D integrated, backend-client.ts description
+31. `chore: update progress.md with final session state` — audit roadmap marked complete, commit history updated
+32. `fix(extension): add react-hooks lint plugin, fix dragIndex bug` — eslint-plugin-react-hooks, useRef fix, no-unused-vars error, CI permissions
 
 ## 360 Audit Results
 
