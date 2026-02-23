@@ -15,6 +15,7 @@ import { StepList } from './components/StepList';
 import { StepDetail } from './components/StepDetail';
 import { ExportPanel } from './components/ExportPanel';
 import { ValidationPanel } from './components/ValidationPanel';
+import { VideoPlayer } from './components/VideoPlayer';
 import { SessionList } from './components/SessionList';
 
 export function App() {
@@ -96,6 +97,7 @@ export function App() {
         />
       )}
 
+      {session && <VideoPlayer sessionId={session.id} />}
       <ValidationPanel session={session} />
       <ExportPanel session={session} actions={actions} />
     </div>
