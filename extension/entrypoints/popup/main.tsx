@@ -1,5 +1,11 @@
 import { render } from 'preact';
 import { Popup } from './Popup';
+import { ErrorBoundary } from '../sidepanel/components/ErrorBoundary';
 import './style.css';
 
-render(<Popup />, document.getElementById('app')!);
+render(
+  <ErrorBoundary>
+    <Popup />
+  </ErrorBoundary>,
+  document.getElementById('app')!,
+);
