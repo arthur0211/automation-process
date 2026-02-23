@@ -437,7 +437,7 @@
         "Hide backend URL in collapsible Advanced section",
         "Onboarding state tracked in chrome.storage.local"
       ],
-      "status": "planned",
+      "status": "done",
       "phase": "sprint-3",
       "priority": "P1",
       "effort": "M",
@@ -455,7 +455,7 @@
         "Configurable: can disable hover capture to reduce noise",
         "Playwright exporter generates page.hover() for hover actions"
       ],
-      "status": "planned",
+      "status": "done",
       "phase": "sprint-4",
       "priority": "P1",
       "effort": "M",
@@ -474,7 +474,7 @@
         "Labels and assignee optional fields",
         "Success notification with link to created issue"
       ],
-      "status": "planned",
+      "status": "done",
       "phase": "sprint-4",
       "priority": "P1",
       "effort": "M",
@@ -579,7 +579,7 @@
         "401 response on missing/invalid key",
         "Environment variable for API key on server side"
       ],
-      "status": "planned",
+      "status": "done",
       "phase": "sprint-5",
       "priority": "P0",
       "effort": "M",
