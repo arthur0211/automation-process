@@ -2,11 +2,11 @@
 
 ## Current State
 
-- **Latest commit**: `feat(ui): add Sessions button to RecordingControls`
-- **Total commits**: 17
-- **Tests**: 146 passing (extension)
+- **Latest commit**: `feat(extension): add JSON import for recording sessions`
+- **Total commits**: 19
+- **Tests**: 158 passing (extension)
 - **TS errors**: 0
-- **Extension**: Feature-complete for Phase 1 + 2A + 2B + 2C + 2D (all) + Audit fixes + FUTURE-02 Session Management
+- **Extension**: Feature-complete for Phase 1 + 2A + 2B + 2C + 2D (all) + Audit fixes + FUTURE-02 + FUTURE-03
 - **Backend**: ADK agents defined (7 agents), all 7 integrated with extension (pipeline + standalone)
 
 ## Completed This Session
@@ -20,6 +20,17 @@
 - Updated `App.tsx` with three-level navigation: sessions → list → detail with back button
 - Added "Sessions" button in `RecordingControls.tsx` stopped state
 - 9 new tests (5 store + 7 actions, 1 updated) — 146 total passing
+
+### FUTURE-03: Import Recordings from JSON
+- Created `json-importer.ts` — validates ProcessExport v1.0.0, creates session + actions in IndexedDB
+- Created `import-defaults.ts` — default ElementMetadata/DecisionPoint for incomplete imports
+- Added `importSessionFromJson` action creator in `recording-actions.ts`
+- Added Import button to SessionList (header + empty state) with inline error display
+- Handles missing element/decisionPoint, preserves validation results
+- 12 new tests covering validation, import, edge cases — 158 total passing
+
+### ErrorBoundary fix
+- Added ErrorBoundary wrapper to popup entry point (was missing, sidepanel already had it)
 
 ### Previous: 360 Audit Fixes (AUDIT-01 to AUDIT-05)
 - Fixed loadState race condition — stateReady promise awaited in GET_STATUS and recording control handlers
@@ -72,6 +83,8 @@
 14. `feat(store): add session management state and actions` — sessions list, three-level nav, CRUD operations, 9 new tests
 15. `feat(ui): add SessionList component and three-level navigation` — SessionList component, App.tsx navigation, back button
 16. `feat(ui): add Sessions button to RecordingControls` — Sessions button in stopped state, features.json + progress.md updated
+17. `fix(ui): add ErrorBoundary to popup entry point` — Popup wrapped in ErrorBoundary like sidepanel
+18. `feat(extension): add JSON import for recording sessions` — json-importer, Import button, 12 tests
 
 ## 360 Audit Results
 
@@ -115,8 +128,8 @@
 
 ### Future Backlog
 - FUTURE-01: Video playback/export in HTML report
-- FUTURE-02: Session management (list, rename, delete)
-- FUTURE-03: Import recordings from JSON
+- ~~FUTURE-02: Session management (list, rename, delete)~~ ✅
+- ~~FUTURE-03: Import recordings from JSON~~ ✅
 - FUTURE-04: Multi-tab recording
 - FUTURE-05: Cloud sync / sharing
 

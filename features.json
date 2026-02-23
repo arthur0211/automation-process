@@ -469,10 +469,14 @@
       "description": "Import previously exported JSON recordings back into the extension",
       "acceptanceCriteria": [
         "File picker for JSON import",
-        "Validate against ProcessExport schema",
-        "Create session and actions in IndexedDB"
+        "Validate against ProcessExport schema v1.0.0",
+        "Create session and actions in IndexedDB",
+        "Import button in SessionList header and empty state",
+        "Error messages shown inline on failure",
+        "Handles missing element/decisionPoint gracefully",
+        "Preserves validation results from export"
       ],
-      "status": "planned",
+      "status": "done",
       "phase": "future"
     },
     {
