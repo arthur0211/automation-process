@@ -1,6 +1,6 @@
 import { createStore } from 'zustand/vanilla';
 import { useSyncExternalStore } from 'preact/compat';
-import type { RecordingStatus, CapturedAction, RecordingSession } from '../types';
+import type { RecordingStatus, CapturedAction, RecordingSession, ActionType } from '../types';
 
 export interface RecordingState {
   status: RecordingStatus;
@@ -11,6 +11,8 @@ export interface RecordingState {
   error: string | null;
   selectedActionId: string | null;
   view: 'sessions' | 'list' | 'detail';
+  searchQuery: string;
+  filterType: ActionType | null;
 }
 
 export interface RecordingActions {
@@ -27,6 +29,8 @@ export interface RecordingActions {
   setError: (error: string | null) => void;
   selectAction: (id: string) => void;
   clearSelection: () => void;
+  setSearchQuery: (query: string) => void;
+  setFilterType: (type: ActionType | null) => void;
   reset: () => void;
 }
 
@@ -39,6 +43,8 @@ const initialState: RecordingState = {
   error: null,
   selectedActionId: null,
   view: 'sessions',
+  searchQuery: '',
+  filterType: null,
 };
 
 export const recordingStore = createStore<RecordingState & RecordingActions>()((set) => ({
@@ -92,6 +98,10 @@ export const recordingStore = createStore<RecordingState & RecordingActions>()((
   selectAction: (id) => set({ selectedActionId: id, view: 'detail' }),
 
   clearSelection: () => set({ selectedActionId: null, view: 'list' }),
+
+  setSearchQuery: (query) => set({ searchQuery: query }),
+
+  setFilterType: (type) => set({ filterType: type }),
 
   reset: () => set(initialState),
 }));

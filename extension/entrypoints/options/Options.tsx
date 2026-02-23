@@ -6,20 +6,27 @@ export function Options() {
   const [settings, setSettings] = useState<CaptureSettings>(DEFAULT_CAPTURE_SETTINGS);
   const [backendUrl, setBackendUrl] = useState('');
   const [standaloneAgentsUrl, setStandaloneAgentsUrl] = useState('');
+  const [showThumbnails, setShowThumbnails] = useState(true);
   const [saved, setSaved] = useState(false);
 
   useEffect(() => {
-    chrome.storage.local.get(['settings', 'backendUrl', 'standaloneAgentsUrl'], (result) => {
-      if (result.settings) {
-        setSettings({ ...DEFAULT_CAPTURE_SETTINGS, ...result.settings });
-      }
-      if (result.backendUrl) {
-        setBackendUrl(result.backendUrl as string);
-      }
-      if (result.standaloneAgentsUrl) {
-        setStandaloneAgentsUrl(result.standaloneAgentsUrl as string);
-      }
-    });
+    chrome.storage.local.get(
+      ['settings', 'backendUrl', 'standaloneAgentsUrl', 'showThumbnails'],
+      (result) => {
+        if (result.settings) {
+          setSettings({ ...DEFAULT_CAPTURE_SETTINGS, ...result.settings });
+        }
+        if (result.backendUrl) {
+          setBackendUrl(result.backendUrl as string);
+        }
+        if (result.standaloneAgentsUrl) {
+          setStandaloneAgentsUrl(result.standaloneAgentsUrl as string);
+        }
+        if (result.showThumbnails !== undefined) {
+          setShowThumbnails(result.showThumbnails as boolean);
+        }
+      },
+    );
   }, []);
 
   function handleChange(key: keyof CaptureSettings, value: number) {
@@ -28,7 +35,7 @@ export function Options() {
   }
 
   function handleSave() {
-    chrome.storage.local.set({ settings, backendUrl, standaloneAgentsUrl }, () => {
+    chrome.storage.local.set({ settings, backendUrl, standaloneAgentsUrl, showThumbnails }, () => {
       setSaved(true);
       setTimeout(() => setSaved(false), 2000);
     });
@@ -104,6 +111,21 @@ export function Options() {
             }
             class="w-full mt-1"
           />
+        </div>
+
+        <div>
+          <label class="flex items-center gap-2 cursor-pointer">
+            <input
+              type="checkbox"
+              checked={showThumbnails}
+              onChange={(e) => {
+                setShowThumbnails((e.target as HTMLInputElement).checked);
+                setSaved(false);
+              }}
+              class="rounded border-gray-300"
+            />
+            <span class="text-sm text-gray-600">Show screenshot thumbnails in step list</span>
+          </label>
         </div>
 
         <button
