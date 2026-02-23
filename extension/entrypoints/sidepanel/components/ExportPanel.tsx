@@ -1,3 +1,4 @@
+import { useState } from 'preact/hooks';
 import type { CapturedAction, RecordingSession } from '@/lib/types';
 import { getVideoBlob } from '@/lib/storage/db';
 
@@ -16,6 +17,8 @@ interface ExportPanelProps {
 }
 
 export function ExportPanel({ session, actions }: ExportPanelProps) {
+  const [copied, setCopied] = useState(false);
+
   if (!session || actions.length === 0) return null;
 
   async function exportJson() {
@@ -41,6 +44,24 @@ export function ExportPanel({ session, actions }: ExportPanelProps) {
     const { exportToPlaywright } = await import('@/lib/export/playwright-exporter');
     const code = exportToPlaywright(session!, actions);
     downloadFile(code, `${session!.name}.spec.ts`, 'text/plain');
+  }
+
+  async function exportMarkdown() {
+    const { exportToMarkdown } = await import('@/lib/export/markdown-exporter');
+    const md = exportToMarkdown(session!, actions);
+    downloadFile(md, `${session!.name}.md`, 'text/markdown');
+  }
+
+  async function copyMarkdown() {
+    try {
+      const { exportToMarkdown } = await import('@/lib/export/markdown-exporter');
+      const md = exportToMarkdown(session!, actions);
+      await navigator.clipboard.writeText(md);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      // Non-fatal: clipboard may fail if extension lacks focus
+    }
   }
 
   function downloadFile(content: string, filename: string, mimeType: string) {
@@ -74,6 +95,20 @@ export function ExportPanel({ session, actions }: ExportPanelProps) {
           class="flex-1 px-3 py-1.5 text-xs font-medium text-green-700 bg-green-50 rounded-md hover:bg-green-100 transition-colors"
         >
           Playwright (.spec.ts)
+        </button>
+      </div>
+      <div class="flex gap-2 mt-2">
+        <button
+          onClick={exportMarkdown}
+          class="flex-1 px-3 py-1.5 text-xs font-medium text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200 transition-colors"
+        >
+          Markdown
+        </button>
+        <button
+          onClick={copyMarkdown}
+          class="flex-1 px-3 py-1.5 text-xs font-medium text-blue-700 bg-blue-50 rounded-md hover:bg-blue-100 transition-colors"
+        >
+          {copied ? 'Copied!' : 'Copy'}
         </button>
       </div>
     </div>
