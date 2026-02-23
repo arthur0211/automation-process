@@ -121,4 +121,40 @@ describe('exportToHtml', () => {
     expect(html).toContain('Enhanced by LLM');
     expect(html).not.toContain('template desc');
   });
+
+  // ─── Video ────────────────────────────────────────────────────────────────
+
+  it('embeds video player when videoDataUrl is provided', () => {
+    const html = exportToHtml(
+      createSession({ stoppedAt: 1700000060000 }),
+      [],
+      'data:video/webm;base64,AABBCC',
+    );
+    expect(html).toContain('<video id="recording-video"');
+    expect(html).toContain('data:video/webm;base64,AABBCC');
+    expect(html).toContain('video/webm');
+    expect(html).toContain('seekVideo');
+  });
+
+  it('does not include video section when no videoDataUrl', () => {
+    const html = exportToHtml(createSession({ stoppedAt: 1700000060000 }), []);
+    expect(html).not.toContain('<video');
+    expect(html).not.toContain('seekVideo');
+  });
+
+  it('renders play-from-here button with timestamp offset when video present', () => {
+    const session = createSession({ startedAt: 1700000000000, stoppedAt: 1700000060000 });
+    const action = createAction({ timestamp: 1700000005000 });
+    const html = exportToHtml(session, [action], 'data:video/webm;base64,X');
+    expect(html).toContain('play-btn');
+    expect(html).toContain('seekVideo(5)');
+  });
+
+  it('does not render play button when no video', () => {
+    const session = createSession({ startedAt: 1700000000000, stoppedAt: 1700000060000 });
+    const action = createAction({ timestamp: 1700000005000 });
+    const html = exportToHtml(session, [action]);
+    expect(html).not.toContain('seekVideo(');
+    expect(html).not.toContain('Play from here');
+  });
 });

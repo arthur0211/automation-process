@@ -20,18 +20,25 @@ function formatTime(ms: number): string {
 export function exportToHtml(
   session: RecordingSession,
   actions: CapturedAction[],
+  videoDataUrl?: string,
 ): string {
   const sorted = [...actions].sort((a, b) => a.sequenceNumber - b.sequenceNumber);
   const duration = (session.stoppedAt || Date.now()) - session.startedAt;
 
   const stepsHtml = sorted
-    .map(
-      (action, index) => `
+    .map((action, index) => {
+      const offsetMs = action.timestamp - session.startedAt;
+      const offsetSec = Math.max(0, Math.floor(offsetMs / 1000));
+      const playButton = videoDataUrl
+        ? `<button class="play-btn" onclick="seekVideo(${offsetSec})" title="Play from here">&#9654; ${formatTime(offsetMs)}</button>`
+        : '';
+      return `
     <div class="step">
       <div class="step-header">
         <span class="step-number">${index + 1}</span>
         <span class="step-action">${escapeHtml(action.actionType)}</span>
         ${action.decisionPoint.isDecisionPoint ? '<span class="decision-badge">Decision Point</span>' : ''}
+        ${playButton}
       </div>
       ${
         action.screenshotDataUrl
@@ -44,8 +51,8 @@ export function exportToHtml(
         <span>URL: ${escapeHtml(action.url)}</span>
         <span>Element: <code>${escapeHtml(action.element.selectors.css)}</code></span>
       </div>
-    </div>`,
-    )
+    </div>`;
+    })
     .join('\n');
 
   return `<!DOCTYPE html>
@@ -70,6 +77,11 @@ export function exportToHtml(
     .step-note { font-size: 0.8125rem; color: #4b5563; background: #f9fafb; padding: 0.5rem 0.75rem; border-radius: 4px; margin-bottom: 0.5rem; }
     .step-meta { font-size: 0.75rem; color: #9ca3af; display: flex; flex-direction: column; gap: 0.125rem; }
     .step-meta code { background: #f3f4f6; padding: 1px 4px; border-radius: 3px; font-size: 0.6875rem; }
+    .play-btn { font-size: 0.625rem; background: #eff6ff; color: #2563eb; border: 1px solid #bfdbfe; padding: 2px 8px; border-radius: 4px; cursor: pointer; margin-left: auto; }
+    .play-btn:hover { background: #dbeafe; }
+    .video-section { background: white; border-radius: 8px; padding: 1.25rem; margin-bottom: 1.5rem; box-shadow: 0 1px 2px rgba(0,0,0,0.05); }
+    .video-section video { width: 100%; border-radius: 6px; border: 1px solid #e5e7eb; max-height: 500px; }
+    .video-section h2 { font-size: 1rem; margin-bottom: 0.75rem; }
   </style>
 </head>
 <body>
@@ -77,6 +89,19 @@ export function exportToHtml(
   <div class="meta">
     ${sorted.length} steps &middot; ${formatTime(duration)} &middot; Started at ${escapeHtml(session.url)}
   </div>
+  ${videoDataUrl ? `
+  <div class="video-section">
+    <h2>Recording</h2>
+    <video id="recording-video" controls>
+      <source src="${videoDataUrl}" type="video/webm" />
+    </video>
+  </div>
+  <script>
+    function seekVideo(seconds) {
+      var v = document.getElementById('recording-video');
+      if (v) { v.currentTime = seconds; v.play(); v.scrollIntoView({ behavior: 'smooth', block: 'center' }); }
+    }
+  </script>` : ''}
   ${stepsHtml}
   ${session.validationResult ? `
   <div class="step" style="border-left: 3px solid ${session.validationResult.overallScore >= 7 ? '#22c55e' : session.validationResult.overallScore >= 4 ? '#eab308' : '#ef4444'}; margin-top: 2rem;">
