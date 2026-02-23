@@ -17,6 +17,7 @@ import type {
   ActionCapturedPayload,
   StatusPayload,
   CaptureSettings,
+  VisualAnalysis,
 } from '@/lib/types';
 import { DEFAULT_CAPTURE_SETTINGS } from '@/lib/types';
 import { getSession } from '@/lib/storage/db';
@@ -312,7 +313,7 @@ async function validateRecordingInBackground(sessionId: string) {
 
 async function analyzeComplexActionInBackground(
   action: CapturedAction,
-  originalAnalysis: Record<string, unknown>,
+  originalAnalysis: VisualAnalysis,
 ) {
   try {
     const result = await chrome.storage.local.get('standaloneAgentsUrl');
@@ -330,7 +331,7 @@ async function analyzeComplexActionInBackground(
     // Only replace if complex analysis has higher confidence
     if (complexResult.confidence > (action.element.selectors.confidence || 0)) {
       await updateAction(action.id, {
-        llmVisualAnalysis: complexResult as unknown as Record<string, unknown>,
+        llmVisualAnalysis: complexResult,
       });
       broadcastStatus();
     }
@@ -346,7 +347,7 @@ export default defineBackground({
     console.log('Agentic Automation Recorder: background service worker started');
 
     // Restore state from session storage (survives SW termination)
-    loadState();
+    const stateReady = loadState();
 
     // Unified message handler
     chrome.runtime.onMessage.addListener(
@@ -358,12 +359,14 @@ export default defineBackground({
             return false;
 
           case 'GET_STATUS':
-            sendResponse({
-              status,
-              sessionId: currentSession?.id,
-              actionCount,
-            } satisfies StatusPayload);
-            return false;
+            stateReady.then(() => {
+              sendResponse({
+                status,
+                sessionId: currentSession?.id,
+                actionCount,
+              } satisfies StatusPayload);
+            });
+            return true; // async response
 
           case 'RESET_RECORDING':
             status = 'idle';
@@ -380,6 +383,7 @@ export default defineBackground({
           case 'RESUME_RECORDING':
           case 'STOP_RECORDING': {
             (async () => {
+              await stateReady;
               const [tab] = await chrome.tabs.query({
                 active: true,
                 currentWindow: true,

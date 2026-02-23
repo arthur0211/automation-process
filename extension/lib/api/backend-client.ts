@@ -1,8 +1,8 @@
-import type { CapturedAction, RecordingSession, ValidationResult } from '../types';
+import type { CapturedAction, RecordingSession, ValidationResult, VisualAnalysis } from '../types';
 
 export interface EnrichedAction {
   humanDescription: string;
-  visualAnalysis: Record<string, unknown>;
+  visualAnalysis: VisualAnalysis;
   decisionAnalysis: {
     isDecisionPoint: boolean;
     reason: string;
@@ -14,18 +14,18 @@ const APP_NAME = 'recording_pipeline';
 const USER_ID = 'extension-user';
 const TIMEOUT_MS = 30_000;
 
-function parseJsonSafe(value: unknown): Record<string, unknown> {
+function parseJsonSafe<T = Record<string, unknown>>(value: unknown): T {
   if (typeof value === 'string') {
     try {
       return JSON.parse(value);
     } catch {
-      return {};
+      return {} as T;
     }
   }
   if (typeof value === 'object' && value !== null) {
-    return value as Record<string, unknown>;
+    return value as T;
   }
-  return {};
+  return {} as T;
 }
 
 export async function processActionWithBackend(
@@ -93,7 +93,7 @@ export async function processActionWithBackend(
       ? state.description
       : action.description;
 
-    const visualAnalysis = parseJsonSafe(state.visual_analysis);
+    const visualAnalysis = parseJsonSafe<VisualAnalysis>(state.visual_analysis);
 
     const decisionRaw = parseJsonSafe(state.decision_analysis);
     const decisionAnalysis = {
@@ -203,7 +203,7 @@ export interface ComplexAnalysis {
 
 export async function analyzeComplexAction(
   action: CapturedAction,
-  originalAnalysis: Record<string, unknown>,
+  originalAnalysis: VisualAnalysis,
   screenshotDataUrl: string,
   backendUrl: string,
 ): Promise<ComplexAnalysis | null> {

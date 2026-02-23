@@ -82,6 +82,18 @@ export interface ValidationResult {
   summary: string;
 }
 
+// ─── Visual Analysis ───────────────────────────────────────────────────────
+
+export interface VisualAnalysis {
+  elements?: { type: string; text: string; position: string }[];
+  interactedElement?: { type: string; text: string; description: string };
+  pageContext?: { app?: string; section?: string; workflow?: string };
+  statusIndicators?: string[];
+  layout?: string;
+  confidence?: number;
+  reasoning?: string;
+}
+
 // ─── Captured Action ────────────────────────────────────────────────────────
 
 export interface CapturedAction {
@@ -101,7 +113,7 @@ export interface CapturedAction {
   note: string;
   decisionPoint: DecisionPoint;
   llmDescription?: string;
-  llmVisualAnalysis?: Record<string, unknown>;
+  llmVisualAnalysis?: VisualAnalysis;
 }
 
 // ─── Recording Session ──────────────────────────────────────────────────────

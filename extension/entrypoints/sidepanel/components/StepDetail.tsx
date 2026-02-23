@@ -89,27 +89,27 @@ export function StepDetail({ action, onUpdate, onDelete }: StepDetailProps) {
         <div>
           <label class="block text-xs font-medium text-gray-500 mb-1">
             Visual Analysis
-            {(action.llmVisualAnalysis as Record<string, any>).reasoning && (
+            {action.llmVisualAnalysis.reasoning && (
               <span class="ml-1 px-1.5 py-0.5 text-[10px] bg-purple-50 text-purple-600 rounded">
                 Deep Analysis
               </span>
             )}
           </label>
           <div class="text-xs text-gray-600 bg-gray-50 px-2 py-1.5 rounded space-y-0.5">
-            {(action.llmVisualAnalysis as Record<string, any>).pageContext?.section && (
-              <p><span class="text-gray-400">Section:</span> {(action.llmVisualAnalysis as Record<string, any>).pageContext.section}</p>
+            {action.llmVisualAnalysis.pageContext?.section && (
+              <p><span class="text-gray-400">Section:</span> {action.llmVisualAnalysis.pageContext.section}</p>
             )}
-            {(action.llmVisualAnalysis as Record<string, any>).layout && (
-              <p><span class="text-gray-400">Layout:</span> {(action.llmVisualAnalysis as Record<string, any>).layout}</p>
+            {action.llmVisualAnalysis.layout && (
+              <p><span class="text-gray-400">Layout:</span> {action.llmVisualAnalysis.layout}</p>
             )}
-            {(action.llmVisualAnalysis as Record<string, any>).interactedElement?.description && (
-              <p><span class="text-gray-400">Element:</span> {(action.llmVisualAnalysis as Record<string, any>).interactedElement.description}</p>
+            {action.llmVisualAnalysis.interactedElement?.description && (
+              <p><span class="text-gray-400">Element:</span> {action.llmVisualAnalysis.interactedElement.description}</p>
             )}
-            {(action.llmVisualAnalysis as Record<string, any>).confidence !== undefined && (
-              <p><span class="text-gray-400">Confidence:</span> {((action.llmVisualAnalysis as Record<string, any>).confidence * 100).toFixed(0)}%</p>
+            {action.llmVisualAnalysis.confidence !== undefined && (
+              <p><span class="text-gray-400">Confidence:</span> {(action.llmVisualAnalysis.confidence * 100).toFixed(0)}%</p>
             )}
-            {(action.llmVisualAnalysis as Record<string, any>).reasoning && (
-              <p><span class="text-gray-400">Reasoning:</span> {(action.llmVisualAnalysis as Record<string, any>).reasoning}</p>
+            {action.llmVisualAnalysis.reasoning && (
+              <p><span class="text-gray-400">Reasoning:</span> {action.llmVisualAnalysis.reasoning}</p>
             )}
           </div>
         </div>
