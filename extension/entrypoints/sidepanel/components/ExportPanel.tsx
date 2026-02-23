@@ -83,6 +83,12 @@ export function ExportPanel({ session, actions }: ExportPanelProps) {
     downloadFile(code, `${session!.name}.cy.ts`, 'text/plain');
   }
 
+  async function exportSelenium() {
+    const { exportToSelenium } = await import('@/lib/export/selenium-exporter');
+    const code = exportToSelenium(session!, actions);
+    downloadFile(code, `${session!.name}.selenium.js`, 'text/plain');
+  }
+
   async function exportPlaywrightCI() {
     const { exportPlaywrightWithCI } = await import('@/lib/export/playwright-ci-exporter');
     const { testFile, workflowFile } = exportPlaywrightWithCI(session!, actions);
@@ -204,6 +210,12 @@ export function ExportPanel({ session, actions }: ExportPanelProps) {
         </button>
       </div>
       <div class="flex gap-2 mt-2">
+        <button
+          onClick={exportSelenium}
+          class="flex-1 px-3 py-1.5 text-xs font-medium text-orange-700 bg-orange-50 rounded-md hover:bg-orange-100 transition-colors"
+        >
+          Selenium (.js)
+        </button>
         <button
           onClick={exportPlaywrightCI}
           class="flex-1 px-3 py-1.5 text-xs font-medium text-green-700 bg-green-50 rounded-md hover:bg-green-100 transition-colors"

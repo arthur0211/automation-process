@@ -2,17 +2,17 @@
 
 ## Current State
 
-- **Latest commit**: `fix(test): increase timeout for retry tests to prevent flaky failures`
-- **Total commits**: 67
-- **Tests**: 298 passing (extension), 16 test files
+- **Latest commit**: `feat(extension): add Selenium WebDriver test exporter (ROAD-26)`
+- **Total commits**: 69
+- **Tests**: 320 passing (extension), 17 test files
 - **TS errors**: 0
 - **Lint errors**: 0
-- **Extension**: Feature-complete — 62 features done in features.json, 6 remaining (XL/L scope or external deps)
+- **Extension**: Feature-complete — 63 features done in features.json, 6 remaining (XL/L scope or external deps)
 - **Backend**: ADK agents consolidated (single app), model versions configurable via env vars, Dockerfile fixed, health check, API key auth.
 
 ## Feature Completion Summary
 
-### Done (62 features in features.json)
+### Done (63 features in features.json)
 - **Phase 1** (P1-01 to P1-08): Core capture, selectors, screenshots, video, descriptions, storage, sidepanel, popup — all done
 - **Phase 2A** (P2A-01 to P2A-11): Bugfixes, settings wiring, race conditions, password masking, reorder, delete — all done
 - **Phase 2B** (P2B-01 to P2B-03): Playwright exporter, JSON exporter, HTML exporter — all done
@@ -42,6 +42,7 @@
 - **ROAD-24**: Playwright test.step() blocks and parameterization (21 tests)
 - **ROAD-20**: Playwright + CI export with GitHub Actions workflow (12 tests)
 - **ROAD-25**: Cypress test exporter (22 tests)
+- **ROAD-26**: Selenium WebDriver test exporter (22 tests)
 
 ### Remaining Planned (6 features — all require external infrastructure)
 - **ROAD-02**: Chrome Web Store submission (P0, M) — manual process, needs store assets/privacy policy
@@ -109,19 +110,21 @@
 60. `fix: restrict CORS origins and update test count in CLAUDE.md` (duplicate — merge artifact)
 61-66. CI, tracking, ROAD-20, ROAD-21, ROAD-17, ROAD-15 commits
 67. `fix(test): increase timeout for retry tests to prevent flaky failures`
+68. `chore: upgrade Gemini models to 3-preview and fix review issues`
+69. `feat(extension): add Selenium WebDriver test exporter (ROAD-26)`
 
 ## 360 Audit Results (Updated)
 
 ### Scores by Area
 | Area | Score | Notes |
 |------|-------|-------|
-| Extension Code | 9.5/10 | 298 tests, 0 TS errors, 0 lint errors, 8 exporters |
-| Tests | A+ | 298 tests across 16 files, all passing |
-| Features | 91% | 62/68 features done, remaining 6 require external infrastructure |
+| Extension Code | 9.5/10 | 320 tests, 0 TS errors, 0 lint errors, 9 exporters |
+| Tests | A+ | 320 tests across 17 files, all passing |
+| Features | 91% | 63/69 features done, remaining 6 require external infrastructure |
 | Backend | Deployable | Dockerfile fixed, health check, API auth, env validation, consolidated |
 | Documentation | 9/10 | CLAUDE.md, README, features.json, progress.md all up to date |
 | Automation | 9/10 | GitHub Actions CI, ESLint + Prettier |
-| Product | 9.5/10 | Complete workflow: capture → enrich → manage → export (8 formats) → integrate (GitHub) |
+| Product | 9.5/10 | Complete workflow: capture → enrich → manage → export (9 formats) → integrate (GitHub) |
 
 ## Known Issues
 

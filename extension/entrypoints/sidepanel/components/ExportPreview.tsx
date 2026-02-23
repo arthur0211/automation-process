@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'preact/hooks';
 import type { CapturedAction, RecordingSession } from '@/lib/types';
 
-export type ExportFormat = 'json' | 'html' | 'playwright' | 'markdown';
+export type ExportFormat = 'json' | 'html' | 'playwright' | 'markdown' | 'cypress' | 'selenium';
 
 interface ExportPreviewProps {
   session: RecordingSession;
@@ -15,10 +15,12 @@ const FORMAT_CONFIG: Record<ExportFormat, { label: string; ext: string; mime: st
   json: { label: 'JSON', ext: '.json', mime: 'application/json' },
   html: { label: 'HTML', ext: '.html', mime: 'text/html' },
   playwright: { label: 'Playwright', ext: '.spec.ts', mime: 'text/plain' },
+  cypress: { label: 'Cypress', ext: '.cy.ts', mime: 'text/plain' },
+  selenium: { label: 'Selenium', ext: '.selenium.js', mime: 'text/plain' },
   markdown: { label: 'Markdown', ext: '.md', mime: 'text/markdown' },
 };
 
-const FORMATS: ExportFormat[] = ['json', 'html', 'playwright', 'markdown'];
+const FORMATS: ExportFormat[] = ['json', 'html', 'playwright', 'cypress', 'selenium', 'markdown'];
 
 export function ExportPreview({
   session,
@@ -50,6 +52,16 @@ export function ExportPreview({
           case 'playwright': {
             const { exportToPlaywright } = await import('@/lib/export/playwright-exporter');
             setContent(exportToPlaywright(session, actions));
+            break;
+          }
+          case 'cypress': {
+            const { exportToCypress } = await import('@/lib/export/cypress-exporter');
+            setContent(exportToCypress(session, actions));
+            break;
+          }
+          case 'selenium': {
+            const { exportToSelenium } = await import('@/lib/export/selenium-exporter');
+            setContent(exportToSelenium(session, actions));
             break;
           }
           case 'markdown': {

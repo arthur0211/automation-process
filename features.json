@@ -803,6 +803,26 @@
       "effort": "M",
       "riceScore": 45,
       "source": "market-analyst"
+    },
+    {
+      "id": "ROAD-26",
+      "name": "Selenium WebDriver test exporter",
+      "description": "Export recording as Selenium WebDriver test script for teams using Selenium (most popular test automation framework globally)",
+      "acceptanceCriteria": [
+        "Generates valid Selenium WebDriver .js test file with Mocha structure",
+        "Locator cascade: By.css('[data-testid]') > By.id() > By.linkText() > By.name() > By.css()",
+        "driver.get() for navigation, sendKeys() for input, click() for clicks",
+        "driver.actions() for hover/contextmenu, executeScript for scroll",
+        "process.env.PASSWORD for password fields",
+        "driver.wait(until.elementLocated) for element waits",
+        "driver.wait(until.urlContains) for navigation waits"
+      ],
+      "status": "done",
+      "phase": "sprint-7",
+      "priority": "P1",
+      "effort": "M",
+      "riceScore": 60,
+      "source": "market-analyst"
     }
   ]
 }

@@ -5,7 +5,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## Project Overview
 
 Chrome Extension that records and documents web processes for humans and LLMs. Two-part architecture:
-- **Extension** (All phases complete): Captures user actions, screenshots, video; stores in IndexedDB; exports to JSON/HTML/Markdown/Playwright/Cypress/PDF/GitHub Issues; centralized Zustand state; session management; multi-tab recording; video playback; JSON import
+- **Extension** (All phases complete): Captures user actions, screenshots, video; stores in IndexedDB; exports to JSON/HTML/Markdown/Playwright/Cypress/Selenium/PDF/GitHub Issues; centralized Zustand state; session management; multi-tab recording; video playback; JSON import
 - **Backend** (Phase 2D - integrated): Google ADK agents on Vertex AI that enrich recordings with LLM analysis
 
 ## Build & Run Commands
@@ -33,7 +33,7 @@ Backend requires Vertex AI env vars — see `backend/.env.example`.
 ### Tests
 ```bash
 cd extension
-npx vitest run           # run all tests (298 tests, vitest + happy-dom + fake-indexeddb)
+npx vitest run           # run all tests (320 tests, vitest + happy-dom + fake-indexeddb)
 npx vitest               # watch mode
 npx tsc --noEmit         # type check (0 errors expected)
 ```
@@ -90,6 +90,7 @@ Model versions are configurable via environment variables (see `backend/.env.exa
 - `lib/export/playwright-exporter.ts` — export to Playwright .spec.ts test with smart native locator cascade, test.step() blocks, testData parameterization
 - `lib/export/playwright-ci-exporter.ts` — Playwright test + GitHub Actions CI workflow YAML
 - `lib/export/cypress-exporter.ts` — export to Cypress .cy.ts test with locator cascade
+- `lib/export/selenium-exporter.ts` — export to Selenium WebDriver .js test with By locator cascade
 - `lib/export/pdf-exporter.ts` — PDF export via print dialog with cover page and page breaks
 - `lib/export/github-exporter.ts` — create GitHub Issues via API with PAT authentication
 - `shared/types/process-schema.json` — JSON Schema v7 defining the export format
