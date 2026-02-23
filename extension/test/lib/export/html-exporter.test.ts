@@ -188,4 +188,11 @@ describe('exportToHtml', () => {
     const html = exportToHtml(createSession({ stoppedAt: 1700000060000 }), [action]);
     expect(html).not.toContain('Tab:');
   });
+
+  it('escapes HTML entities in tabTitle', () => {
+    const action = createAction({ tabTitle: '<script>xss</script>' });
+    const html = exportToHtml(createSession({ stoppedAt: 1700000060000 }), [action]);
+    expect(html).not.toContain('<script>xss</script>');
+    expect(html).toContain('&lt;script&gt;xss&lt;/script&gt;');
+  });
 });

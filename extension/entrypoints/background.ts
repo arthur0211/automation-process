@@ -98,15 +98,10 @@ async function startRecording(tabId: number) {
   status = 'recording';
 
   // Tell ALL tabs to start capturing (multi-tab support)
-  const allTabs = await chrome.tabs.query({});
-  for (const t of allTabs) {
-    if (t.id) {
-      chrome.tabs.sendMessage(t.id, {
-        type: 'START_RECORDING',
-        payload: { sessionId, settings: currentSettings },
-      }).catch(() => {}); // Tab may not have content script
-    }
-  }
+  await sendToAllTabs({
+    type: 'START_RECORDING',
+    payload: { sessionId, settings: currentSettings },
+  });
 
   // Start tab video capture
   await startTabCapture(tabId);
@@ -120,7 +115,7 @@ async function startRecording(tabId: number) {
   saveState();
 }
 
-async function sendToAllTabs(message: { type: string }) {
+async function sendToAllTabs(message: ExtensionMessage) {
   const allTabs = await chrome.tabs.query({});
   for (const t of allTabs) {
     if (t.id) {
@@ -233,8 +228,12 @@ async function processAction(payload: ActionCapturedPayload, senderTabId?: numbe
 
   const action = payload.action as CapturedAction;
   action.sessionId = currentSession.id;
-  if (senderTabId) action.tabId = senderTabId;
+  if (senderTabId !== undefined) action.tabId = senderTabId;
   if (senderTabTitle) action.tabTitle = senderTabTitle;
+
+  // Background owns sequence numbering (prevents multi-tab collisions)
+  actionCount++;
+  action.sequenceNumber = actionCount;
 
   // Generate template description
   action.description = generateDescription(action);
@@ -249,7 +248,6 @@ async function processAction(payload: ActionCapturedPayload, senderTabId?: numbe
 
   // Store in IndexedDB
   await addAction(action);
-  actionCount++;
 
   // Update session action count
   await updateSession(currentSession.id, { actionCount });
@@ -383,13 +381,14 @@ async function handleTabSwitch(activeInfo: { tabId: number; windowId: number }) 
   if (activeInfo.tabId === lastActiveTabId) return;
   lastActiveTabId = activeInfo.tabId;
 
+  actionCount++;
   try {
     const tab = await chrome.tabs.get(activeInfo.tabId);
     const action: CapturedAction = {
       id: `action_${Date.now()}_${Math.random().toString(36).slice(2, 9)}`,
       sessionId: currentSession.id,
       timestamp: Date.now(),
-      sequenceNumber: ++actionCount,
+      sequenceNumber: actionCount,
       actionType: 'navigate',
       url: tab.url || '',
       pageTitle: tab.title || '',
@@ -403,7 +402,7 @@ async function handleTabSwitch(activeInfo: { tabId: number; windowId: number }) 
 
     action.description = generateDescription(action);
 
-    // Take screenshot of new tab
+    // Screenshot may capture previous tab due to rendering timing
     try {
       const screenshotDataUrl = await captureScreenshot(currentSettings.screenshotQuality);
       action.screenshotDataUrl = screenshotDataUrl;
@@ -415,8 +414,9 @@ async function handleTabSwitch(activeInfo: { tabId: number; windowId: number }) 
     await updateSession(currentSession.id, { actionCount });
     broadcastStatus();
     saveState();
-  } catch {
-    // Tab may have been closed during switch
+  } catch (err) {
+    actionCount--; // Rollback on failure
+    console.warn('Tab switch action failed:', err);
   }
 }
 
