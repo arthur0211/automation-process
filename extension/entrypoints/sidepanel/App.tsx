@@ -97,7 +97,9 @@ export function App() {
         />
       )}
 
-      {session && <VideoPlayer sessionId={session.id} />}
+      {session && status !== 'recording' && status !== 'paused' && (
+        <VideoPlayer sessionId={session.id} />
+      )}
       <ValidationPanel session={session} />
       <ExportPanel session={session} actions={actions} />
     </div>

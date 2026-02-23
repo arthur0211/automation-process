@@ -22,6 +22,10 @@ export function exportToHtml(
   actions: CapturedAction[],
   videoDataUrl?: string,
 ): string {
+  // Sanitize: only allow data:video/ URLs to prevent XSS
+  if (videoDataUrl && !videoDataUrl.startsWith('data:video/')) {
+    videoDataUrl = undefined;
+  }
   const sorted = [...actions].sort((a, b) => a.sequenceNumber - b.sequenceNumber);
   const duration = (session.stoppedAt || Date.now()) - session.startedAt;
 
@@ -93,7 +97,7 @@ export function exportToHtml(
   <div class="video-section">
     <h2>Recording</h2>
     <video id="recording-video" controls>
-      <source src="${videoDataUrl}" type="video/webm" />
+      <source src="${videoDataUrl}" type="${videoDataUrl.match(/^data:([^;]+);/)?.[1] ?? 'video/webm'}" />
     </video>
   </div>
   <script>

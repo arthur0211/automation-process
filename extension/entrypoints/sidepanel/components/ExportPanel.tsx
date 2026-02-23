@@ -1,6 +1,15 @@
 import type { CapturedAction, RecordingSession } from '@/lib/types';
 import { getVideoBlob } from '@/lib/storage/db';
 
+function blobToDataUrl(blob: Blob): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onloadend = () => resolve(reader.result as string);
+    reader.onerror = reject;
+    reader.readAsDataURL(blob);
+  });
+}
+
 interface ExportPanelProps {
   session: RecordingSession | null;
   actions: CapturedAction[];
@@ -17,10 +26,12 @@ export function ExportPanel({ session, actions }: ExportPanelProps) {
 
   async function exportHtml() {
     const { exportToHtml } = await import('@/lib/export/html-exporter');
-    const videoBlob = await getVideoBlob(session!.id);
     let videoDataUrl: string | undefined;
-    if (videoBlob) {
-      videoDataUrl = await blobToDataUrl(videoBlob);
+    try {
+      const videoBlob = await getVideoBlob(session!.id);
+      if (videoBlob) videoDataUrl = await blobToDataUrl(videoBlob);
+    } catch {
+      // Non-fatal: export without video
     }
     const html = exportToHtml(session!, actions, videoDataUrl);
     downloadFile(html, `${session!.name}.html`, 'text/html');
@@ -30,15 +41,6 @@ export function ExportPanel({ session, actions }: ExportPanelProps) {
     const { exportToPlaywright } = await import('@/lib/export/playwright-exporter');
     const code = exportToPlaywright(session!, actions);
     downloadFile(code, `${session!.name}.spec.ts`, 'text/plain');
-  }
-
-  function blobToDataUrl(blob: Blob): Promise<string> {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onloadend = () => resolve(reader.result as string);
-      reader.onerror = reject;
-      reader.readAsDataURL(blob);
-    });
   }
 
   function downloadFile(content: string, filename: string, mimeType: string) {

@@ -15,14 +15,18 @@ export function VideoPlayer({ sessionId }: VideoPlayerProps) {
     let revoked = false;
     let url: string | null = null;
 
-    getVideoBlob(sessionId).then((blob) => {
-      if (revoked) return;
-      setLoading(false);
-      if (blob) {
-        url = URL.createObjectURL(blob);
-        setVideoUrl(url);
-      }
-    });
+    getVideoBlob(sessionId)
+      .then((blob) => {
+        if (revoked) return;
+        setLoading(false);
+        if (blob) {
+          url = URL.createObjectURL(blob);
+          setVideoUrl(url);
+        }
+      })
+      .catch(() => {
+        if (!revoked) setLoading(false);
+      });
 
     return () => {
       revoked = true;
@@ -55,10 +59,4 @@ export function VideoPlayer({ sessionId }: VideoPlayerProps) {
       )}
     </div>
   );
-}
-
-export function seekVideo(videoEl: HTMLVideoElement | null, timestampMs: number) {
-  if (!videoEl) return;
-  videoEl.currentTime = timestampMs / 1000;
-  videoEl.play();
 }

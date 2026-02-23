@@ -150,6 +150,23 @@ describe('exportToHtml', () => {
     expect(html).toContain('seekVideo(5)');
   });
 
+  it('sanitizes non-data-video URLs to prevent XSS', () => {
+    const html = exportToHtml(
+      createSession({ stoppedAt: 1700000060000 }),
+      [],
+      'javascript:alert(1)',
+    );
+    expect(html).not.toContain('<video');
+    expect(html).not.toContain('javascript:');
+  });
+
+  it('clamps negative timestamp offset to zero', () => {
+    const session = createSession({ startedAt: 1700000010000, stoppedAt: 1700000060000 });
+    const action = createAction({ timestamp: 1700000005000 }); // before session start
+    const html = exportToHtml(session, [action], 'data:video/webm;base64,X');
+    expect(html).toContain('seekVideo(0)');
+  });
+
   it('does not render play button when no video', () => {
     const session = createSession({ startedAt: 1700000000000, stoppedAt: 1700000060000 });
     const action = createAction({ timestamp: 1700000005000 });
