@@ -88,6 +88,11 @@ async function startRecording(tabId: number) {
     ...DEFAULT_CAPTURE_SETTINGS,
     ...(stored.settings as Partial<CaptureSettings>),
   };
+  // Clamp settings to valid bounds
+  currentSettings.screenshotQuality = Math.max(
+    10,
+    Math.min(100, currentSettings.screenshotQuality),
+  );
 
   const tab = await chrome.tabs.get(tabId);
   lastActiveTabId = tabId;
@@ -440,7 +445,9 @@ export default defineBackground({
     console.log('Agentic Automation Recorder: background service worker started');
 
     // Restore state from session storage (survives SW termination)
-    const stateReady = loadState();
+    const stateReady = loadState().catch((err) => {
+      console.error('Failed to load state:', err);
+    });
 
     // Unified message handler
     chrome.runtime.onMessage.addListener((message: ExtensionMessage, sender, sendResponse) => {

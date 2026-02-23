@@ -133,6 +133,9 @@ export function StepDetail({ action, onUpdate, onDelete }: StepDetailProps) {
       <div class="flex items-center gap-2">
         <label class="text-xs font-medium text-gray-500">Decision Point</label>
         <button
+          role="switch"
+          aria-checked={action.decisionPoint.isDecisionPoint}
+          aria-label="Toggle decision point"
           onClick={() =>
             onUpdate(action.id, {
               decisionPoint: {
