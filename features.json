@@ -365,7 +365,7 @@
         "Screenshots referenced as data URLs or excluded via option",
         "Clipboard notification toast on success"
       ],
-      "status": "planned",
+      "status": "done",
       "phase": "sprint-3",
       "priority": "P0",
       "effort": "S",
@@ -402,7 +402,7 @@
         "Clear filter button",
         "Result count displayed"
       ],
-      "status": "planned",
+      "status": "done",
       "phase": "sprint-3",
       "priority": "P0",
       "effort": "S",
@@ -419,7 +419,7 @@
         "Click thumbnail opens step detail",
         "Toggle thumbnails on/off via setting"
       ],
-      "status": "planned",
+      "status": "done",
       "phase": "sprint-3",
       "priority": "P0",
       "effort": "S",
@@ -544,7 +544,7 @@
         "Fallback to text-only if screenshot unavailable",
         "Tests verify correct message format"
       ],
-      "status": "planned",
+      "status": "done",
       "phase": "sprint-5",
       "priority": "P0",
       "effort": "S",
@@ -561,7 +561,7 @@
         "Check output_keys exist before returning response",
         "Timeout after 15s returns null gracefully"
       ],
-      "status": "planned",
+      "status": "done",
       "phase": "sprint-5",
       "priority": "P0",
       "effort": "S",
@@ -597,7 +597,7 @@
         "No retry on 400/401/404 (client errors)",
         "UI indicator when enrichment is retrying"
       ],
-      "status": "planned",
+      "status": "done",
       "phase": "sprint-5",
       "priority": "P1",
       "effort": "S",
