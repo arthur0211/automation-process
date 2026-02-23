@@ -13,6 +13,9 @@ dist/
 *.log
 npm-debug.log*
 
+# Coverage
+coverage/
+
 .DS_Store
 Thumbs.db
 
