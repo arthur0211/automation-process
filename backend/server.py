@@ -22,7 +22,10 @@ _API_KEY = os.environ.get("API_KEY")
 app: FastAPI = get_fast_api_app(
     agents_dir=os.path.dirname(os.path.abspath(__file__)),
     session_service_uri="sqlite+aiosqlite:///./sessions.db",
-    allow_origins=["*"],
+    allow_origins=[
+        "chrome-extension://*",
+        "http://localhost:*",
+    ],
     web=False,
 )
 
