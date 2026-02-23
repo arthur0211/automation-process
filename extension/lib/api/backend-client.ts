@@ -13,6 +13,9 @@ export interface EnrichedAction {
 const APP_NAME = 'recording_pipeline';
 const USER_ID = 'extension-user';
 const TIMEOUT_MS = 30_000;
+const POLL_DELAYS = [500, 1000, 2000, 4000, 8000];
+const MAX_RETRIES = 3;
+const RETRYABLE_STATUSES = [429, 503];
 
 function parseJsonSafe<T = Record<string, unknown>>(value: unknown): T {
   if (typeof value === 'string') {
@@ -28,6 +31,76 @@ function parseJsonSafe<T = Record<string, unknown>>(value: unknown): T {
   return {} as T;
 }
 
+function parseScreenshotParts(screenshotDataUrl: string): { text?: string; inlineData?: { mimeType: string; data: string } }[] {
+  if (!screenshotDataUrl) return [];
+  const match = screenshotDataUrl.match(/^data:(image\/[^;]+);base64,(.+)$/);
+  if (match) {
+    return [{ inlineData: { mimeType: match[1], data: match[2] } }];
+  }
+  return [];
+}
+
+async function fetchWithRetry(
+  url: string,
+  options: RequestInit,
+  maxRetries = MAX_RETRIES,
+): Promise<Response> {
+  let lastError: Error | null = null;
+  for (let attempt = 0; attempt <= maxRetries; attempt++) {
+    try {
+      const response = await fetch(url, options);
+      if (response.ok || !RETRYABLE_STATUSES.includes(response.status) || attempt === maxRetries) {
+        return response;
+      }
+      const retryAfter = response.headers.get('Retry-After');
+      const delay = retryAfter ? parseInt(retryAfter, 10) * 1000 : POLL_DELAYS[Math.min(attempt, POLL_DELAYS.length - 1)];
+      await new Promise(r => setTimeout(r, delay));
+    } catch (err) {
+      lastError = err as Error;
+      if (attempt === maxRetries) break;
+      await new Promise(r => setTimeout(r, POLL_DELAYS[Math.min(attempt, POLL_DELAYS.length - 1)]));
+    }
+  }
+  throw lastError || new Error('fetchWithRetry exhausted');
+}
+
+async function pollSessionState(
+  baseUrl: string,
+  appName: string,
+  sessionId: string,
+  outputKeys: string[],
+): Promise<Record<string, unknown>> {
+  for (const delay of POLL_DELAYS) {
+    await new Promise(r => setTimeout(r, delay));
+    try {
+      const res = await fetch(
+        `${baseUrl}/apps/${appName}/users/${USER_ID}/sessions/${sessionId}`,
+        { signal: AbortSignal.timeout(10_000) },
+      );
+      if (!res.ok) continue;
+      const data = await res.json();
+      const state = data.state || {};
+      if (outputKeys.every(k => state[k] !== undefined)) {
+        return state;
+      }
+    } catch {
+      continue;
+    }
+  }
+  // Final attempt: return whatever state we have
+  try {
+    const res = await fetch(
+      `${baseUrl}/apps/${appName}/users/${USER_ID}/sessions/${sessionId}`,
+      { signal: AbortSignal.timeout(10_000) },
+    );
+    if (res.ok) {
+      const data = await res.json();
+      return data.state || {};
+    }
+  } catch { /* return empty */ }
+  return {};
+}
+
 export async function processActionWithBackend(
   action: CapturedAction,
   screenshotDataUrl: string,
@@ -39,8 +112,21 @@ export async function processActionWithBackend(
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), TIMEOUT_MS);
 
-    // 1. Send action to ADK backend via POST /run
-    const runResponse = await fetch(`${backendUrl}/run`, {
+    // Build message parts: text metadata + screenshot as inlineData (ROAD-11)
+    const textPart = {
+      text: JSON.stringify({
+        actionType: action.actionType,
+        url: action.url,
+        pageTitle: action.pageTitle,
+        element: action.element,
+        description: action.description,
+        inputValue: action.inputValue,
+      }),
+    };
+    const screenshotParts = parseScreenshotParts(screenshotDataUrl);
+
+    // 1. Send action to ADK backend via POST /run with retry (ROAD-14)
+    const runResponse = await fetchWithRetry(`${backendUrl}/run`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       signal: controller.signal,
@@ -50,19 +136,7 @@ export async function processActionWithBackend(
         sessionId: action.sessionId,
         newMessage: {
           role: 'user',
-          parts: [
-            {
-              text: JSON.stringify({
-                actionType: action.actionType,
-                url: action.url,
-                pageTitle: action.pageTitle,
-                element: action.element,
-                description: action.description,
-                inputValue: action.inputValue,
-                screenshotDataUrl,
-              }),
-            },
-          ],
+          parts: [textPart, ...screenshotParts],
         },
       }),
     });
@@ -74,19 +148,13 @@ export async function processActionWithBackend(
       return null;
     }
 
-    // 2. Read session state to get output_key values
-    const sessionResponse = await fetch(
-      `${backendUrl}/apps/${APP_NAME}/users/${USER_ID}/sessions/${action.sessionId}`,
-      { signal: AbortSignal.timeout(10_000) },
+    // 2. Poll session state with exponential backoff (ROAD-12)
+    const state = await pollSessionState(
+      backendUrl,
+      APP_NAME,
+      action.sessionId,
+      ['description', 'visual_analysis', 'decision_analysis'],
     );
-
-    if (!sessionResponse.ok) {
-      console.warn(`ADK session GET returned ${sessionResponse.status}`);
-      return null;
-    }
-
-    const sessionData = await sessionResponse.json();
-    const state = sessionData.state || {};
 
     // 3. Extract enrichment from session state (output_keys from agents)
     const description =
@@ -142,7 +210,7 @@ export async function validateRecordingWithBackend(
       })),
     };
 
-    const runResponse = await fetch(`${backendUrl}/run`, {
+    const runResponse = await fetchWithRetry(`${backendUrl}/run`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       signal: controller.signal,
@@ -163,14 +231,14 @@ export async function validateRecordingWithBackend(
       return null;
     }
 
-    const stateResponse = await fetch(
-      `${backendUrl}/apps/${VALIDATOR_APP_NAME}/users/${USER_ID}/sessions/${session.id}`,
-      { signal: AbortSignal.timeout(10_000) },
+    // Poll session state with backoff (ROAD-12)
+    const state = await pollSessionState(
+      backendUrl,
+      VALIDATOR_APP_NAME,
+      session.id,
+      ['validation_result'],
     );
-    if (!stateResponse.ok) return null;
-
-    const sessionData = await stateResponse.json();
-    const raw = parseJsonSafe(sessionData.state?.validation_result);
+    const raw = parseJsonSafe(state.validation_result);
 
     return {
       overallScore: typeof raw.overallScore === 'number' ? raw.overallScore : 0,
@@ -212,7 +280,20 @@ export async function analyzeComplexAction(
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), ANALYSIS_TIMEOUT_MS);
 
-    const runResponse = await fetch(`${backendUrl}/run`, {
+    // Build parts with inlineData for screenshot (ROAD-11)
+    const textPart = {
+      text: JSON.stringify({
+        actionType: action.actionType,
+        url: action.url,
+        pageTitle: action.pageTitle,
+        element: action.element,
+        description: action.llmDescription || action.description,
+        originalAnalysis,
+      }),
+    };
+    const screenshotParts = parseScreenshotParts(screenshotDataUrl);
+
+    const runResponse = await fetchWithRetry(`${backendUrl}/run`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       signal: controller.signal,
@@ -222,19 +303,7 @@ export async function analyzeComplexAction(
         sessionId: action.sessionId,
         newMessage: {
           role: 'user',
-          parts: [
-            {
-              text: JSON.stringify({
-                actionType: action.actionType,
-                url: action.url,
-                pageTitle: action.pageTitle,
-                element: action.element,
-                description: action.llmDescription || action.description,
-                originalAnalysis,
-                screenshotDataUrl,
-              }),
-            },
-          ],
+          parts: [textPart, ...screenshotParts],
         },
       }),
     });
@@ -245,14 +314,14 @@ export async function analyzeComplexAction(
       return null;
     }
 
-    const stateResponse = await fetch(
-      `${backendUrl}/apps/${ANALYZER_APP_NAME}/users/${USER_ID}/sessions/${action.sessionId}`,
-      { signal: AbortSignal.timeout(10_000) },
+    // Poll session state with backoff (ROAD-12)
+    const state = await pollSessionState(
+      backendUrl,
+      ANALYZER_APP_NAME,
+      action.sessionId,
+      ['complex_analysis'],
     );
-    if (!stateResponse.ok) return null;
-
-    const sessionData = await stateResponse.json();
-    const raw = parseJsonSafe(sessionData.state?.complex_analysis);
+    const raw = parseJsonSafe(state.complex_analysis);
 
     if (typeof raw.confidence !== 'number') return null;
 
