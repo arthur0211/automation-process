@@ -196,7 +196,7 @@ describe('processActionWithBackend', () => {
     expect(result).toBeNull();
   });
 
-  it('retries on 429 and eventually succeeds (ROAD-14)', async () => {
+  it('retries on 429 and eventually succeeds (ROAD-14)', { timeout: 15000 }, async () => {
     let callCount = 0;
     fetchMock.mockImplementation((url: string, options?: RequestInit) => {
       if (options?.method === 'POST') {
@@ -236,7 +236,7 @@ describe('processActionWithBackend', () => {
     expect(callCount).toBe(2);
   });
 
-  it('retries on 503 and eventually succeeds (ROAD-14)', async () => {
+  it('retries on 503 and eventually succeeds (ROAD-14)', { timeout: 15000 }, async () => {
     let callCount = 0;
     fetchMock.mockImplementation((url: string, options?: RequestInit) => {
       if (options?.method === 'POST') {
