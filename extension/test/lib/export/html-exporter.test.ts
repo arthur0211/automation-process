@@ -20,7 +20,10 @@ describe('exportToHtml', () => {
   });
 
   it('escapes HTML entities in session name', () => {
-    const session = createSession({ name: 'Test <script>alert("xss")</script>', stoppedAt: 1700000060000 });
+    const session = createSession({
+      name: 'Test <script>alert("xss")</script>',
+      stoppedAt: 1700000060000,
+    });
     const html = exportToHtml(session, []);
     expect(html).toContain('Test &lt;script&gt;alert(&quot;xss&quot;)&lt;/script&gt;');
     expect(html).not.toContain('<script>alert');

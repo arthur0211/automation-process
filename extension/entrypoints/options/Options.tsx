@@ -46,9 +46,7 @@ export function Options() {
     <div class="max-w-2xl mx-auto p-6 space-y-6">
       <div>
         <h1 class="text-xl font-bold text-gray-900">Settings</h1>
-        <p class="mt-1 text-sm text-gray-500">
-          Configure Agentic Automation Recorder
-        </p>
+        <p class="mt-1 text-sm text-gray-500">Configure Agentic Automation Recorder</p>
       </div>
 
       <div class="space-y-4 bg-white p-5 rounded-lg shadow-sm">

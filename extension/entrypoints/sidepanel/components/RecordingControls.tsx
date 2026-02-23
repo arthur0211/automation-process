@@ -28,13 +28,9 @@ export function RecordingControls() {
       <div class="flex items-center justify-between mb-2">
         <div class="flex items-center gap-2">
           <span class={`w-2.5 h-2.5 rounded-full ${statusColors[status]}`} />
-          <span class="text-sm font-medium text-gray-700">
-            {statusLabels[status]}
-          </span>
+          <span class="text-sm font-medium text-gray-700">{statusLabels[status]}</span>
         </div>
-        {status !== 'idle' && (
-          <span class="text-xs text-gray-500">{actionCount} steps</span>
-        )}
+        {status !== 'idle' && <span class="text-xs text-gray-500">{actionCount} steps</span>}
       </div>
 
       <div class="flex gap-2">

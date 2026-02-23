@@ -18,7 +18,12 @@ const statusColors: Record<string, string> = {
 
 function formatDate(timestamp: number): string {
   const d = new Date(timestamp);
-  return d.toLocaleDateString(undefined, { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+  return d.toLocaleDateString(undefined, {
+    month: 'short',
+    day: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+  });
 }
 
 function truncateUrl(url: string, max = 40): string {
@@ -31,7 +36,13 @@ function truncateUrl(url: string, max = 40): string {
   }
 }
 
-export function SessionList({ sessions, onSelect, onRename, onDelete, onImport }: SessionListProps) {
+export function SessionList({
+  sessions,
+  onSelect,
+  onRename,
+  onDelete,
+  onImport,
+}: SessionListProps) {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editValue, setEditValue] = useState('');
   const [importError, setImportError] = useState<string | null>(null);
@@ -87,9 +98,7 @@ export function SessionList({ sessions, onSelect, onRename, onDelete, onImport }
           >
             Import JSON
           </button>
-          {importError && (
-            <div class="mt-2 text-xs text-red-500">{importError}</div>
-          )}
+          {importError && <div class="mt-2 text-xs text-red-500">{importError}</div>}
         </div>
       </div>
     );
@@ -119,7 +128,9 @@ export function SessionList({ sessions, onSelect, onRename, onDelete, onImport }
           onClick={() => onSelect(session)}
           class="flex items-start gap-2 p-2.5 border-b border-gray-100 cursor-pointer transition-colors hover:bg-gray-50"
         >
-          <span class={`w-2 h-2 rounded-full flex-shrink-0 mt-1.5 ${statusColors[session.status] || 'bg-gray-400'}`} />
+          <span
+            class={`w-2 h-2 rounded-full flex-shrink-0 mt-1.5 ${statusColors[session.status] || 'bg-gray-400'}`}
+          />
           <div class="flex-1 min-w-0">
             {editingId === session.id ? (
               <input
@@ -133,7 +144,6 @@ export function SessionList({ sessions, onSelect, onRename, onDelete, onImport }
                 onBlur={() => commitRename(session.id)}
                 onClick={(e) => e.stopPropagation()}
                 class="w-full text-sm px-1 py-0.5 border border-blue-400 rounded outline-none"
-                // eslint-disable-next-line jsx-a11y/no-autofocus
                 autoFocus
               />
             ) : (
@@ -147,9 +157,7 @@ export function SessionList({ sessions, onSelect, onRename, onDelete, onImport }
                 {session.name}
               </div>
             )}
-            <div class="text-xs text-gray-400 mt-0.5 truncate">
-              {truncateUrl(session.url)}
-            </div>
+            <div class="text-xs text-gray-400 mt-0.5 truncate">{truncateUrl(session.url)}</div>
             <div class="flex items-center gap-2 mt-0.5">
               <span class="text-xs text-gray-400">{formatDate(session.startedAt)}</span>
               <span class="text-xs text-gray-400">{session.actionCount} steps</span>

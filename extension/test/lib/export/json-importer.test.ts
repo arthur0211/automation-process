@@ -11,11 +11,15 @@ describe('validateExport', () => {
   });
 
   it('rejects unsupported version', () => {
-    expect(() => validateExport({ version: '2.0.0', metadata: {}, steps: [] })).toThrow('Unsupported version');
+    expect(() => validateExport({ version: '2.0.0', metadata: {}, steps: [] })).toThrow(
+      'Unsupported version',
+    );
   });
 
   it('rejects missing metadata', () => {
-    expect(() => validateExport({ version: '1.0.0', steps: [] })).toThrow('Missing or invalid metadata');
+    expect(() => validateExport({ version: '1.0.0', steps: [] })).toThrow(
+      'Missing or invalid metadata',
+    );
   });
 
   it('rejects missing steps array', () => {
@@ -94,7 +98,13 @@ describe('importFromJson', () => {
   it('generates unique session IDs for each import', async () => {
     const json = JSON.stringify({
       version: '1.0.0',
-      metadata: { name: 'Test', createdAt: '2024-01-01T00:00:00Z', totalSteps: 0, startUrl: 'https://example.com', duration: 0 },
+      metadata: {
+        name: 'Test',
+        createdAt: '2024-01-01T00:00:00Z',
+        totalSteps: 0,
+        startUrl: 'https://example.com',
+        duration: 0,
+      },
       steps: [],
     });
 
@@ -107,16 +117,24 @@ describe('importFromJson', () => {
   it('handles steps without element or decisionPoint gracefully', async () => {
     const json = JSON.stringify({
       version: '1.0.0',
-      metadata: { name: 'Minimal', createdAt: '2024-01-01T00:00:00Z', totalSteps: 1, startUrl: 'https://example.com', duration: 0 },
-      steps: [{
-        stepNumber: 1,
-        actionType: 'click',
-        url: 'https://example.com',
-        pageTitle: 'Test',
-        description: 'Clicked something',
-        note: '',
-        timestamp: 1700000000000,
-      }],
+      metadata: {
+        name: 'Minimal',
+        createdAt: '2024-01-01T00:00:00Z',
+        totalSteps: 1,
+        startUrl: 'https://example.com',
+        duration: 0,
+      },
+      steps: [
+        {
+          stepNumber: 1,
+          actionType: 'click',
+          url: 'https://example.com',
+          pageTitle: 'Test',
+          description: 'Clicked something',
+          note: '',
+          timestamp: 1700000000000,
+        },
+      ],
     });
 
     const result = await importFromJson(json);
@@ -136,7 +154,13 @@ describe('importFromJson', () => {
         totalSteps: 0,
         startUrl: 'https://example.com',
         duration: 0,
-        validation: { overallScore: 9, issues: [], suggestions: [], missingSteps: [], summary: 'Great' },
+        validation: {
+          overallScore: 9,
+          issues: [],
+          suggestions: [],
+          missingSteps: [],
+          summary: 'Great',
+        },
       },
       steps: [],
     });

@@ -49,7 +49,8 @@ describe('generateSelectors', () => {
     });
 
     it('falls back to ID when data-testid is not unique', () => {
-      document.body.innerHTML = '<button data-testid="btn" id="unique">A</button><button data-testid="btn">B</button>';
+      document.body.innerHTML =
+        '<button data-testid="btn" id="unique">A</button><button data-testid="btn">B</button>';
       const el = document.querySelector('#unique')!;
       const { css } = generateSelectors(el);
       expect(css).toBe('#unique');
@@ -79,7 +80,8 @@ describe('generateSelectors', () => {
     });
 
     it('filters framework classes (js-, ng-, v-, _, css-, sc-, emotion-)', () => {
-      document.body.innerHTML = '<div class="js-hook ng-scope v-cloak _internal css-abc sc-xyz emotion-123 real-class">X</div>';
+      document.body.innerHTML =
+        '<div class="js-hook ng-scope v-cloak _internal css-abc sc-xyz emotion-123 real-class">X</div>';
       const el = document.querySelector('div')!;
       const { css } = generateSelectors(el);
       // Only real-class should survive filtering
@@ -146,7 +148,7 @@ describe('generateSelectors', () => {
     it('assigns 0.90 for ID selector', () => {
       document.body.innerHTML = '<button id="submit">Go</button>';
       const { confidence } = generateSelectors(document.querySelector('button')!);
-      expect(confidence).toBe(0.90);
+      expect(confidence).toBe(0.9);
     });
 
     it('assigns 0.85 for aria-label selector', () => {
@@ -158,14 +160,14 @@ describe('generateSelectors', () => {
     it('assigns 0.80 for name selector', () => {
       document.body.innerHTML = '<input name="email" />';
       const { confidence } = generateSelectors(document.querySelector('input')!);
-      expect(confidence).toBe(0.80);
+      expect(confidence).toBe(0.8);
     });
 
     it('assigns 0.20 for nth-of-type fallback', () => {
       document.body.innerHTML = '<div><span></span><span></span></div>';
       const el = document.querySelectorAll('span')[1];
       const { confidence } = generateSelectors(el);
-      expect(confidence).toBe(0.20);
+      expect(confidence).toBe(0.2);
     });
   });
 });

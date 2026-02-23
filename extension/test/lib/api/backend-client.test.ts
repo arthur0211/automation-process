@@ -1,5 +1,9 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import { processActionWithBackend, validateRecordingWithBackend, analyzeComplexAction } from '@/lib/api/backend-client';
+import {
+  processActionWithBackend,
+  validateRecordingWithBackend,
+  analyzeComplexAction,
+} from '@/lib/api/backend-client';
 import { createAction, createSession } from '../../fixtures';
 
 const BACKEND_URL = 'http://localhost:8000';
@@ -226,7 +230,8 @@ describe('validateRecordingWithBackend', () => {
       json: () =>
         Promise.resolve({
           state: {
-            validation_result: '{"overallScore":7,"issues":[],"suggestions":[],"missingSteps":[],"summary":"OK"}',
+            validation_result:
+              '{"overallScore":7,"issues":[],"suggestions":[],"missingSteps":[],"summary":"OK"}',
           },
         }),
     });

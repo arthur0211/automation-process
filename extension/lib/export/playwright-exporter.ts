@@ -20,10 +20,7 @@ function getLocator(element: ElementMetadata): string {
     return `page.getByLabel('${escapeSingleQuotes(element.ariaLabel)}')`;
   }
 
-  if (
-    element.placeholder &&
-    (element.tag === 'input' || element.tag === 'textarea')
-  ) {
+  if (element.placeholder && (element.tag === 'input' || element.tag === 'textarea')) {
     return `page.getByPlaceholder('${escapeSingleQuotes(element.placeholder)}')`;
   }
 
@@ -77,10 +74,7 @@ function actionToCode(action: CapturedAction, index: number): string {
   return lines.join('\n');
 }
 
-export function exportToPlaywright(
-  session: RecordingSession,
-  actions: CapturedAction[],
-): string {
+export function exportToPlaywright(session: RecordingSession, actions: CapturedAction[]): string {
   const sorted = [...actions].sort((a, b) => a.sequenceNumber - b.sequenceNumber);
 
   const stepsCode = sorted.map((action, i) => actionToCode(action, i)).join('\n\n');

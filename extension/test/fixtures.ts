@@ -83,7 +83,9 @@ export function createSession(overrides: Partial<RecordingSession> = {}): Record
   };
 }
 
-export function createValidationResult(overrides: Partial<ValidationResult> = {}): ValidationResult {
+export function createValidationResult(
+  overrides: Partial<ValidationResult> = {},
+): ValidationResult {
   return {
     overallScore: 8,
     issues: [],

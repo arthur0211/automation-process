@@ -12,7 +12,11 @@
     "zip:firefox": "wxt zip --browser firefox",
     "postinstall": "wxt prepare",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "lint": "eslint lib/ entrypoints/ test/",
+    "lint:fix": "eslint lib/ entrypoints/ test/ --fix",
+    "format": "prettier --write lib/ entrypoints/ test/",
+    "format:check": "prettier --check lib/ entrypoints/ test/"
   },
   "dependencies": {
     "dexie": "^4.3.0",
@@ -21,13 +25,19 @@
     "zustand": "^5.0.11"
   },
   "devDependencies": {
+    "@eslint/js": "^9.39.3",
     "@preact/preset-vite": "^2.10.3",
     "@tailwindcss/vite": "^4.2.0",
     "@types/chrome": "^0.1.37",
+    "@vitest/coverage-v8": "^4.0.18",
+    "eslint": "^9.39.3",
+    "eslint-config-prettier": "^10.1.8",
     "fake-indexeddb": "^6.2.5",
     "happy-dom": "^20.7.0",
+    "prettier": "^3.8.1",
     "tailwindcss": "^4.2.0",
     "typescript": "^5.9.3",
+    "typescript-eslint": "^8.56.0",
     "vitest": "^4.0.18"
   }
 }

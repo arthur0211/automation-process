@@ -8,7 +8,11 @@ import {
 } from '@/lib/storage/db';
 import { captureScreenshot } from '@/lib/capture/screenshot';
 import { generateDescription } from '@/lib/capture/description-generator';
-import { processActionWithBackend, validateRecordingWithBackend, analyzeComplexAction } from '@/lib/api/backend-client';
+import {
+  processActionWithBackend,
+  validateRecordingWithBackend,
+  analyzeComplexAction,
+} from '@/lib/api/backend-client';
 import type {
   RecordingStatus,
   RecordingSession,
@@ -46,7 +50,9 @@ async function saveState() {
 
 async function loadState() {
   const result = await chrome.storage.session.get('swState');
-  const saved = result.swState as { status: RecordingStatus; sessionId: string | null; actionCount: number } | undefined;
+  const saved = result.swState as
+    | { status: RecordingStatus; sessionId: string | null; actionCount: number }
+    | undefined;
   if (!saved) return;
   status = saved.status;
   actionCount = saved.actionCount;
@@ -78,7 +84,10 @@ async function startRecording(tabId: number) {
 
   // Load user settings from chrome.storage.local
   const stored = await chrome.storage.local.get('settings');
-  currentSettings = { ...DEFAULT_CAPTURE_SETTINGS, ...(stored.settings as Partial<CaptureSettings>) };
+  currentSettings = {
+    ...DEFAULT_CAPTURE_SETTINGS,
+    ...(stored.settings as Partial<CaptureSettings>),
+  };
 
   const tab = await chrome.tabs.get(tabId);
   lastActiveTabId = tabId;
@@ -223,7 +232,11 @@ async function stopTabCapture() {
 
 // ─── Action Processing ──────────────────────────────────────────────────────
 
-async function processAction(payload: ActionCapturedPayload, senderTabId?: number, senderTabTitle?: string) {
+async function processAction(
+  payload: ActionCapturedPayload,
+  senderTabId?: number,
+  senderTabTitle?: string,
+) {
   if (!currentSession || status !== 'recording') return;
 
   const action = payload.action as CapturedAction;
@@ -430,76 +443,74 @@ export default defineBackground({
     const stateReady = loadState();
 
     // Unified message handler
-    chrome.runtime.onMessage.addListener(
-      (message: ExtensionMessage, sender, sendResponse) => {
-        switch (message.type) {
-          // ─── Sync handlers (content script & status queries) ──────────
-          case 'ACTION_CAPTURED':
-            processAction(
-              message.payload as ActionCapturedPayload,
-              sender.tab?.id,
-              sender.tab?.title,
-            );
-            return false;
+    chrome.runtime.onMessage.addListener((message: ExtensionMessage, sender, sendResponse) => {
+      switch (message.type) {
+        // ─── Sync handlers (content script & status queries) ──────────
+        case 'ACTION_CAPTURED':
+          processAction(
+            message.payload as ActionCapturedPayload,
+            sender.tab?.id,
+            sender.tab?.title,
+          );
+          return false;
 
-          case 'GET_STATUS':
-            stateReady.then(() => {
-              sendResponse({
-                status,
-                sessionId: currentSession?.id,
-                actionCount,
-              } satisfies StatusPayload);
+        case 'GET_STATUS':
+          stateReady.then(() => {
+            sendResponse({
+              status,
+              sessionId: currentSession?.id,
+              actionCount,
+            } satisfies StatusPayload);
+          });
+          return true; // async response
+
+        case 'RESET_RECORDING':
+          status = 'idle';
+          currentSession = null;
+          actionCount = 0;
+          broadcastStatus();
+          saveState();
+          sendResponse({ success: true });
+          return false;
+
+        // ─── Async handlers (recording controls from popup/sidepanel) ─
+        case 'START_RECORDING':
+        case 'PAUSE_RECORDING':
+        case 'RESUME_RECORDING':
+        case 'STOP_RECORDING': {
+          (async () => {
+            await stateReady;
+            const [tab] = await chrome.tabs.query({
+              active: true,
+              currentWindow: true,
             });
-            return true; // async response
-
-          case 'RESET_RECORDING':
-            status = 'idle';
-            currentSession = null;
-            actionCount = 0;
-            broadcastStatus();
-            saveState();
+            if (!tab?.id) {
+              sendResponse({ error: 'No active tab' });
+              return;
+            }
+            switch (message.type) {
+              case 'START_RECORDING':
+                await startRecording(tab.id);
+                break;
+              case 'PAUSE_RECORDING':
+                await pauseRecording(tab.id);
+                break;
+              case 'RESUME_RECORDING':
+                await resumeRecording(tab.id);
+                break;
+              case 'STOP_RECORDING':
+                await stopRecording(tab.id);
+                break;
+            }
             sendResponse({ success: true });
-            return false;
-
-          // ─── Async handlers (recording controls from popup/sidepanel) ─
-          case 'START_RECORDING':
-          case 'PAUSE_RECORDING':
-          case 'RESUME_RECORDING':
-          case 'STOP_RECORDING': {
-            (async () => {
-              await stateReady;
-              const [tab] = await chrome.tabs.query({
-                active: true,
-                currentWindow: true,
-              });
-              if (!tab?.id) {
-                sendResponse({ error: 'No active tab' });
-                return;
-              }
-              switch (message.type) {
-                case 'START_RECORDING':
-                  await startRecording(tab.id);
-                  break;
-                case 'PAUSE_RECORDING':
-                  await pauseRecording(tab.id);
-                  break;
-                case 'RESUME_RECORDING':
-                  await resumeRecording(tab.id);
-                  break;
-                case 'STOP_RECORDING':
-                  await stopRecording(tab.id);
-                  break;
-              }
-              sendResponse({ success: true });
-            })();
-            return true; // async response
-          }
-
-          default:
-            return false;
+          })();
+          return true; // async response
         }
-      },
-    );
+
+        default:
+          return false;
+      }
+    });
 
     // Tab switch detection for multi-tab recording
     chrome.tabs.onActivated.addListener(handleTabSwitch);

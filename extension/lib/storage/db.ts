@@ -35,10 +35,7 @@ export async function getSession(id: string): Promise<RecordingSession | undefin
   return db.sessions.get(id);
 }
 
-export async function updateSession(
-  id: string,
-  changes: Partial<RecordingSession>,
-): Promise<void> {
+export async function updateSession(id: string, changes: Partial<RecordingSession>): Promise<void> {
   await db.sessions.update(id, changes);
 }
 
@@ -64,10 +61,7 @@ export async function getAction(id: string): Promise<CapturedAction | undefined>
   return db.actions.get(id);
 }
 
-export async function updateAction(
-  id: string,
-  changes: Partial<CapturedAction>,
-): Promise<void> {
+export async function updateAction(id: string, changes: Partial<CapturedAction>): Promise<void> {
   await db.actions.update(id, changes);
 }
 
@@ -78,10 +72,7 @@ export async function getSessionActions(sessionId: string): Promise<CapturedActi
     .toArray();
 }
 
-export async function reorderActions(
-  sessionId: string,
-  orderedIds: string[],
-): Promise<void> {
+export async function reorderActions(sessionId: string, orderedIds: string[]): Promise<void> {
   await db.transaction('rw', db.actions, async () => {
     for (let i = 0; i < orderedIds.length; i++) {
       await db.actions.update(orderedIds[i], { sequenceNumber: i + 1 });
@@ -95,10 +86,7 @@ export async function deleteAction(id: string): Promise<void> {
 
 // ─── Video Operations ───────────────────────────────────────────────────────
 
-export async function saveVideoBlob(
-  sessionId: string,
-  blob: Blob,
-): Promise<string> {
+export async function saveVideoBlob(sessionId: string, blob: Blob): Promise<string> {
   const id = `video_${sessionId}`;
   await db.videoBlobs.put({ id, sessionId, blob, createdAt: Date.now() });
   return id;
@@ -119,7 +107,11 @@ export async function clearAllData(): Promise<void> {
   });
 }
 
-export async function getStorageUsage(): Promise<{ sessions: number; actions: number; videos: number }> {
+export async function getStorageUsage(): Promise<{
+  sessions: number;
+  actions: number;
+  videos: number;
+}> {
   const [sessions, actions, videos] = await Promise.all([
     db.sessions.count(),
     db.actions.count(),

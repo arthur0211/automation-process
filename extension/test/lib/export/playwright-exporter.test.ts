@@ -1,11 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { exportToPlaywright } from '@/lib/export/playwright-exporter';
-import {
-  createAction,
-  createSession,
-  createElementMetadata,
-  createSelector,
-} from '../../fixtures';
+import type { ActionType } from '@/lib/types';
+import { createAction, createSession, createElementMetadata, createSelector } from '../../fixtures';
 
 describe('exportToPlaywright', () => {
   it('generates valid Playwright test file structure', () => {
@@ -326,7 +322,7 @@ describe('exportToPlaywright', () => {
   it('adds comment for unsupported action type', () => {
     const session = createSession();
     // Force an unsupported action type via cast
-    const actions = [createAction({ actionType: 'hover' as any })];
+    const actions = [createAction({ actionType: 'hover' as unknown as ActionType })];
     const result = exportToPlaywright(session, actions);
 
     expect(result).toContain('// Unsupported action type: hover');

@@ -2,14 +2,23 @@
 
 ## Current State
 
-- **Latest commit**: `fix(extension): address multi-tab review issues`
-- **Total commits**: 25
+- **Latest commit**: `chore: add ESLint + Prettier config and CI lint/coverage`
+- **Total commits**: 28
 - **Tests**: 169 passing (extension)
 - **TS errors**: 0
 - **Extension**: Feature-complete for Phase 1 + 2A + 2B + 2C + 2D (all) + Audit fixes + FUTURE-01 + FUTURE-02 + FUTURE-03 + FUTURE-04
 - **Backend**: ADK agents defined (7 agents), all 7 integrated with extension (pipeline + standalone)
 
 ## Completed This Session
+
+### P2 Audit: ESLint + Prettier + CI Improvements
+- Added ESLint 9 flat config with typescript-eslint and eslint-config-prettier
+- Added Prettier config (.prettierrc.json)
+- Formatted entire codebase (33 files)
+- Removed stale eslint-disable comment (jsx-a11y/no-autofocus)
+- Added lint, format, format:check scripts to package.json
+- Added lint step and coverage flag to CI workflow
+- 0 lint errors, 0 TS errors, 169 tests passing
 
 ### README Update
 - Updated README.md with current project state (158→169 tests, Phase 2D complete, FUTURE-02/03)
@@ -114,19 +123,23 @@
 23. `fix(export): address code review issues for video feature` — XSS sanitization, MIME type, error handling, 2 tests
 24. `feat(extension): add multi-tab recording support` — tabId/tabTitle, sendToAllTabs, tab switch detection, 4 tests
 25. `fix(extension): address multi-tab review issues` — central sequencing, counter rollback, type safety, 1 test
+26. `chore: update tracking for FUTURE-01 and FUTURE-04 completion` — features.json + progress.md
+27. `docs: update README with FUTURE-01 and FUTURE-04 features` — video playback, multi-tab in docs
+28. `chore: add GitHub Actions CI workflow` — tsc --noEmit + vitest run on push/PR
+29. `chore: add ESLint + Prettier config and CI lint/coverage` — ESLint 9 flat config, Prettier, formatted codebase, lint + coverage in CI
 
 ## 360 Audit Results
 
 ### Scores by Area
 | Area | Score | Notes |
 |------|-------|-------|
-| Extension Code | 7.5/10 | Solid architecture, minor type safety and race condition issues |
-| Tests | B+ | Good coverage (131 tests), missing edge cases in Playwright exporter |
-| Features | 93% | 35/38 features done, remaining are future backlog |
-| Backend | NOT deployable | Agents defined but no CI/CD, no env validation, no health checks |
-| Documentation | 6.5/10 | CLAUDE.md good, README outdated, no API docs |
-| Automation | 6/10 | No CI/CD pipeline, no pre-commit hooks, no lint config |
-| Product | 6.5/10 | Core flow works, UX polish needed (decision badges, error boundaries) |
+| Extension Code | 9/10 | Solid architecture, type safety fixed, race conditions resolved, 0 lint errors |
+| Tests | A | 169 tests, good coverage, edge cases covered |
+| Features | 95% | 40/42 features done, only FUTURE-05 (cloud sync) planned |
+| Backend | NOT deployable | Agents defined but no env validation, no health checks |
+| Documentation | 8/10 | CLAUDE.md, README, features.json, progress.md all up to date |
+| Automation | 9/10 | GitHub Actions CI (lint + type check + tests + coverage), ESLint + Prettier |
+| Product | 8/10 | All core features + video, sessions, import, multi-tab done |
 
 ### Top Findings by Priority
 

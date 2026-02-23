@@ -125,9 +125,7 @@ function handleInput(event: Event) {
     target,
     setTimeout(() => {
       inputTimers.delete(target);
-      const value = (target as HTMLInputElement).type === 'password'
-        ? '••••••••'
-        : target.value;
+      const value = (target as HTMLInputElement).type === 'password' ? '••••••••' : target.value;
       const action = buildAction('input', target, {
         inputValue: value,
       });
@@ -145,14 +143,19 @@ function handleScroll() {
   const now = Date.now();
   if (now - lastScrollTime < captureSettings.scrollThrottleMs) {
     if (scrollTimer) clearTimeout(scrollTimer);
-    scrollTimer = setTimeout(handleScroll, captureSettings.scrollThrottleMs - (now - lastScrollTime));
+    scrollTimer = setTimeout(
+      handleScroll,
+      captureSettings.scrollThrottleMs - (now - lastScrollTime),
+    );
     return;
   }
   lastScrollTime = now;
 
-  sendAction(buildAction('scroll', document.documentElement, {
-    scrollPosition: { x: window.scrollX, y: window.scrollY },
-  }));
+  sendAction(
+    buildAction('scroll', document.documentElement, {
+      scrollPosition: { x: window.scrollX, y: window.scrollY },
+    }),
+  );
 }
 
 function handleSubmit(event: Event) {
@@ -171,7 +174,15 @@ function handleChange(event: Event) {
   const tag = target.tagName.toLowerCase();
   const type = (target as HTMLInputElement).type || '';
   const isSelect = tag === 'select';
-  const isSpecialInput = ['date', 'time', 'datetime-local', 'month', 'week', 'color', 'range'].includes(type);
+  const isSpecialInput = [
+    'date',
+    'time',
+    'datetime-local',
+    'month',
+    'week',
+    'color',
+    'range',
+  ].includes(type);
 
   if (!isSelect && !isSpecialInput) return;
 

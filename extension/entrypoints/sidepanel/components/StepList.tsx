@@ -63,13 +63,9 @@ export function StepList({ actions, selectedId, onSelect, onReorder }: StepListP
                 </span>
               )}
             </div>
-            <div class="text-xs text-gray-400 mt-0.5 truncate">
-              {action.pageTitle}
-            </div>
+            <div class="text-xs text-gray-400 mt-0.5 truncate">{action.pageTitle}</div>
           </div>
-          <span class="text-xs text-gray-300 flex-shrink-0">
-            {action.sequenceNumber}
-          </span>
+          <span class="text-xs text-gray-300 flex-shrink-0">{action.sequenceNumber}</span>
         </div>
       ))}
     </div>

@@ -23,13 +23,9 @@ function getCssSelector(element: Element): string {
   const tag = element.tagName.toLowerCase();
 
   // 0. Try data-testid / data-test-id (most reliable for automation)
-  const testId =
-    element.getAttribute('data-testid') ||
-    element.getAttribute('data-test-id');
+  const testId = element.getAttribute('data-testid') || element.getAttribute('data-test-id');
   if (testId) {
-    const attr = element.hasAttribute('data-testid')
-      ? 'data-testid'
-      : 'data-test-id';
+    const attr = element.hasAttribute('data-testid') ? 'data-testid' : 'data-test-id';
     const selector = `${tag}[${attr}="${CSS.escape(testId)}"]`;
     if (document.querySelectorAll(selector).length === 1) {
       return selector;
@@ -78,9 +74,7 @@ function getCssSelector(element: Element): string {
     const tag = el.tagName.toLowerCase();
     const parent: Element | null = el.parentElement;
     if (parent) {
-      const siblings = Array.from(parent.children).filter(
-        (c: Element) => c.tagName === el.tagName,
-      );
+      const siblings = Array.from(parent.children).filter((c: Element) => c.tagName === el.tagName);
       if (siblings.length > 1) {
         const index = siblings.indexOf(el) + 1;
         parts.unshift(`${tag}:nth-of-type(${index})`);
@@ -98,19 +92,16 @@ function getCssSelector(element: Element): string {
 
 function getSelectorConfidence(css: string): number {
   if (css.includes('[data-testid=') || css.includes('[data-test-id=')) return 0.95;
-  if (css.startsWith('#')) return 0.90;
+  if (css.startsWith('#')) return 0.9;
   if (css.includes('[aria-label=')) return 0.85;
-  if (css.includes('[name=')) return 0.80;
-  if (css.includes('.') && !css.includes('nth-of-type')) return 0.60;
-  return 0.20;
+  if (css.includes('[name=')) return 0.8;
+  if (css.includes('.') && !css.includes('nth-of-type')) return 0.6;
+  return 0.2;
 }
 
 export function generateSelectors(element: Element): ElementSelector {
   const role = element.getAttribute('role') || '';
-  const testId =
-    element.getAttribute('data-testid') ||
-    element.getAttribute('data-test-id') ||
-    '';
+  const testId = element.getAttribute('data-testid') || element.getAttribute('data-test-id') || '';
   const css = getCssSelector(element);
 
   return {

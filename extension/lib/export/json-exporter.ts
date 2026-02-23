@@ -17,10 +17,7 @@ function actionToStep(action: CapturedAction, index: number): ProcessStep {
   };
 }
 
-export function exportToJson(
-  session: RecordingSession,
-  actions: CapturedAction[],
-): string {
+export function exportToJson(session: RecordingSession, actions: CapturedAction[]): string {
   const sorted = [...actions].sort((a, b) => a.sequenceNumber - b.sequenceNumber);
 
   const output: ProcessExport = {

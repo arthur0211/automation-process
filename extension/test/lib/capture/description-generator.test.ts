@@ -32,17 +32,33 @@ describe('generateDescription', () => {
   it('describes toggling a checkbox', () => {
     const action = createAction({
       actionType: 'click',
-      element: createElementMetadata({ tag: 'input', type: 'checkbox', text: '', role: '', name: 'agree' }),
+      element: createElementMetadata({
+        tag: 'input',
+        type: 'checkbox',
+        text: '',
+        role: '',
+        name: 'agree',
+      }),
     });
-    expect(generateDescription(action)).toBe("Toggled checkbox the 'agree' field on example.com (/page)");
+    expect(generateDescription(action)).toBe(
+      "Toggled checkbox the 'agree' field on example.com (/page)",
+    );
   });
 
   it('describes selecting a radio button', () => {
     const action = createAction({
       actionType: 'click',
-      element: createElementMetadata({ tag: 'input', type: 'radio', text: '', role: '', name: 'option' }),
+      element: createElementMetadata({
+        tag: 'input',
+        type: 'radio',
+        text: '',
+        role: '',
+        name: 'option',
+      }),
     });
-    expect(generateDescription(action)).toBe("Selected radio the 'option' field on example.com (/page)");
+    expect(generateDescription(action)).toBe(
+      "Selected radio the 'option' field on example.com (/page)",
+    );
   });
 
   it('describes opening a dropdown', () => {
@@ -67,7 +83,12 @@ describe('generateDescription', () => {
     const action = createAction({
       actionType: 'input',
       inputValue: 'hello world',
-      element: createElementMetadata({ tag: 'input', text: '', ariaLabel: '', placeholder: 'Enter name' }),
+      element: createElementMetadata({
+        tag: 'input',
+        text: '',
+        ariaLabel: '',
+        placeholder: 'Enter name',
+      }),
     });
     expect(generateDescription(action)).toBe(
       "Typed 'hello world' in the 'Enter name' field on example.com (/page)",
@@ -78,7 +99,13 @@ describe('generateDescription', () => {
     const action = createAction({
       actionType: 'input',
       inputValue: 'secret123',
-      element: createElementMetadata({ tag: 'input', type: 'password', text: '', ariaLabel: '', placeholder: 'Password' }),
+      element: createElementMetadata({
+        tag: 'input',
+        type: 'password',
+        text: '',
+        ariaLabel: '',
+        placeholder: 'Password',
+      }),
     });
     expect(generateDescription(action)).toBe(
       "Typed •••••••• in the 'Password' field on example.com (/page)",
@@ -89,7 +116,13 @@ describe('generateDescription', () => {
     const action = createAction({
       actionType: 'input',
       inputValue: '',
-      element: createElementMetadata({ tag: 'input', text: '', ariaLabel: '', placeholder: '', name: 'email' }),
+      element: createElementMetadata({
+        tag: 'input',
+        text: '',
+        ariaLabel: '',
+        placeholder: '',
+        name: 'email',
+      }),
     });
     expect(generateDescription(action)).toBe(
       "Typed '' in the 'email' field on example.com (/page)",
@@ -108,9 +141,7 @@ describe('generateDescription', () => {
       actionType: 'navigate',
       url: 'https://docs.example.com/getting-started',
     });
-    expect(generateDescription(action)).toBe(
-      'Navigated to docs.example.com (/getting-started)',
-    );
+    expect(generateDescription(action)).toBe('Navigated to docs.example.com (/getting-started)');
   });
 
   it('describes form submit', () => {
@@ -143,14 +174,25 @@ describe('generateDescription', () => {
 
   it('uses name attribute', () => {
     const action = createAction({
-      element: createElementMetadata({ ariaLabel: '', text: '', placeholder: '', name: 'username' }),
+      element: createElementMetadata({
+        ariaLabel: '',
+        text: '',
+        placeholder: '',
+        name: 'username',
+      }),
     });
     expect(generateDescription(action)).toContain("'username' field");
   });
 
   it('uses id as fallback', () => {
     const action = createAction({
-      element: createElementMetadata({ ariaLabel: '', text: '', placeholder: '', name: '', id: 'submit-form' }),
+      element: createElementMetadata({
+        ariaLabel: '',
+        text: '',
+        placeholder: '',
+        name: '',
+        id: 'submit-form',
+      }),
     });
     expect(generateDescription(action)).toContain('#submit-form');
   });
@@ -158,7 +200,13 @@ describe('generateDescription', () => {
   it('uses type+tag as last resort', () => {
     const action = createAction({
       element: createElementMetadata({
-        ariaLabel: '', text: '', placeholder: '', name: '', id: '', tag: 'input', type: 'email',
+        ariaLabel: '',
+        text: '',
+        placeholder: '',
+        name: '',
+        id: '',
+        tag: 'input',
+        type: 'email',
       }),
     });
     expect(generateDescription(action)).toContain('a email input');
@@ -167,7 +215,13 @@ describe('generateDescription', () => {
   it('uses generic tag element as ultimate fallback', () => {
     const action = createAction({
       element: createElementMetadata({
-        ariaLabel: '', text: '', placeholder: '', name: '', id: '', tag: 'span', type: '',
+        ariaLabel: '',
+        text: '',
+        placeholder: '',
+        name: '',
+        id: '',
+        tag: 'span',
+        type: '',
       }),
     });
     expect(generateDescription(action)).toContain('a span element');

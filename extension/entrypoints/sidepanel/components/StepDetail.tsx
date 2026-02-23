@@ -37,9 +37,7 @@ export function StepDetail({ action, onUpdate, onDelete }: StepDetailProps) {
 
       {/* Description */}
       <div>
-        <label class="block text-xs font-medium text-gray-500 mb-1">
-          Description
-        </label>
+        <label class="block text-xs font-medium text-gray-500 mb-1">Description</label>
         {editingDesc ? (
           <div>
             <textarea
@@ -56,7 +54,10 @@ export function StepDetail({ action, onUpdate, onDelete }: StepDetailProps) {
                 Save
               </button>
               <button
-                onClick={() => { setDescValue(action.description); setEditingDesc(false); }}
+                onClick={() => {
+                  setDescValue(action.description);
+                  setEditingDesc(false);
+                }}
                 class="px-2 py-1 text-xs font-medium text-gray-600 bg-gray-100 rounded hover:bg-gray-200"
               >
                 Cancel
@@ -97,19 +98,32 @@ export function StepDetail({ action, onUpdate, onDelete }: StepDetailProps) {
           </label>
           <div class="text-xs text-gray-600 bg-gray-50 px-2 py-1.5 rounded space-y-0.5">
             {action.llmVisualAnalysis.pageContext?.section && (
-              <p><span class="text-gray-400">Section:</span> {action.llmVisualAnalysis.pageContext.section}</p>
+              <p>
+                <span class="text-gray-400">Section:</span>{' '}
+                {action.llmVisualAnalysis.pageContext.section}
+              </p>
             )}
             {action.llmVisualAnalysis.layout && (
-              <p><span class="text-gray-400">Layout:</span> {action.llmVisualAnalysis.layout}</p>
+              <p>
+                <span class="text-gray-400">Layout:</span> {action.llmVisualAnalysis.layout}
+              </p>
             )}
             {action.llmVisualAnalysis.interactedElement?.description && (
-              <p><span class="text-gray-400">Element:</span> {action.llmVisualAnalysis.interactedElement.description}</p>
+              <p>
+                <span class="text-gray-400">Element:</span>{' '}
+                {action.llmVisualAnalysis.interactedElement.description}
+              </p>
             )}
             {action.llmVisualAnalysis.confidence !== undefined && (
-              <p><span class="text-gray-400">Confidence:</span> {(action.llmVisualAnalysis.confidence * 100).toFixed(0)}%</p>
+              <p>
+                <span class="text-gray-400">Confidence:</span>{' '}
+                {(action.llmVisualAnalysis.confidence * 100).toFixed(0)}%
+              </p>
             )}
             {action.llmVisualAnalysis.reasoning && (
-              <p><span class="text-gray-400">Reasoning:</span> {action.llmVisualAnalysis.reasoning}</p>
+              <p>
+                <span class="text-gray-400">Reasoning:</span> {action.llmVisualAnalysis.reasoning}
+              </p>
             )}
           </div>
         </div>
@@ -177,7 +191,10 @@ export function StepDetail({ action, onUpdate, onDelete }: StepDetailProps) {
           )}
 
           <span class="text-gray-400">CSS</span>
-          <span class="text-gray-700 font-mono text-[10px] truncate" title={action.element.selectors.css}>
+          <span
+            class="text-gray-700 font-mono text-[10px] truncate"
+            title={action.element.selectors.css}
+          >
             {action.element.selectors.css}
           </span>
         </div>
@@ -194,10 +211,7 @@ export function StepDetail({ action, onUpdate, onDelete }: StepDetailProps) {
       </div>
 
       {/* Notes */}
-      <NoteEditor
-        note={action.note}
-        onSave={(note) => onUpdate(action.id, { note })}
-      />
+      <NoteEditor note={action.note} onSave={(note) => onUpdate(action.id, { note })} />
     </div>
   );
 }

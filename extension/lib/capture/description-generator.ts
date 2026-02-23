@@ -59,8 +59,7 @@ export function generateDescription(action: CapturedAction): string {
 
     case 'input': {
       const value = action.inputValue || '';
-      const masked =
-        action.element.type === 'password' ? '••••••••' : `'${truncate(value)}'`;
+      const masked = action.element.type === 'password' ? '••••••••' : `'${truncate(value)}'`;
       return `Typed ${masked} in ${target} on ${page}`;
     }
 

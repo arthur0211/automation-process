@@ -42,9 +42,7 @@ export function ValidationPanel({ session }: ValidationPanelProps) {
         </span>
         <label class="text-xs font-medium text-gray-500">Validation</label>
       </div>
-      {result.summary && (
-        <p class="text-xs text-gray-600">{result.summary}</p>
-      )}
+      {result.summary && <p class="text-xs text-gray-600">{result.summary}</p>}
       {result.issues.length > 0 && (
         <div class="space-y-0.5">
           {result.issues.map((issue, i) => (

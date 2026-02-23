@@ -11,7 +11,10 @@ import {
   updateSession as dbUpdateSession,
 } from '../storage/db';
 
-export async function updateActionWithDb(id: string, changes: Partial<CapturedAction>): Promise<void> {
+export async function updateActionWithDb(
+  id: string,
+  changes: Partial<CapturedAction>,
+): Promise<void> {
   await dbUpdateAction(id, changes);
   recordingStore.getState().updateAction(id, changes);
 }
@@ -23,13 +26,20 @@ export async function deleteActionWithDb(id: string): Promise<void> {
   clearSelection();
 }
 
-export async function reorderActionsWithDb(sessionId: string, fromIndex: number, toIndex: number): Promise<void> {
+export async function reorderActionsWithDb(
+  sessionId: string,
+  fromIndex: number,
+  toIndex: number,
+): Promise<void> {
   const actions = [...recordingStore.getState().actions];
   const [moved] = actions.splice(fromIndex, 1);
   actions.splice(toIndex, 0, moved);
   const reordered = actions.map((a, i) => ({ ...a, sequenceNumber: i + 1 }));
   recordingStore.getState().setActions(reordered);
-  await dbReorderActions(sessionId, reordered.map((a) => a.id));
+  await dbReorderActions(
+    sessionId,
+    reordered.map((a) => a.id),
+  );
 }
 
 export async function loadSessions(): Promise<void> {
@@ -37,7 +47,9 @@ export async function loadSessions(): Promise<void> {
   recordingStore.getState().setSessions(sessions);
 }
 
-export async function loadSessionActions(session: import('../types').RecordingSession): Promise<void> {
+export async function loadSessionActions(
+  session: import('../types').RecordingSession,
+): Promise<void> {
   const actions = await getSessionActions(session.id);
   recordingStore.getState().selectSession(session);
   recordingStore.getState().setActions(actions);

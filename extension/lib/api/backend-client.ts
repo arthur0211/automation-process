@@ -89,9 +89,8 @@ export async function processActionWithBackend(
     const state = sessionData.state || {};
 
     // 3. Extract enrichment from session state (output_keys from agents)
-    const description = typeof state.description === 'string'
-      ? state.description
-      : action.description;
+    const description =
+      typeof state.description === 'string' ? state.description : action.description;
 
     const visualAnalysis = parseJsonSafe<VisualAnalysis>(state.visual_analysis);
 
@@ -259,8 +258,16 @@ export async function analyzeComplexAction(
 
     return {
       elements: Array.isArray(raw.elements) ? raw.elements : [],
-      interactedElement: (raw.interactedElement as ComplexAnalysis['interactedElement']) || { type: '', text: '', description: '' },
-      pageContext: (raw.pageContext as ComplexAnalysis['pageContext']) || { app: '', section: '', workflow: '' },
+      interactedElement: (raw.interactedElement as ComplexAnalysis['interactedElement']) || {
+        type: '',
+        text: '',
+        description: '',
+      },
+      pageContext: (raw.pageContext as ComplexAnalysis['pageContext']) || {
+        app: '',
+        section: '',
+        workflow: '',
+      },
       statusIndicators: Array.isArray(raw.statusIndicators) ? raw.statusIndicators : [],
       layout: typeof raw.layout === 'string' ? raw.layout : '',
       confidence: raw.confidence,

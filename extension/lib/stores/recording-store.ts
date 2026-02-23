@@ -52,7 +52,8 @@ export const recordingStore = createStore<RecordingState & RecordingActions>()((
 
   selectSession: (session) => set({ session, view: 'list', selectedActionId: null }),
 
-  backToSessions: () => set({ session: null, actions: [], actionCount: 0, selectedActionId: null, view: 'sessions' }),
+  backToSessions: () =>
+    set({ session: null, actions: [], actionCount: 0, selectedActionId: null, view: 'sessions' }),
 
   addAction: (action) =>
     set((state) => ({
@@ -98,8 +99,5 @@ export const recordingStore = createStore<RecordingState & RecordingActions>()((
 type StoreState = RecordingState & RecordingActions;
 
 export function useRecordingStore<U>(selector: (state: StoreState) => U): U {
-  return useSyncExternalStore(
-    recordingStore.subscribe,
-    () => selector(recordingStore.getState()),
-  );
+  return useSyncExternalStore(recordingStore.subscribe, () => selector(recordingStore.getState()));
 }
