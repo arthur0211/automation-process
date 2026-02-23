@@ -42,8 +42,8 @@ Chrome Extension that records web interactions and exports process documentation
 | Layer | Technologies |
 |-------|-------------|
 | **Extension** | WXT 0.20, Preact 10, Zustand 5, Dexie 4, Tailwind CSS 4, TypeScript 5.9 |
-| **Backend** (Phase 2D) | Google ADK, Vertex AI, Gemini 3 Flash/Pro, Claude Sonnet 4.6, Python 3.12 |
-| **Tests** | Vitest, happy-dom, fake-indexeddb |
+| **Backend** | Google ADK, Vertex AI, Gemini 3 Flash/Pro, Claude Sonnet 4.6, Python 3.12 |
+| **Tests** | Vitest (158 tests), happy-dom, fake-indexeddb |
 
 ## Setup & Run
 
@@ -56,7 +56,7 @@ npx wxt                  # dev mode (Chrome, hot reload)
 npx wxt --browser firefox  # dev mode (Firefox)
 npx wxt build            # production build → .output/
 npx wxt zip              # create extension ZIP
-npx vitest run           # run 116 tests
+npx vitest run           # run 158 tests
 npx tsc --noEmit         # type check (0 errors)
 ```
 
@@ -68,7 +68,7 @@ npm run build  # forwards to extension build
 npm run zip    # forwards to extension zip
 ```
 
-### Backend (Phase 2)
+### Backend
 
 ```bash
 cd backend
@@ -86,6 +86,7 @@ Requires Vertex AI environment variables — copy `backend/.env.example` to `bac
 4. **Review** — Open the Side Panel to see captured steps with screenshots and descriptions
 5. **Edit** — Edit descriptions, add notes, reorder or delete steps in the Side Panel
 6. **Export** — Download as JSON (for LLMs), HTML (self-contained report), or Playwright test (.spec.ts)
+7. **Sessions** — Browse past recordings, rename, delete, or import JSON exports from the Sessions view
 
 ## Keyboard Shortcuts
 
@@ -105,8 +106,13 @@ Requires Vertex AI environment variables — copy `backend/.env.example` to `bac
 
 - **Phase 1** (Extension core) — Complete. Recording, capture, storage, JSON/HTML export
 - **Phase 2A** (Bugfixes + quick wins) — Complete. 7 bugfixes + 4 enhancements
-- **Phase 2B** (Playwright exporter) — Complete. Smart locator cascade, 17 tests
+- **Phase 2B** (Playwright exporter) — Complete. Smart locator cascade, 23 tests
 - **Phase 2C** (Zustand migration) — Complete. Centralized state, eliminated duplicated local state
-- **Phase 2D** (Backend integration) — Planned. LLM-powered enrichment via Google ADK agents on Vertex AI
+- **Phase 2D** (Backend integration) — Complete. ADK pipeline + standalone agents integrated
+- **Audit** — Complete. Race condition fix, type safety, decision badges, Playwright reliability
+- **FUTURE-02** (Session management) — Complete. List, rename, delete sessions with three-level navigation
+- **FUTURE-03** (Import recordings) — Complete. JSON import with validation
+
+**158 tests passing, 0 TypeScript errors.**
 
 See `features.json` for the full feature inventory and `progress.md` for current session state.
