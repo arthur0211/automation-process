@@ -9,7 +9,7 @@ interface UndoToastProps {
 
 export function UndoToast({ message, onUndo, onDismiss, duration = 5000 }: UndoToastProps) {
   const [remaining, setRemaining] = useState(duration);
-  const startRef = useRef(Date.now());
+  const startRef = useRef(0);
   const frameRef = useRef<number>(0);
 
   useEffect(() => {

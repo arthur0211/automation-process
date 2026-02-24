@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback } from 'preact/hooks';
+import { useState, useRef, useCallback, useEffect } from 'preact/hooks';
 import type { CapturedAction, RecordingSession } from '@/lib/types';
 import { useRecordingStore, recordingStore } from '@/lib/stores/recording-store';
 import { useBackgroundSync } from '@/lib/hooks/use-background-sync';
@@ -40,8 +40,10 @@ export function App() {
   const backToSessions = useRecordingStore((s) => s.backToSessions);
 
   const [pendingDelete, setPendingDelete] = useState<PendingDelete | null>(null);
-  const pendingRef = useRef(pendingDelete);
-  pendingRef.current = pendingDelete;
+  const pendingRef = useRef<PendingDelete | null>(null);
+  useEffect(() => {
+    pendingRef.current = pendingDelete;
+  });
 
   function handleSelect(id: string) {
     selectAction(id);
