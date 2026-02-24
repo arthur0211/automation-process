@@ -166,6 +166,8 @@ export async function processActionWithBackend(
     }
 
     // 2. Poll session state with exponential backoff (ROAD-12)
+    // Note: visual_grounding is intentionally excluded from required keys —
+    // it uses code execution which is slower, so we don't block on it (ROAD-28)
     const state = await pollSessionState(
       backendUrl,
       APP_NAME,

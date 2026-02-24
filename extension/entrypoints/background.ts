@@ -4,6 +4,7 @@ import {
   addAction,
   updateAction,
   getSessionActions,
+  getActionBySequence,
   saveVideoBlob,
 } from '@/lib/storage/db';
 import { captureScreenshot } from '@/lib/capture/screenshot';
@@ -289,8 +290,7 @@ async function enrichActionInBackground(action: CapturedAction) {
     // Look up previous action for temporal context (before/after)
     let prevScreenshotDataUrl: string | undefined;
     if (action.sequenceNumber > 1) {
-      const actions = await getSessionActions(action.sessionId);
-      const prevAction = actions.find(a => a.sequenceNumber === action.sequenceNumber - 1);
+      const prevAction = await getActionBySequence(action.sessionId, action.sequenceNumber - 1);
       prevScreenshotDataUrl = prevAction?.screenshotDataUrl;
     }
 

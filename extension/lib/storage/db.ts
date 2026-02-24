@@ -72,6 +72,13 @@ export async function getSessionActions(sessionId: string): Promise<CapturedActi
     .toArray();
 }
 
+export async function getActionBySequence(
+  sessionId: string,
+  sequenceNumber: number,
+): Promise<CapturedAction | undefined> {
+  return db.actions.where('[sessionId+sequenceNumber]').equals([sessionId, sequenceNumber]).first();
+}
+
 export async function reorderActions(sessionId: string, orderedIds: string[]): Promise<void> {
   await db.transaction('rw', db.actions, async () => {
     for (let i = 0; i < orderedIds.length; i++) {
