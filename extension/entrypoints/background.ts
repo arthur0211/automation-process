@@ -438,6 +438,21 @@ async function handleTabSwitch(activeInfo: { tabId: number; windowId: number }) 
   if (activeInfo.tabId === lastActiveTabId) return;
   lastActiveTabId = activeInfo.tabId;
 
+  // Ensure the new tab has content script capturing
+  // (new tabs opened during recording never received START_RECORDING)
+  try {
+    const tabInfo = await chrome.tabs.get(activeInfo.tabId);
+    if (tabInfo.url && /^https?:\/\//.test(tabInfo.url)) {
+      await ensureContentScript(activeInfo.tabId);
+      await chrome.tabs.sendMessage(activeInfo.tabId, {
+        type: 'START_RECORDING',
+        payload: { sessionId: currentSession.id, settings: currentSettings },
+      }).catch(() => {});
+    }
+  } catch {
+    // Tab may not be ready yet — content script will miss early events
+  }
+
   actionCount++;
   try {
     const tab = await chrome.tabs.get(activeInfo.tabId);
