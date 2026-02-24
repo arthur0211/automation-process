@@ -96,6 +96,14 @@ export interface VisualAnalysis {
   codeTrace?: string;
 }
 
+export interface VisualGrounding {
+  boundingBox?: { y0: number; x0: number; y1: number; x1: number };
+  annotatedImageBase64?: string;
+  elementLabel?: string;
+  spatialRelations?: string[];
+  confidence?: number;
+}
+
 // ─── Captured Action ────────────────────────────────────────────────────────
 
 export interface CapturedAction {
@@ -116,6 +124,7 @@ export interface CapturedAction {
   decisionPoint: DecisionPoint;
   llmDescription?: string;
   llmVisualAnalysis?: VisualAnalysis;
+  visualGrounding?: VisualGrounding;
   tabId?: number;
   tabTitle?: string;
 }

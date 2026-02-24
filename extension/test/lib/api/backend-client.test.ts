@@ -372,6 +372,46 @@ describe('processActionWithBackend', () => {
     });
   });
 
+  it('parses visual_grounding from session state (ROAD-28)', async () => {
+    setupFetchMock(fetchMock, {
+      description: 'Clicks the Submit button',
+      visual_analysis: { elements: [], layout: 'form' },
+      decision_analysis: { isDecisionPoint: false, reason: '', branches: [] },
+      visual_grounding: {
+        boundingBox: { y0: 100, x0: 200, y1: 150, x1: 400 },
+        annotatedImageBase64: 'data:image/png;base64,annotated',
+        elementLabel: 'Button: Submit',
+        spatialRelations: ['inside main form'],
+        confidence: 0.92,
+      },
+    });
+
+    const result = await processActionWithBackend(
+      createAction({ sessionId: 'sess-grounding' }),
+      'data:image/png;base64,abc123',
+      BACKEND_URL,
+    );
+
+    expect(result).not.toBeNull();
+    expect(result!.visualGrounding).toBeDefined();
+    expect(result!.visualGrounding!.boundingBox).toEqual({ y0: 100, x0: 200, y1: 150, x1: 400 });
+    expect(result!.visualGrounding!.elementLabel).toBe('Button: Submit');
+    expect(result!.visualGrounding!.confidence).toBe(0.92);
+  });
+
+  it('returns undefined visualGrounding when visual_grounding is missing from state', async () => {
+    setupFetchMock(fetchMock, {
+      description: 'Clicks button',
+      visual_analysis: { elements: [], layout: 'form' },
+      decision_analysis: { isDecisionPoint: false, reason: '', branches: [] },
+    });
+
+    const result = await processActionWithBackend(createAction(), '', BACKEND_URL);
+
+    expect(result).not.toBeNull();
+    expect(result!.visualGrounding).toBeUndefined();
+  });
+
   it('parses boundingBox and codeTrace from visual_analysis (ROAD-28)', async () => {
     setupFetchMock(fetchMock, {
       description: 'Clicks the Submit button',

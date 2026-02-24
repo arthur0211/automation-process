@@ -1,4 +1,4 @@
-import type { CapturedAction, RecordingSession, ValidationResult, VisualAnalysis } from '../types';
+import type { CapturedAction, RecordingSession, ValidationResult, VisualAnalysis, VisualGrounding } from '../types';
 
 export interface EnrichedAction {
   humanDescription: string;
@@ -8,6 +8,7 @@ export interface EnrichedAction {
     reason: string;
     branches: { condition: string; description: string }[];
   };
+  visualGrounding?: VisualGrounding;
 }
 
 const APP_NAME = 'action_processor';
@@ -184,7 +185,11 @@ export async function processActionWithBackend(
       branches: Array.isArray(decisionRaw.branches) ? decisionRaw.branches : [],
     };
 
-    return { humanDescription: description, visualAnalysis, decisionAnalysis };
+    const visualGrounding = state.visual_grounding
+      ? parseJsonSafe<VisualGrounding>(state.visual_grounding)
+      : undefined;
+
+    return { humanDescription: description, visualAnalysis, decisionAnalysis, visualGrounding };
   } catch (err) {
     console.warn('processActionWithBackend failed:', err);
     return null;
