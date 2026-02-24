@@ -2,13 +2,99 @@
 
 ## Current State
 
-- **Latest commit**: `feat(extension): add Puppeteer test exporter (ROAD-27)`
-- **Total commits**: 73
+- **Latest commit**: `fix(ci): install lightningcss linux binary explicitly`
+- **Total commits**: 78
 - **Tests**: 341 passing (extension), 18 test files
 - **TS errors**: 0
 - **Lint errors**: 0
-- **Extension**: Feature-complete — 64 features done in features.json, 6 remaining (XL/L scope or external deps)
+- **Extension**: 64 features done, 6 planned (external deps), 10 new refinement items from UX testing
 - **Backend**: ADK agents consolidated (single app), model versions configurable via env vars, Dockerfile fixed, health check, API key auth.
+- **UX Testing**: Comprehensive E2E testing via Playwright MCP completed (2026-02-24). 23 UX issues documented, 2 bugs found, 3 Agent Team reviews completed.
+
+## UX Testing Session (2026-02-24)
+
+### Methodology
+- **Tool**: Playwright MCP (browser automation via MCP plugin)
+- **Approach**: Simulated real enterprise user (Ana, QA Lead at TechCorp) — first-time user, no technical knowledge of the tool
+- **Scope**: Full E2E testing of all features: recording, side panel, export (all 10 formats), sessions, options, import
+- **Verification**: 3-agent code review team validated all findings against source code
+
+### Bugs Found (2)
+
+| ID | Severity | Issue | Root Cause | File:Line |
+|----|----------|-------|------------|-----------|
+| BUG-01 | Critical | Cypress export crashes with `TypeError: Failed to construct 'URL'` | `new URL(nextAction.url).pathname` without try-catch when URL is empty | `cypress-exporter.ts:58,85` |
+| BUG-02 | Critical | Navigate steps store empty URL string | `tab.url \|\| ''` in handleTabSwitch, missing URL in event-capture.ts navigate action | `background.ts:450`, `event-capture.ts:277` |
+
+### UX Issues Found (23)
+
+| ID | Priority | Category | Issue |
+|----|----------|----------|-------|
+| UX-01 | P2 | Popup | Too much empty space, layout not compact |
+| UX-02 | P2 | Popup | "Open Review Panel" terminology unclear for first-time users |
+| UX-03 | P2 | Popup | No indication which tab will be recorded |
+| UX-04 | P2 | Popup | No brief explanation of what the tool does |
+| UX-05 | P2 | Recording | No session naming before/during recording |
+| UX-06 | P2 | Popup | Popup doesn't auto-close after starting recording |
+| UX-07 | P1 | Recording | No recording indicator on the web page being recorded |
+| UX-08 | P2 | Recording | Must reopen popup to see step count during recording |
+| UX-09 | P3 | Capture | Fewer steps captured than expected (partially Playwright MCP limitation) |
+| UX-10 | P3 | Capture | Steps captured poorly in certain scenarios (programmatic events) |
+| UX-11 | P0 | Steps | "Navigated to " without URL is useless |
+| UX-12 | P2 | Steps | Empty/grey thumbnails on navigate steps |
+| UX-13 | P1 | Export | Export section takes half the screen (11 buttons) |
+| UX-14 | P1 | Export | 10 export buttons overwhelming for first-time users |
+| UX-15 | P0 | Steps | Empty URL in step detail view |
+| UX-16 | P2 | Steps | No screenshot for navigate steps |
+| UX-17 | P2 | Steps | "Decision Point" toggle needs tooltip/explanation |
+| UX-18 | P2 | Steps | Technical CSS/XPath selectors shown to non-technical users |
+| UX-19 | P2 | Sessions | Sessions with identical auto-generated names are indistinguishable |
+| UX-20 | P2 | Sessions | Latest recording not appearing in session list immediately |
+| UX-21 | P1 | Sessions | Session rename via double-click not discoverable (no visual hint) |
+| UX-22 | P2 | Sessions | No visual indicator for active/selected session |
+| UX-23 | P3 | Sessions | Import button positioning (minor) |
+
+### Agent Team Code Review Results
+
+**Agent 1 — UX Code Issues Review**: Confirmed all 6 critical issues with exact file paths and line numbers. Empty URL root cause traced to `background.ts:450` (`url: tab.url || ''`) and `event-capture.ts:277`. Cypress crash confirmed at `cypress-exporter.ts:58,85` — Selenium has identical pattern but with try-catch (safe).
+
+**Agent 2 — Export Quality Review**: Comprehensive table of all 10 exporters. Cypress is the only exporter that crashes on edge cases. All others handle 0 steps, missing screenshots, and empty URLs gracefully. HTML/Markdown properly escape output.
+
+**Agent 3 — UI Components UX Review**: Detailed component-by-component analysis. ExportPanel.tsx has 11 buttons in 175 lines with no grouping/collapsing. SessionList.tsx rename is double-click only (line 150-153), no edit icon. StepDetail.tsx shows raw CSS selectors (line 196-202). Content script injects no recording indicator UI.
+
+### Refinement Plan (REFINE-01 to REFINE-10)
+
+#### Sprint Refine-1 (P0 + P1 — Critical fixes and high-impact UX)
+
+| ID | Name | Priority | Effort | Description |
+|----|------|----------|--------|-------------|
+| REFINE-01 | Fix empty URL in navigate steps | P0 | S | Fix root cause in background.ts and event-capture.ts. All exporters and descriptions benefit. |
+| REFINE-02 | Fix Cypress exporter crash | P0 | S | Add try-catch around `new URL()` calls in cypress-exporter.ts. Add edge case tests. |
+| REFINE-03 | Recording indicator on web page | P1 | M | Inject floating badge via content script. Shows state + step count. Dismissible. |
+| REFINE-04 | Collapsible export panel | P1 | M | Group 11 buttons into 3 accordion sections: Documentation, Test Automation, Integrations. |
+| REFINE-05 | Discoverable session rename | P1 | S | Add edit icon on hover + tooltip. Keep double-click as alternative. |
+
+**Estimated effort**: 2S + 2M + 1S = ~1 sprint
+
+#### Sprint Refine-2 (P2 — Quality of life improvements)
+
+| ID | Name | Priority | Effort | Description |
+|----|------|----------|--------|-------------|
+| REFINE-06 | Popup UX improvements | P2 | M | Compact layout, rename button, tab indicator, description, auto-close. |
+| REFINE-07 | Step detail for non-tech users | P2 | S | Hide selectors by default, tooltip for Decision Point, human-readable element info. |
+| REFINE-08 | Session list improvements | P2 | S | Better auto-names, active indicator, auto-refresh, date/duration info. |
+| REFINE-09 | Navigate step quality | P2 | S | Better descriptions with URL, fallback thumbnails, skip empty URLs in exports. |
+| REFINE-10 | Session naming on start | P2 | S | Optional name field in popup before recording. Default auto-generated. |
+
+**Estimated effort**: 1M + 4S = ~1 sprint
+
+#### Implementation Order (recommended)
+1. **REFINE-01 + REFINE-02** first (P0 bugs, blocks everything else)
+2. **REFINE-09** next (depends on REFINE-01 for URL data)
+3. **REFINE-04** (biggest visual impact for existing users)
+4. **REFINE-05** (quick win, high discoverability improvement)
+5. **REFINE-03** (medium effort, high user confidence improvement)
+6. **REFINE-06 through REFINE-10** in any order (independent P2 items)
 
 ## Feature Completion Summary
 
@@ -19,33 +105,10 @@
 - **Phase 2C** (P2C-01 to P2C-05): Zustand store migration, action creators, useBackgroundSync — all done
 - **Phase 2D** (P2D-01 to P2D-07): Backend integration, validation, complex analysis — all done
 - **Audit** (AUDIT-01 to AUDIT-05): loadState fix, VisualAnalysis types, decision badges, Playwright reliability, project hygiene — all done
-- **FUTURE-01**: Video playback and HTML export with timeline sync
-- **FUTURE-02**: Session management (list, rename, delete, 3-level nav)
-- **FUTURE-03**: JSON import for recording sessions
-- **FUTURE-04**: Multi-tab recording with tab switch detection
-- **ROAD-01**: Markdown and clipboard export (19 tests)
-- **ROAD-03**: Step search and filter (8 tests)
-- **ROAD-04**: Screenshot thumbnails with toggle
-- **ROAD-05**: First-run onboarding tooltips
-- **ROAD-06**: Hover and right-click event capture (4 tests)
-- **ROAD-07**: GitHub Issue export (6 tests)
-- **ROAD-08**: Export preview panel (JSON/HTML/Playwright/Markdown)
-- **ROAD-09**: Undo toast for destructive actions
-- **ROAD-10**: Dockerfile CMD fix, health check, non-root user
-- **ROAD-11**: Screenshot inlineData format for vision models
-- **ROAD-12**: Session state polling with exponential backoff
-- **ROAD-13**: Backend API key authentication
-- **ROAD-14**: Retry with exponential backoff (429/503)
-- **ROAD-15**: Pin model versions, consolidate ADK apps, remove redundant entry points
-- **ROAD-17**: PDF export via print dialog (22 tests)
-- **ROAD-21**: Custom branding — accent color, header/footer, TOC for 10+ steps (9 tests)
-- **ROAD-24**: Playwright test.step() blocks and parameterization (21 tests)
-- **ROAD-20**: Playwright + CI export with GitHub Actions workflow (12 tests)
-- **ROAD-25**: Cypress test exporter (22 tests)
-- **ROAD-26**: Selenium WebDriver test exporter (22 tests)
-- **ROAD-27**: Puppeteer test exporter (21 tests)
+- **FUTURE-01 to FUTURE-04**: Video playback, session management, JSON import, multi-tab recording
+- **ROAD-01 to ROAD-27**: Markdown export, search/filter, thumbnails, onboarding, hover/right-click, GitHub Issues, export preview, undo toast, Dockerfile, screenshot format, session polling, API auth, retry, model versions, PDF, branding, Playwright+CI, Cypress, Selenium, Puppeteer
 
-### Remaining Planned (6 features — all require external infrastructure)
+### Remaining Planned — External Infrastructure (6 features)
 - **ROAD-02**: Chrome Web Store submission (P0, M) — manual process, needs store assets/privacy policy
 - **ROAD-16**: Cloud sync and sharing (P1, XL) — requires external infrastructure (Supabase/Firebase)
 - **ROAD-18**: Hosted AI enrichment endpoint (P1, L) — requires Cloud Run deployment
@@ -53,9 +116,33 @@
 - **ROAD-22**: Jira and Linear integration (P2, L) — requires OAuth/API token flow
 - **ROAD-23**: Chrome Built-in AI / Gemini Nano (P2, L) — still in origin trial, not GA
 
+### New — UX Refinement (10 features from E2E testing)
+- **REFINE-01**: Fix empty URL in navigate steps (P0, S)
+- **REFINE-02**: Fix Cypress exporter crash on empty URLs (P0, S)
+- **REFINE-03**: Recording indicator on web page (P1, M)
+- **REFINE-04**: Collapsible export panel with categories (P1, M)
+- **REFINE-05**: Discoverable session rename (P1, S)
+- **REFINE-06**: Popup UX improvements (P2, M)
+- **REFINE-07**: Step detail UX for non-technical users (P2, S)
+- **REFINE-08**: Session list improvements (P2, S)
+- **REFINE-09**: Navigate step quality improvements (P2, S)
+- **REFINE-10**: Session naming on recording start (P2, S)
+
 ## Completed This Session
 
-### Sprint 3: UX Features
+### UX Testing & Refinement Planning (2026-02-24)
+- **E2E Testing via Playwright MCP**: Full functional testing of all features as end user
+- **UX Evaluation as Enterprise User**: Simulated first-time user (Ana, QA Lead) testing all workflows
+- **Agent Team Code Review**: 3 agents validated findings against source code (UX issues, export quality, UI components)
+- **Documented 23 UX issues** (UX-01 through UX-23) with priority classification
+- **Identified 2 bugs** (Cypress crash, empty navigate URLs) with root cause analysis
+- **Created 10 refinement features** (REFINE-01 through REFINE-10) in features.json
+- **Designed 2-sprint refinement plan** with implementation order and effort estimates
+- **Exported test recording** to `.playwright-mcp/` (JSON, Playwright spec, GitHub Actions CI YAML)
+
+### Previous Sessions
+
+#### Sprint 3: UX Features
 - **ROAD-01**: Markdown exporter + clipboard copy in ExportPanel (19 tests)
 - **ROAD-03**: Search bar + action type filter in StepList, Zustand state (8 tests)
 - **ROAD-04**: Screenshot thumbnails (48x36) with lazy loading, toggle in Options
@@ -116,24 +203,27 @@
 70-72. Commit count fixes
 73. `feat(extension): add Puppeteer test exporter (ROAD-27)`
 
-## 360 Audit Results (Updated)
+## 360 Audit Results (Updated 2026-02-24)
 
 ### Scores by Area
 | Area | Score | Notes |
 |------|-------|-------|
-| Extension Code | 9.5/10 | 341 tests, 0 TS errors, 0 lint errors, 10 exporters |
+| Extension Code | 9/10 | 341 tests, 0 TS errors, 0 lint errors, 10 exporters. -0.5 for Cypress crash bug, -0.5 for empty URL bug |
 | Tests | A+ | 341 tests across 18 files, all passing |
-| Features | 91% | 64/70 features done, remaining 6 require external infrastructure |
+| Features | 80% | 64/80 features done (6 external deps + 10 UX refinements planned) |
 | Backend | Deployable | Dockerfile fixed, health check, API auth, env validation, consolidated |
 | Documentation | 9/10 | CLAUDE.md, README, features.json, progress.md all up to date |
 | Automation | 9/10 | GitHub Actions CI, ESLint + Prettier |
-| Product | 10/10 | Complete workflow: capture → enrich → manage → export (10 formats) → integrate (GitHub) |
+| Product | 9/10 | Complete workflow, but UX polish needed for non-technical users (export panel, session management, recording feedback) |
+| UX | 7/10 | Functional but not intuitive for first-time users. 23 UX issues identified. Major gaps: no recording indicator, overwhelming export panel, non-discoverable features |
 
 ## Known Issues
 
 - **Build EBUSY error** (Windows): `npx wxt build` occasionally fails with `EBUSY: resource busy or locked` on `.output/` directory. Workaround: close Chrome extension devtools.
 - **Offscreen document**: Chrome sometimes reports offscreen document already exists on rapid start/stop cycles. Handled with try/catch.
 - **Backend flaky test**: `backend-client.test.ts` retry tests use real timer delays via `shouldAdvanceTime`. Timeout increased to 15s (commit 322cf41).
+- **BUG: Cypress export crash** (REFINE-02): `new URL(nextAction.url).pathname` crashes on empty URL strings. `cypress-exporter.ts:58,85`. Selenium has same pattern with try-catch (safe).
+- **BUG: Empty navigate URLs** (REFINE-01): Navigate steps from tab switches store empty string URL. `background.ts:450` uses `tab.url || ''`, `event-capture.ts:277` omits URL. Affects all exporters and descriptions.
 
 ## Architecture Decisions
 

@@ -1,11 +1,12 @@
 {
   "version": "2.0.0",
-  "lastUpdated": "2026-02-23",
+  "lastUpdated": "2026-02-24",
   "analysisDate": "2026-02-23",
   "analysisSources": [
     "backend-analyst: ADK pipeline, scalability, security, deployment",
     "product-analyst: UX, features, monetization, RICE prioritization",
-    "market-analyst: competitive landscape, pricing, market sizing"
+    "market-analyst: competitive landscape, pricing, market sizing",
+    "ux-testing: Playwright MCP E2E testing + Agent Team code review (2026-02-24)"
   ],
   "features": [
     {
@@ -842,6 +843,185 @@
       "effort": "M",
       "riceScore": 50,
       "source": "market-analyst"
+    },
+
+    {
+      "id": "REFINE-01",
+      "name": "Fix empty URL in navigate steps",
+      "description": "Navigate actions (tab switch, initial navigation) store empty string for URL. Root cause: background.ts handleTabSwitch uses `tab.url || ''` and event-capture.ts navigate action omits URL. Affects Cypress export (crash), Playwright export (page.goto('')), step descriptions ('Navigated to '), and step detail display.",
+      "acceptanceCriteria": [
+        "handleTabSwitch in background.ts captures actual tab URL (never empty string)",
+        "event-capture.ts navigate action includes current window.location.href",
+        "Description generator shows full URL: 'Navigated to https://example.com'",
+        "Step detail shows actual URL instead of empty field",
+        "All exporters receive valid URLs for navigate steps"
+      ],
+      "status": "planned",
+      "phase": "refine-1",
+      "priority": "P0",
+      "effort": "S",
+      "source": "ux-testing",
+      "relatedIssues": ["UX-11", "UX-15", "BUG-02"]
+    },
+    {
+      "id": "REFINE-02",
+      "name": "Fix Cypress exporter crash on empty URLs",
+      "description": "Cypress exporter crashes with TypeError: Failed to construct 'URL': Invalid URL when step has empty URL. Root cause: `new URL(nextAction.url).pathname` at lines 58 and 85 without try-catch. Selenium exporter has same pattern but with try-catch (safe).",
+      "acceptanceCriteria": [
+        "Wrap new URL() calls in cypress-exporter.ts with try-catch",
+        "Fallback to '/' pathname when URL is empty or invalid",
+        "Add test for empty URL edge case",
+        "Verify all other exporters handle empty URLs gracefully"
+      ],
+      "status": "planned",
+      "phase": "refine-1",
+      "priority": "P0",
+      "effort": "S",
+      "source": "ux-testing",
+      "relatedIssues": ["BUG-01"]
+    },
+    {
+      "id": "REFINE-03",
+      "name": "Recording indicator on web page",
+      "description": "No visual feedback on the actual web page being recorded. User must reopen popup to confirm recording is active. Content script should inject a non-intrusive floating indicator (e.g., small red dot or badge) that shows recording state.",
+      "acceptanceCriteria": [
+        "Floating recording indicator injected via content script when recording starts",
+        "Shows red dot/badge with 'Recording' label",
+        "Positioned in corner, non-intrusive (does not interfere with page content)",
+        "Shows step count incrementing in real time",
+        "Indicator removed when recording stops or pauses",
+        "Can be dismissed/minimized by user",
+        "Does not appear in captured screenshots"
+      ],
+      "status": "planned",
+      "phase": "refine-1",
+      "priority": "P1",
+      "effort": "M",
+      "source": "ux-testing",
+      "relatedIssues": ["UX-07", "UX-08"]
+    },
+    {
+      "id": "REFINE-04",
+      "name": "Collapsible export panel with categories",
+      "description": "Export section shows 11 buttons at once, taking half the side panel space. Overwhelming for first-time users. Group exports into collapsible categories: Documentation (JSON, HTML, Markdown, PDF), Test Automation (Playwright, Playwright+CI, Cypress, Selenium, Puppeteer), Integrations (GitHub Issues, Copy, Preview).",
+      "acceptanceCriteria": [
+        "Export buttons grouped into 3 collapsible sections",
+        "Sections: Documentation, Test Automation, Integrations",
+        "Only one section expanded at a time (accordion behavior)",
+        "Remember last expanded section in session",
+        "Quick actions (Copy, Preview) always visible outside accordion",
+        "Section headers show count of export options"
+      ],
+      "status": "planned",
+      "phase": "refine-1",
+      "priority": "P1",
+      "effort": "M",
+      "source": "ux-testing",
+      "relatedIssues": ["UX-13", "UX-14"]
+    },
+    {
+      "id": "REFINE-05",
+      "name": "Discoverable session rename",
+      "description": "Session rename exists via double-click on session name, but this is not discoverable. No visual hint or edit icon. Users assume sessions cannot be renamed.",
+      "acceptanceCriteria": [
+        "Edit icon (pencil) visible on session name hover",
+        "Click edit icon enters rename mode (same as current double-click)",
+        "Tooltip on hover: 'Double-click to rename'",
+        "Keep double-click as alternative interaction"
+      ],
+      "status": "planned",
+      "phase": "refine-1",
+      "priority": "P1",
+      "effort": "S",
+      "source": "ux-testing",
+      "relatedIssues": ["UX-21"]
+    },
+    {
+      "id": "REFINE-06",
+      "name": "Popup UX improvements",
+      "description": "Multiple UX issues in popup: too much empty space, 'Open Review Panel' terminology unclear for first-time users, no indication which tab will be recorded, no brief explanation of what the tool does.",
+      "acceptanceCriteria": [
+        "Compact layout with less vertical padding",
+        "Rename 'Open Review Panel' to 'Review Recording' or 'Open Side Panel'",
+        "Show current tab title/URL that will be recorded",
+        "Add one-line description: 'Record and document web processes'",
+        "Popup auto-closes after starting recording (configurable in Options)"
+      ],
+      "status": "planned",
+      "phase": "refine-2",
+      "priority": "P2",
+      "effort": "M",
+      "source": "ux-testing",
+      "relatedIssues": ["UX-01", "UX-02", "UX-03", "UX-04", "UX-06"]
+    },
+    {
+      "id": "REFINE-07",
+      "name": "Step detail UX for non-technical users",
+      "description": "Step detail shows raw CSS selectors and XPath which are meaningless to non-technical users. 'Decision Point' toggle has no explanation. Technical metadata should be hidden by default with expandable 'Technical Details' section.",
+      "acceptanceCriteria": [
+        "CSS/XPath selectors hidden by default in collapsible 'Technical Details' section",
+        "Decision Point toggle has tooltip explaining what it means",
+        "Confidence score shown as visual indicator (color bar) not raw number",
+        "Element info shows human-readable summary: 'Link: Form Authentication'"
+      ],
+      "status": "planned",
+      "phase": "refine-2",
+      "priority": "P2",
+      "effort": "S",
+      "source": "ux-testing",
+      "relatedIssues": ["UX-17", "UX-18"]
+    },
+    {
+      "id": "REFINE-08",
+      "name": "Session list improvements",
+      "description": "Multiple session list UX issues: sessions with identical auto-generated names are indistinguishable, latest recording doesn't appear immediately, no visual indicator for active/selected session.",
+      "acceptanceCriteria": [
+        "Auto-generated session names include tab title or first action URL",
+        "Active/selected session has visual highlight (border/background)",
+        "Session list auto-refreshes when recording stops",
+        "Each session shows date, step count, and duration as secondary info",
+        "Most recent session appears at top of list"
+      ],
+      "status": "planned",
+      "phase": "refine-2",
+      "priority": "P2",
+      "effort": "S",
+      "source": "ux-testing",
+      "relatedIssues": ["UX-19", "UX-20", "UX-22"]
+    },
+    {
+      "id": "REFINE-09",
+      "name": "Navigate step quality improvements",
+      "description": "Navigate steps show 'Navigated to ' with empty URL, have grey/empty thumbnails, and generate useless export code. Improve description, provide fallback thumbnail, and ensure useful data in exports.",
+      "acceptanceCriteria": [
+        "Navigate step description includes page title and URL",
+        "Fallback thumbnail shows page favicon or generic navigation icon when screenshot missing",
+        "Playwright export skips navigate steps with empty URL instead of generating page.goto('')",
+        "All exporters handle navigate steps gracefully with actual URL data"
+      ],
+      "status": "planned",
+      "phase": "refine-2",
+      "priority": "P2",
+      "effort": "S",
+      "source": "ux-testing",
+      "relatedIssues": ["UX-11", "UX-12", "UX-16"]
+    },
+    {
+      "id": "REFINE-10",
+      "name": "Session naming on recording start",
+      "description": "Users cannot name a recording before or during the session. All sessions get auto-generated names, making it hard to identify specific recordings later.",
+      "acceptanceCriteria": [
+        "Optional name field in popup before clicking Start Recording",
+        "Default name auto-generated if left empty (current behavior)",
+        "Session name editable during recording via side panel header",
+        "Name persisted to IndexedDB immediately"
+      ],
+      "status": "planned",
+      "phase": "refine-2",
+      "priority": "P2",
+      "effort": "S",
+      "source": "ux-testing",
+      "relatedIssues": ["UX-05"]
     }
   ]
 }
