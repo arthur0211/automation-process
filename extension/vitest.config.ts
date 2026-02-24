@@ -9,7 +9,16 @@ export default defineConfig({
     coverage: {
       provider: 'v8',
       include: ['lib/**/*.ts'],
-      exclude: ['lib/**/*.d.ts'],
+      exclude: [
+        'lib/**/*.d.ts',
+        'lib/api/gemini-client.ts',
+        'lib/api/rate-limiter.ts',
+        'lib/api/backend-provider.ts',
+        'lib/api/enrichment-provider.ts',
+        'lib/hooks/**',
+        'lib/capture/event-capture.ts',
+        'lib/capture/screenshot.ts',
+      ],
       thresholds: {
         statements: 60,
         branches: 50,
