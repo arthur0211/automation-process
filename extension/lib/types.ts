@@ -220,7 +220,8 @@ export type MessageType =
   | 'GET_STATUS'
   | 'STATUS_UPDATE'
   | 'START_TAB_CAPTURE'
-  | 'STOP_TAB_CAPTURE';
+  | 'STOP_TAB_CAPTURE'
+  | 'PING';
 
 export interface ExtensionMessage {
   type: MessageType;

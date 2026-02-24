@@ -69,8 +69,8 @@ function broadcastStatus() {
     sessionId: currentSession?.id,
     actionCount,
   };
-  chrome.runtime.sendMessage({ type: 'STATUS_UPDATE', payload }).catch(() => {
-    // Side panel or popup may not be open
+  chrome.runtime.sendMessage({ type: 'STATUS_UPDATE', payload }).catch((err) => {
+    console.debug('broadcastStatus: no receiver (popup/sidepanel may be closed):', err?.message);
   });
 }
 
@@ -122,19 +122,43 @@ async function startRecording(tabId: number) {
   await startTabCapture(tabId);
 
   // Open side panel
-  chrome.sidePanel.open({ tabId }).catch(() => {
-    // Side panel may not be available
+  chrome.sidePanel.open({ tabId }).catch((err) => {
+    console.debug('sidePanel.open failed:', err?.message);
   });
 
   broadcastStatus();
   saveState();
 }
 
+
+async function ensureContentScript(tabId: number): Promise<boolean> {
+  try {
+    await chrome.tabs.sendMessage(tabId, { type: 'PING' });
+    return true;
+  } catch {
+    try {
+      await chrome.scripting.executeScript({
+        target: { tabId },
+        files: ['content-scripts/content.js'],
+      });
+      return true;
+    } catch (err) {
+      console.warn(`Cannot inject content script into tab ${tabId}:`, err);
+      return false;
+    }
+  }
+}
+
 async function sendToAllTabs(message: ExtensionMessage) {
   const allTabs = await chrome.tabs.query({});
   for (const t of allTabs) {
-    if (t.id) {
-      chrome.tabs.sendMessage(t.id, message).catch(() => {});
+    if (!t.id || !t.url) continue;
+    if (!/^https?:\/\//.test(t.url)) continue;
+    try {
+      await ensureContentScript(t.id);
+      await chrome.tabs.sendMessage(t.id, message);
+    } catch (err) {
+      console.warn(`Failed to send message to tab ${t.id} (${t.url}):`, err);
     }
   }
 }
@@ -469,11 +493,13 @@ export default defineBackground({
       switch (message.type) {
         // ─── Sync handlers (content script & status queries) ──────────
         case 'ACTION_CAPTURED':
-          processAction(
-            message.payload as ActionCapturedPayload,
-            sender.tab?.id,
-            sender.tab?.title,
-          );
+          stateReady.then(() => {
+            processAction(
+              message.payload as ActionCapturedPayload,
+              sender.tab?.id,
+              sender.tab?.title,
+            );
+          });
           return false;
 
         case 'GET_STATUS':

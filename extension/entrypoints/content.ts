@@ -9,8 +9,11 @@ import type { ExtensionMessage, CaptureSettings } from '@/lib/types';
 export default defineContentScript({
   matches: ['<all_urls>'],
   main() {
-    chrome.runtime.onMessage.addListener((message: ExtensionMessage, _sender, _sendResponse) => {
+    chrome.runtime.onMessage.addListener((message: ExtensionMessage, _sender, sendResponse) => {
       switch (message.type) {
+        case 'PING':
+          sendResponse({ pong: true });
+          return true;
         case 'START_RECORDING': {
           const payload = message.payload as {
             sessionId: string;

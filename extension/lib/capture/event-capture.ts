@@ -87,6 +87,8 @@ function sendAction(action: CapturedAction) {
   chrome.runtime.sendMessage({
     type: 'ACTION_CAPTURED',
     payload: { action },
+  }).catch((err) => {
+    console.warn('sendAction failed (service worker may be inactive):', err);
   });
 }
 
