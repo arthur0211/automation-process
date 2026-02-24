@@ -1022,6 +1022,28 @@
       "effort": "S",
       "source": "ux-testing",
       "relatedIssues": ["UX-05"]
+    },
+    {
+      "id": "REFINE-11",
+      "name": "Backend AI integration discoverability",
+      "description": "The backend agent pipeline (Gemini 3 Flash) is fully implemented but invisible to users. No UI indication that AI analysis exists, no setup guidance, silent failures when backend unreachable, and env var mismatch prevents backend from starting.",
+      "acceptanceCriteria": [
+        "Backend status badge (green/gray dot) visible in sidepanel header",
+        "Dismissable setup banner on sessions view when backend not configured",
+        "StepDetail shows AI analysis loading state (pulse animation) for recent actions",
+        "StepDetail shows fallback placeholder with Settings link when AI not available",
+        "StepDetail shows AI results with sparkle indicator when enrichment complete",
+        "Test Connection buttons in Options for Backend URL and Standalone Agents URL",
+        "Connection test shows success (green checkmark) or failure (red X) feedback",
+        "Backend loads .env via python-dotenv in both app.py and server.py entry points",
+        "backend/.env created with correct GOOGLE_CLOUD_PROJECT/LOCATION variable names"
+      ],
+      "status": "done",
+      "phase": "refine-1.5",
+      "priority": "P1",
+      "effort": "M",
+      "source": "ux-testing",
+      "relatedIssues": ["UX-23"]
     }
   ]
 }

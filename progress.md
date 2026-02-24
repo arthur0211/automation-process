@@ -2,14 +2,15 @@
 
 ## Current State
 
-- **Latest commit**: `fix(ci): install lightningcss linux binary explicitly`
-- **Total commits**: 78
-- **Tests**: 341 passing (extension), 18 test files
+- **Latest commit**: `feat(extension,backend): make AI backend integration discoverable and functional`
+- **Total commits**: 84
+- **Tests**: 349 passing (extension), 18 test files
 - **TS errors**: 0
 - **Lint errors**: 0
-- **Extension**: 64 features done, 6 planned (external deps), 10 new refinement items from UX testing
-- **Backend**: ADK agents consolidated (single app), model versions configurable via env vars, Dockerfile fixed, health check, API key auth.
+- **Extension**: 70 features done, 6 planned (external deps), 5 UX refinements remaining (Sprint Refine-2)
+- **Backend**: ADK agents consolidated (single app), model versions configurable via env vars, Dockerfile fixed, health check, API key auth. Now with python-dotenv auto-loading and correct env var mapping.
 - **UX Testing**: Comprehensive E2E testing via Playwright MCP completed (2026-02-24). 23 UX issues documented, 2 bugs found, 3 Agent Team reviews completed.
+- **Backend Discoverability**: Status badge, setup banner, AI loading states, connection test buttons, dotenv integration (2026-02-24).
 
 ## UX Testing Session (2026-02-24)
 
@@ -127,8 +128,26 @@
 - **REFINE-08**: Session list improvements (P2, S)
 - **REFINE-09**: Navigate step quality improvements (P2, S)
 - **REFINE-10**: Session naming on recording start (P2, S)
+- **REFINE-11**: Backend AI integration discoverability (P1, M) ✅
 
 ## Completed This Session
+
+### Backend AI Discoverability (2026-02-24)
+- **REFINE-11**: Made backend AI integration discoverable and functional
+  - Created `useBackendConfig` hook for reading chrome.storage.local backend settings with live updates
+  - Created `BackendBadge` component (green/gray dot in sidepanel header)
+  - Created `BackendSetupBanner` (dismissable banner on sessions view with Settings link)
+  - Enhanced `StepDetail` with 3 AI states: loading pulse, available with sparkle, fallback placeholder
+  - Added "Test Connection" buttons in Options page for both Backend URL and Standalone Agents URL
+  - Added `python-dotenv` to backend for auto-loading `.env` files
+  - Created `backend/.env` with correct `GOOGLE_CLOUD_PROJECT`/`GOOGLE_CLOUD_LOCATION` mapping from root `.env`
+  - Fixed env var name mismatch that prevented backend from starting
+
+### Sprint Refine-1 + Capture Hardening (2026-02-24)
+- **REFINE-01 to REFINE-05**: All 5 Sprint Refine-1 features implemented
+- **8 capture fixes**: startCapturing guard, contenteditable support, debounce flush, document_start, keydown, dblclick, popstate/hashchange, auto-registration
+- **CI fixes**: @tailwindcss/oxide binary, prettier formatting, ESLint react-hooks errors
+- **Commits**: 6 commits pushed to master (CI green)
 
 ### UX Testing & Refinement Planning (2026-02-24)
 - **E2E Testing via Playwright MCP**: Full functional testing of all features as end user
@@ -202,28 +221,36 @@
 69. `feat(extension): add Selenium WebDriver test exporter (ROAD-26)`
 70-72. Commit count fixes
 73. `feat(extension): add Puppeteer test exporter (ROAD-27)`
+74. `fix(ci): add @tailwindcss/oxide linux binary for Tailwind 4 CI`
+75. `feat(extension): Sprint Refine-1 — UX fixes, capture hardening, new event types`
+76. `chore: update tracking with UX testing results and refinement plan`
+77. `style: format all source files with prettier`
+78. `fix(extension): resolve ESLint react-hooks errors in App and UndoToast`
+79. `chore: mark Sprint Refine-1 features as done (REFINE-01 to REFINE-05)`
+80. `feat(extension,backend): make AI backend integration discoverable and functional`
 
 ## 360 Audit Results (Updated 2026-02-24)
 
 ### Scores by Area
 | Area | Score | Notes |
 |------|-------|-------|
-| Extension Code | 9/10 | 341 tests, 0 TS errors, 0 lint errors, 10 exporters. -0.5 for Cypress crash bug, -0.5 for empty URL bug |
-| Tests | A+ | 341 tests across 18 files, all passing |
-| Features | 80% | 64/80 features done (6 external deps + 10 UX refinements planned) |
+| Extension Code | 9.5/10 | 349 tests, 0 TS errors, 0 lint errors, 10 exporters. Bugs fixed. |
+| Tests | A+ | 349 tests across 18 files, all passing |
+| Features | 86% | 70/81 features done (6 external deps + 5 UX refinements planned) |
 | Backend | Deployable | Dockerfile fixed, health check, API auth, env validation, consolidated |
 | Documentation | 9/10 | CLAUDE.md, README, features.json, progress.md all up to date |
 | Automation | 9/10 | GitHub Actions CI, ESLint + Prettier |
 | Product | 9/10 | Complete workflow, but UX polish needed for non-technical users (export panel, session management, recording feedback) |
-| UX | 7/10 | Functional but not intuitive for first-time users. 23 UX issues identified. Major gaps: no recording indicator, overwhelming export panel, non-discoverable features |
+| UX | 8/10 | Sprint Refine-1 complete: recording indicator, collapsible export, discoverable rename, backend awareness. 5 P2 items remaining. |
 
 ## Known Issues
 
 - **Build EBUSY error** (Windows): `npx wxt build` occasionally fails with `EBUSY: resource busy or locked` on `.output/` directory. Workaround: close Chrome extension devtools.
 - **Offscreen document**: Chrome sometimes reports offscreen document already exists on rapid start/stop cycles. Handled with try/catch.
 - **Backend flaky test**: `backend-client.test.ts` retry tests use real timer delays via `shouldAdvanceTime`. Timeout increased to 15s (commit 322cf41).
-- **BUG: Cypress export crash** (REFINE-02): `new URL(nextAction.url).pathname` crashes on empty URL strings. `cypress-exporter.ts:58,85`. Selenium has same pattern with try-catch (safe).
-- **BUG: Empty navigate URLs** (REFINE-01): Navigate steps from tab switches store empty string URL. `background.ts:450` uses `tab.url || ''`, `event-capture.ts:277` omits URL. Affects all exporters and descriptions.
+- ~~**BUG: Cypress export crash** (REFINE-02)~~: FIXED — try-catch around `new URL()` in cypress-exporter.ts
+- ~~**BUG: Empty navigate URLs** (REFINE-01)~~: FIXED — tab.url guard, pendingUrl fallback in background.ts
+- **Backend env var mismatch**: FIXED — created backend/.env with correct GOOGLE_CLOUD_PROJECT/LOCATION names, added python-dotenv
 
 ## Architecture Decisions
 
