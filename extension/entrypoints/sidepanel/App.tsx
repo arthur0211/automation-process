@@ -18,6 +18,7 @@ import { ExportPanel } from './components/ExportPanel';
 import { ValidationPanel } from './components/ValidationPanel';
 import { VideoPlayer } from './components/VideoPlayer';
 import { SessionList } from './components/SessionList';
+import { BackendSetupBanner } from './components/BackendSetupBanner';
 import { UndoToast } from './components/UndoToast';
 
 type PendingDelete =
@@ -119,6 +120,8 @@ export function App() {
   return (
     <div class="flex flex-col h-screen bg-gray-50">
       <RecordingControls />
+
+      {view === 'sessions' && <BackendSetupBanner />}
 
       {view === 'detail' && selectedAction ? (
         <div class="flex-1 overflow-y-auto">

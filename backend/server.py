@@ -3,6 +3,10 @@
 import os
 import sys
 
+from dotenv import load_dotenv
+
+load_dotenv()  # Load backend/.env before validation
+
 from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
 from starlette.middleware.base import BaseHTTPMiddleware

@@ -1,6 +1,7 @@
 import type { RecordingStatus } from '@/lib/types';
 import { useRecordingStore } from '@/lib/stores/recording-store';
 import { OnboardingTooltip } from './OnboardingTooltip';
+import { BackendBadge } from './BackendBadge';
 
 export function RecordingControls() {
   const status = useRecordingStore((s) => s.status);
@@ -31,7 +32,10 @@ export function RecordingControls() {
           <span class={`w-2.5 h-2.5 rounded-full ${statusColors[status]}`} />
           <span class="text-sm font-medium text-gray-700">{statusLabels[status]}</span>
         </div>
-        {status !== 'idle' && <span class="text-xs text-gray-500">{actionCount} steps</span>}
+        <div class="flex items-center gap-2">
+          {status !== 'idle' && <span class="text-xs text-gray-500">{actionCount} steps</span>}
+          <BackendBadge />
+        </div>
       </div>
 
       {status === 'idle' && (

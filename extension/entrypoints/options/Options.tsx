@@ -1,6 +1,8 @@
-import { useState, useEffect } from 'preact/hooks';
+import { useState, useEffect, useCallback } from 'preact/hooks';
 import type { CaptureSettings, BrandingSettings } from '@/lib/types';
 import { DEFAULT_CAPTURE_SETTINGS, DEFAULT_BRANDING_SETTINGS } from '@/lib/types';
+
+type ConnectionStatus = 'idle' | 'testing' | 'success' | 'error';
 
 export function Options() {
   const [settings, setSettings] = useState<CaptureSettings>(DEFAULT_CAPTURE_SETTINGS);
@@ -12,6 +14,8 @@ export function Options() {
   const [githubPat, setGithubPat] = useState('');
   const [githubRepo, setGithubRepo] = useState('');
   const [saved, setSaved] = useState(false);
+  const [backendStatus, setBackendStatus] = useState<ConnectionStatus>('idle');
+  const [standaloneStatus, setStandaloneStatus] = useState<ConnectionStatus>('idle');
 
   useEffect(() => {
     chrome.storage.local.get(
@@ -88,6 +92,37 @@ export function Options() {
       });
     }
   }
+
+  const testConnection = useCallback(
+    (url: string, setStatus: (status: ConnectionStatus) => void) => {
+      setStatus('testing');
+
+      const headers: Record<string, string> = {};
+      if (backendApiKey) {
+        headers['X-API-Key'] = backendApiKey;
+      }
+
+      fetch(url.replace(/\/+$/, '') + '/health', {
+        method: 'GET',
+        headers,
+        signal: AbortSignal.timeout(5000),
+      })
+        .then((response) => {
+          if (response.ok) {
+            setStatus('success');
+            setTimeout(() => setStatus('idle'), 3000);
+          } else {
+            setStatus('error');
+            setTimeout(() => setStatus('idle'), 5000);
+          }
+        })
+        .catch(() => {
+          setStatus('error');
+          setTimeout(() => setStatus('idle'), 5000);
+        });
+    },
+    [backendApiKey],
+  );
 
   return (
     <div class="max-w-2xl mx-auto p-6 space-y-6">
@@ -323,16 +358,31 @@ export function Options() {
                 i
               </span>
             </label>
-            <input
-              type="url"
-              placeholder="http://localhost:8000"
-              value={backendUrl}
-              onInput={(e) => {
-                setBackendUrl((e.target as HTMLInputElement).value);
-                setSaved(false);
-              }}
-              class="w-full px-3 py-2 text-sm border border-gray-200 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-400"
-            />
+            <div class="flex items-center gap-2">
+              <input
+                type="url"
+                placeholder="http://localhost:8000"
+                value={backendUrl}
+                onInput={(e) => {
+                  setBackendUrl((e.target as HTMLInputElement).value);
+                  setSaved(false);
+                }}
+                class="flex-1 px-3 py-2 text-sm border border-gray-200 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-400"
+              />
+              <button
+                type="button"
+                disabled={!backendUrl || backendStatus === 'testing'}
+                onClick={() => testConnection(backendUrl, setBackendStatus)}
+                class="px-3 py-2 text-xs font-medium rounded-md transition-colors whitespace-nowrap disabled:opacity-40 disabled:cursor-not-allowed bg-gray-100 text-gray-700 hover:bg-gray-200"
+              >
+                {backendStatus === 'testing' && <span class="animate-pulse">Testing...</span>}
+                {backendStatus === 'success' && (
+                  <span class="text-green-600">&#10003; Connected</span>
+                )}
+                {backendStatus === 'error' && <span class="text-red-600">&#10007; Failed</span>}
+                {backendStatus === 'idle' && 'Test'}
+              </button>
+            </div>
           </div>
           <div>
             <label class="block text-xs font-medium text-gray-600 mb-1">
@@ -369,16 +419,31 @@ export function Options() {
                 i
               </span>
             </label>
-            <input
-              type="url"
-              placeholder="http://localhost:8001"
-              value={standaloneAgentsUrl}
-              onInput={(e) => {
-                setStandaloneAgentsUrl((e.target as HTMLInputElement).value);
-                setSaved(false);
-              }}
-              class="w-full px-3 py-2 text-sm border border-gray-200 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-400"
-            />
+            <div class="flex items-center gap-2">
+              <input
+                type="url"
+                placeholder="http://localhost:8001"
+                value={standaloneAgentsUrl}
+                onInput={(e) => {
+                  setStandaloneAgentsUrl((e.target as HTMLInputElement).value);
+                  setSaved(false);
+                }}
+                class="flex-1 px-3 py-2 text-sm border border-gray-200 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-400"
+              />
+              <button
+                type="button"
+                disabled={!standaloneAgentsUrl || standaloneStatus === 'testing'}
+                onClick={() => testConnection(standaloneAgentsUrl, setStandaloneStatus)}
+                class="px-3 py-2 text-xs font-medium rounded-md transition-colors whitespace-nowrap disabled:opacity-40 disabled:cursor-not-allowed bg-gray-100 text-gray-700 hover:bg-gray-200"
+              >
+                {standaloneStatus === 'testing' && <span class="animate-pulse">Testing...</span>}
+                {standaloneStatus === 'success' && (
+                  <span class="text-green-600">&#10003; Connected</span>
+                )}
+                {standaloneStatus === 'error' && <span class="text-red-600">&#10007; Failed</span>}
+                {standaloneStatus === 'idle' && 'Test'}
+              </button>
+            </div>
             <p class="text-xs text-gray-400 mt-1">
               For doc_validator and complex_analyzer agents. Leave empty to disable.
             </p>

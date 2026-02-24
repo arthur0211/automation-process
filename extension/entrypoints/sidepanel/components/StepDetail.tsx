@@ -2,6 +2,8 @@ import { useState, useEffect } from 'preact/hooks';
 import type { CapturedAction } from '@/lib/types';
 import { NoteEditor } from './NoteEditor';
 
+const ENRICHMENT_TIMEOUT_MS = 60_000;
+
 interface StepDetailProps {
   action: CapturedAction;
   onUpdate: (id: string, changes: Partial<CapturedAction>) => void;
@@ -11,11 +13,28 @@ interface StepDetailProps {
 export function StepDetail({ action, onUpdate, onDelete }: StepDetailProps) {
   const [editingDesc, setEditingDesc] = useState(false);
   const [descValue, setDescValue] = useState(action.description);
+  const [enrichmentTimedOut, setEnrichmentTimedOut] = useState(false);
 
   useEffect(() => {
     setDescValue(action.description);
     setEditingDesc(false);
   }, [action.id, action.description]);
+
+  useEffect(() => {
+    if (action.llmDescription) {
+      setEnrichmentTimedOut(false);
+      return;
+    }
+
+    const age = Date.now() - action.timestamp;
+    if (age >= ENRICHMENT_TIMEOUT_MS) {
+      setEnrichmentTimedOut(true);
+      return;
+    }
+
+    const timer = setTimeout(() => setEnrichmentTimedOut(true), ENRICHMENT_TIMEOUT_MS - age);
+    return () => clearTimeout(timer);
+  }, [action.id, action.llmDescription, action.timestamp]);
 
   function saveDescription() {
     onUpdate(action.id, { description: descValue });
@@ -75,57 +94,81 @@ export function StepDetail({ action, onUpdate, onDelete }: StepDetailProps) {
         )}
       </div>
 
-      {/* AI Description (from backend enrichment) */}
-      {action.llmDescription && (
-        <div>
-          <label class="block text-xs font-medium text-gray-500 mb-1">AI Description</label>
-          <p class="text-sm text-gray-800 bg-blue-50 px-2 py-1.5 rounded">
-            {action.llmDescription}
+      {/* AI Analysis */}
+      {action.llmDescription ? (
+        <div class="space-y-2">
+          <div>
+            <label class="block text-xs font-medium text-gray-500 mb-1">
+              <span class="text-amber-500 mr-1">✦</span>AI Analysis
+            </label>
+            <p class="text-sm text-gray-800 bg-blue-50 px-2 py-1.5 rounded">
+              {action.llmDescription}
+            </p>
+          </div>
+
+          {action.llmVisualAnalysis && (
+            <div>
+              <label class="block text-xs font-medium text-gray-500 mb-1">
+                <span class="text-amber-500 mr-1">✦</span>Visual Analysis
+                {action.llmVisualAnalysis.reasoning && (
+                  <span class="ml-1 px-1.5 py-0.5 text-[10px] bg-purple-50 text-purple-600 rounded">
+                    Deep Analysis
+                  </span>
+                )}
+              </label>
+              <div class="text-xs text-gray-600 bg-gray-50 px-2 py-1.5 rounded space-y-0.5">
+                {action.llmVisualAnalysis.pageContext?.section && (
+                  <p>
+                    <span class="text-gray-400">Section:</span>{' '}
+                    {action.llmVisualAnalysis.pageContext.section}
+                  </p>
+                )}
+                {action.llmVisualAnalysis.layout && (
+                  <p>
+                    <span class="text-gray-400">Layout:</span> {action.llmVisualAnalysis.layout}
+                  </p>
+                )}
+                {action.llmVisualAnalysis.interactedElement?.description && (
+                  <p>
+                    <span class="text-gray-400">Element:</span>{' '}
+                    {action.llmVisualAnalysis.interactedElement.description}
+                  </p>
+                )}
+                {action.llmVisualAnalysis.confidence !== undefined && (
+                  <p>
+                    <span class="text-gray-400">Confidence:</span>{' '}
+                    {(action.llmVisualAnalysis.confidence * 100).toFixed(0)}%
+                  </p>
+                )}
+                {action.llmVisualAnalysis.reasoning && (
+                  <p>
+                    <span class="text-gray-400">Reasoning:</span>{' '}
+                    {action.llmVisualAnalysis.reasoning}
+                  </p>
+                )}
+              </div>
+            </div>
+          )}
+        </div>
+      ) : enrichmentTimedOut ? (
+        <div class="border border-dashed border-gray-300 rounded-md px-3 py-2.5">
+          <p class="text-xs text-gray-400">AI analysis not available</p>
+          <p class="text-[10px] text-gray-400 mt-1">
+            Configure the backend in{' '}
+            <button
+              type="button"
+              onClick={() => chrome.runtime.openOptionsPage()}
+              class="underline text-blue-500 hover:text-blue-600 cursor-pointer"
+            >
+              Settings
+            </button>{' '}
+            to enable AI-powered descriptions and visual analysis
           </p>
         </div>
-      )}
-
-      {/* Visual Analysis (from backend enrichment) */}
-      {action.llmVisualAnalysis && (
-        <div>
-          <label class="block text-xs font-medium text-gray-500 mb-1">
-            Visual Analysis
-            {action.llmVisualAnalysis.reasoning && (
-              <span class="ml-1 px-1.5 py-0.5 text-[10px] bg-purple-50 text-purple-600 rounded">
-                Deep Analysis
-              </span>
-            )}
-          </label>
-          <div class="text-xs text-gray-600 bg-gray-50 px-2 py-1.5 rounded space-y-0.5">
-            {action.llmVisualAnalysis.pageContext?.section && (
-              <p>
-                <span class="text-gray-400">Section:</span>{' '}
-                {action.llmVisualAnalysis.pageContext.section}
-              </p>
-            )}
-            {action.llmVisualAnalysis.layout && (
-              <p>
-                <span class="text-gray-400">Layout:</span> {action.llmVisualAnalysis.layout}
-              </p>
-            )}
-            {action.llmVisualAnalysis.interactedElement?.description && (
-              <p>
-                <span class="text-gray-400">Element:</span>{' '}
-                {action.llmVisualAnalysis.interactedElement.description}
-              </p>
-            )}
-            {action.llmVisualAnalysis.confidence !== undefined && (
-              <p>
-                <span class="text-gray-400">Confidence:</span>{' '}
-                {(action.llmVisualAnalysis.confidence * 100).toFixed(0)}%
-              </p>
-            )}
-            {action.llmVisualAnalysis.reasoning && (
-              <p>
-                <span class="text-gray-400">Reasoning:</span> {action.llmVisualAnalysis.reasoning}
-              </p>
-            )}
-          </div>
+      ) : (
+        <div class="flex items-center gap-2 px-3 py-2">
+          <span class="inline-block h-2 w-2 rounded-full bg-blue-400 animate-pulse" />
+          <span class="text-xs text-gray-400">Analyzing...</span>
         </div>
       )}
 
