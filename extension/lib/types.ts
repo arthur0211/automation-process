@@ -94,6 +94,8 @@ export interface VisualAnalysis {
   reasoning?: string;
   boundingBox?: { y0: number; x0: number; y1: number; x1: number };
   codeTrace?: string;
+  stateChange?: string;
+  actionSucceeded?: boolean | null;
 }
 
 export interface VisualGrounding {

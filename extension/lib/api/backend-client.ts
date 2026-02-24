@@ -120,6 +120,7 @@ export async function processActionWithBackend(
   screenshotDataUrl: string,
   backendUrl: string,
   apiKey?: string,
+  prevScreenshotDataUrl?: string,
 ): Promise<EnrichedAction | null> {
   if (!backendUrl) return null;
 
@@ -139,6 +140,7 @@ export async function processActionWithBackend(
       }),
     };
     const screenshotParts = parseScreenshotParts(screenshotDataUrl);
+    const prevScreenshotParts = parseScreenshotParts(prevScreenshotDataUrl || '');
 
     // 1. Send action to ADK backend via POST /run with retry (ROAD-14)
     const runResponse = await fetchWithRetry(`${backendUrl}/run`, {
@@ -151,7 +153,7 @@ export async function processActionWithBackend(
         sessionId: action.sessionId,
         newMessage: {
           role: 'user',
-          parts: [textPart, ...screenshotParts],
+          parts: [textPart, ...screenshotParts, ...prevScreenshotParts],
         },
       }),
     });

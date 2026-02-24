@@ -412,6 +412,61 @@ describe('processActionWithBackend', () => {
     expect(result!.visualGrounding).toBeUndefined();
   });
 
+  it('sends prevScreenshotDataUrl as third inlineData part (ROAD-28)', async () => {
+    setupFetchMock(fetchMock, {
+      description: 'Clicks the Next button',
+      visual_analysis: { elements: [], layout: 'form', stateChange: 'Button became disabled', actionSucceeded: true },
+      decision_analysis: { isDecisionPoint: false, reason: '', branches: [] },
+    });
+
+    const result = await processActionWithBackend(
+      createAction({ sessionId: 'sess-temporal' }),
+      'data:image/png;base64,afterScreenshot',
+      BACKEND_URL,
+      undefined,
+      'data:image/jpeg;base64,beforeScreenshot',
+    );
+
+    const postCalls = fetchMock.mock.calls.filter(
+      ([, opts]: [string, RequestInit?]) => opts?.method === 'POST',
+    );
+    const body = JSON.parse(postCalls[0][1].body as string);
+    expect(body.newMessage.parts).toHaveLength(3);
+    expect(body.newMessage.parts[0]).toHaveProperty('text');
+    expect(body.newMessage.parts[1]).toEqual({
+      inlineData: { mimeType: 'image/png', data: 'afterScreenshot' },
+    });
+    expect(body.newMessage.parts[2]).toEqual({
+      inlineData: { mimeType: 'image/jpeg', data: 'beforeScreenshot' },
+    });
+
+    expect(result).not.toBeNull();
+    expect(result!.visualAnalysis.stateChange).toBe('Button became disabled');
+    expect(result!.visualAnalysis.actionSucceeded).toBe(true);
+  });
+
+  it('sends only 2 parts when prevScreenshotDataUrl is undefined', async () => {
+    setupFetchMock(fetchMock, {
+      description: 'Clicks button',
+      visual_analysis: { elements: [], layout: 'form' },
+      decision_analysis: { isDecisionPoint: false, reason: '', branches: [] },
+    });
+
+    await processActionWithBackend(
+      createAction(),
+      'data:image/png;base64,abc',
+      BACKEND_URL,
+      undefined,
+      undefined,
+    );
+
+    const postCalls = fetchMock.mock.calls.filter(
+      ([, opts]: [string, RequestInit?]) => opts?.method === 'POST',
+    );
+    const body = JSON.parse(postCalls[0][1].body as string);
+    expect(body.newMessage.parts).toHaveLength(2);
+  });
+
   it('parses boundingBox and codeTrace from visual_analysis (ROAD-28)', async () => {
     setupFetchMock(fetchMock, {
       description: 'Clicks the Submit button',
