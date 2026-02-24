@@ -40,6 +40,13 @@ function actionToCode(
     lines.push(`${indent}// Selector confidence: ${confidence}`);
   }
 
+  if (action.visualGrounding?.boundingBox && confidence !== undefined && confidence < 0.5) {
+    const bbox = action.visualGrounding.boundingBox;
+    const cx = Math.round((bbox.x0 + bbox.x1) / 2);
+    const cy = Math.round((bbox.y0 + bbox.y1) / 2);
+    lines.push(`${indent}// Visual grounding fallback (coords 0-1000): center=(${cx}, ${cy})`);
+  }
+
   if (action.decisionPoint.isDecisionPoint) {
     lines.push(`${indent}// Decision Point: ${action.decisionPoint.reason}`);
   }
