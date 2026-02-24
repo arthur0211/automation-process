@@ -32,10 +32,7 @@ function formatDate(timestamp: number): string {
  * Generates a print-optimized HTML document suitable for Print to PDF.
  * No video, no interactive elements, includes cover page and page breaks.
  */
-export function generatePrintHtml(
-  session: RecordingSession,
-  actions: CapturedAction[],
-): string {
+export function generatePrintHtml(session: RecordingSession, actions: CapturedAction[]): string {
   const sorted = [...actions].sort((a, b) => a.sequenceNumber - b.sequenceNumber);
   const duration = (session.stoppedAt || Date.now()) - session.startedAt;
 

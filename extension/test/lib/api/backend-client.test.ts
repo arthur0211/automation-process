@@ -415,7 +415,12 @@ describe('processActionWithBackend', () => {
   it('sends prevScreenshotDataUrl as third inlineData part (ROAD-28)', async () => {
     setupFetchMock(fetchMock, {
       description: 'Clicks the Next button',
-      visual_analysis: { elements: [], layout: 'form', stateChange: 'Button became disabled', actionSucceeded: true },
+      visual_analysis: {
+        elements: [],
+        layout: 'form',
+        stateChange: 'Button became disabled',
+        actionSucceeded: true,
+      },
       decision_analysis: { isDecisionPoint: false, reason: '', branches: [] },
     });
 
@@ -487,7 +492,9 @@ describe('processActionWithBackend', () => {
 
     expect(result).not.toBeNull();
     expect(result!.visualAnalysis.boundingBox).toEqual({ y0: 100, x0: 200, y1: 150, x1: 400 });
-    expect(result!.visualAnalysis.codeTrace).toBe('Cropped region around button, drew bounding box');
+    expect(result!.visualAnalysis.codeTrace).toBe(
+      'Cropped region around button, drew bounding box',
+    );
   });
 });
 

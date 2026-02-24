@@ -20,11 +20,7 @@ function getLocator(element: ElementMetadata): string {
   return `cy.get('${escapeSingleQuotes(element.selectors.css)}')`;
 }
 
-function actionToCode(
-  action: CapturedAction,
-  index: number,
-  nextAction?: CapturedAction,
-): string {
+function actionToCode(action: CapturedAction, index: number, nextAction?: CapturedAction): string {
   const lines: string[] = [];
   const description = action.llmDescription || action.description;
   const confidence = action.element.selectors.confidence;
@@ -56,9 +52,7 @@ function actionToCode(
       if (nextAction && nextAction.url !== action.url) {
         try {
           const pathname = new URL(nextAction.url).pathname;
-          lines.push(
-            `${indent}cy.url().should('include', '${escapeSingleQuotes(pathname)}');`,
-          );
+          lines.push(`${indent}cy.url().should('include', '${escapeSingleQuotes(pathname)}');`);
         } catch {
           // Non-fatal: skip URL assertion if URL is invalid
         }
@@ -88,9 +82,7 @@ function actionToCode(
       if (nextAction && nextAction.url !== action.url) {
         try {
           const pathname = new URL(nextAction.url).pathname;
-          lines.push(
-            `${indent}cy.url().should('include', '${escapeSingleQuotes(pathname)}');`,
-          );
+          lines.push(`${indent}cy.url().should('include', '${escapeSingleQuotes(pathname)}');`);
         } catch {
           // Non-fatal: skip URL assertion if URL is invalid
         }
@@ -104,15 +96,10 @@ function actionToCode(
   return lines.join('\n');
 }
 
-export function exportToCypress(
-  session: RecordingSession,
-  actions: CapturedAction[],
-): string {
+export function exportToCypress(session: RecordingSession, actions: CapturedAction[]): string {
   const sorted = [...actions].sort((a, b) => a.sequenceNumber - b.sequenceNumber);
 
-  const stepsCode = sorted
-    .map((action, i) => actionToCode(action, i, sorted[i + 1]))
-    .join('\n\n');
+  const stepsCode = sorted.map((action, i) => actionToCode(action, i, sorted[i + 1])).join('\n\n');
 
   return `describe('${escapeSingleQuotes(session.name)}', () => {
   it('recorded flow', () => {

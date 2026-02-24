@@ -130,7 +130,6 @@ async function startRecording(tabId: number) {
   saveState();
 }
 
-
 async function ensureContentScript(tabId: number): Promise<boolean> {
   try {
     await chrome.tabs.sendMessage(tabId, { type: 'PING' });
@@ -153,7 +152,7 @@ async function sendToAllTabs(message: ExtensionMessage) {
   const allTabs = await chrome.tabs.query({});
   await Promise.allSettled(
     allTabs
-      .filter(t => t.id && t.url && /^https?:\/\//.test(t.url))
+      .filter((t) => t.id && t.url && /^https?:\/\//.test(t.url))
       .map(async (t) => {
         try {
           await ensureContentScript(t.id!);
@@ -161,7 +160,7 @@ async function sendToAllTabs(message: ExtensionMessage) {
         } catch (err) {
           console.warn(`Failed to send message to tab ${t.id} (${t.url}):`, err);
         }
-      })
+      }),
   );
 }
 
@@ -368,7 +367,12 @@ async function validateRecordingInBackground(sessionId: string) {
     if (!session) return;
     const actions = await getSessionActions(sessionId);
 
-    const validationResult = await validateRecordingWithBackend(session, actions, agentsUrl, apiKey);
+    const validationResult = await validateRecordingWithBackend(
+      session,
+      actions,
+      agentsUrl,
+      apiKey,
+    );
 
     if (validationResult) {
       await updateSession(sessionId, { validationResult, validationStatus: 'done' });
@@ -442,7 +446,7 @@ async function handleTabSwitch(activeInfo: { tabId: number; windowId: number }) 
 
   let tab: chrome.tabs.Tab;
   try {
-    tab = await chrome.tabs.get(activeInfo.tabId);  // Single call
+    tab = await chrome.tabs.get(activeInfo.tabId); // Single call
   } catch {
     return; // Tab may not exist
   }
@@ -451,15 +455,17 @@ async function handleTabSwitch(activeInfo: { tabId: number; windowId: number }) 
   // (new tabs opened during recording never received START_RECORDING)
   if (tab.url && /^https?:\/\//.test(tab.url)) {
     await ensureContentScript(activeInfo.tabId);
-    await chrome.tabs.sendMessage(activeInfo.tabId, {
-      type: 'START_RECORDING',
-      payload: { sessionId: currentSession.id, settings: currentSettings },
-    }).catch(() => {});
+    await chrome.tabs
+      .sendMessage(activeInfo.tabId, {
+        type: 'START_RECORDING',
+        payload: { sessionId: currentSession.id, settings: currentSettings },
+      })
+      .catch(() => {});
   }
 
   // Create navigate action
   const tabUrl = tab.url || tab.pendingUrl || '';
-  if (!tabUrl) return;  // Don't create action with empty URL
+  if (!tabUrl) return; // Don't create action with empty URL
 
   actionCount++;
   try {

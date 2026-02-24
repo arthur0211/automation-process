@@ -29,9 +29,7 @@ describe('exportToMarkdown', () => {
 
   it('includes step descriptions', () => {
     const session = createSession({ stoppedAt: 1700000060000 });
-    const actions = [
-      createAction({ sequenceNumber: 1, description: 'Clicked the submit button' }),
-    ];
+    const actions = [createAction({ sequenceNumber: 1, description: 'Clicked the submit button' })];
     const md = exportToMarkdown(session, actions);
 
     expect(md).toContain('## Step 1:');
@@ -114,9 +112,7 @@ describe('exportToMarkdown', () => {
 
   it('includes screenshots when enabled', () => {
     const session = createSession({ stoppedAt: 1700000060000 });
-    const actions = [
-      createAction({ screenshotDataUrl: 'data:image/png;base64,abc123' }),
-    ];
+    const actions = [createAction({ screenshotDataUrl: 'data:image/png;base64,abc123' })];
     const md = exportToMarkdown(session, actions, true);
 
     expect(md).toContain('![Step 1](data:image/png;base64,abc123)');
@@ -124,9 +120,7 @@ describe('exportToMarkdown', () => {
 
   it('excludes screenshots by default', () => {
     const session = createSession({ stoppedAt: 1700000060000 });
-    const actions = [
-      createAction({ screenshotDataUrl: 'data:image/png;base64,abc123' }),
-    ];
+    const actions = [createAction({ screenshotDataUrl: 'data:image/png;base64,abc123' })];
     const md = exportToMarkdown(session, actions);
 
     expect(md).not.toContain('![');
@@ -135,9 +129,7 @@ describe('exportToMarkdown', () => {
 
   it('excludes screenshots when disabled explicitly', () => {
     const session = createSession({ stoppedAt: 1700000060000 });
-    const actions = [
-      createAction({ screenshotDataUrl: 'data:image/png;base64,abc123' }),
-    ];
+    const actions = [createAction({ screenshotDataUrl: 'data:image/png;base64,abc123' })];
     const md = exportToMarkdown(session, actions, false);
 
     expect(md).not.toContain('![');

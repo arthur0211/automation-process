@@ -383,9 +383,7 @@ describe('exportToPlaywright', () => {
     const actions = [createAction({ description: 'Clicked the submit button' })];
     const result = exportToPlaywright(session, actions);
 
-    expect(result).toContain(
-      "await test.step('Step 1: Clicked the submit button', async () => {",
-    );
+    expect(result).toContain("await test.step('Step 1: Clicked the submit button', async () => {");
     expect(result).toContain('    });');
   });
 
@@ -411,15 +409,13 @@ describe('exportToPlaywright', () => {
     ];
     const result = exportToPlaywright(session, actions);
 
-    expect(result).toContain("Step 1: Click the login button to authenticate");
-    expect(result).not.toContain("Step 1: Clicked button");
+    expect(result).toContain('Step 1: Click the login button to authenticate');
+    expect(result).not.toContain('Step 1: Clicked button');
   });
 
   it('escapes single quotes in test.step() description', () => {
     const session = createSession();
-    const actions = [
-      createAction({ description: "Click the 'Submit' button" }),
-    ];
+    const actions = [createAction({ description: "Click the 'Submit' button" })];
     const result = exportToPlaywright(session, actions);
 
     expect(result).toContain("Step 1: Click the \\'Submit\\' button");
@@ -604,9 +600,7 @@ describe('exportToPlaywright', () => {
     ];
     const result = exportToPlaywright(session, actions);
 
-    expect(result).toContain(
-      "await page.waitForURL('https://example.com/dashboard');",
-    );
+    expect(result).toContain("await page.waitForURL('https://example.com/dashboard');");
   });
 
   it('does not add waitForURL when next action has the same URL', () => {
@@ -666,9 +660,7 @@ describe('exportToPlaywright', () => {
     ];
     const result = exportToPlaywright(session, actions);
 
-    expect(result).toContain(
-      "await page.waitForURL('https://example.com/success');",
-    );
+    expect(result).toContain("await page.waitForURL('https://example.com/success');");
   });
 
   it('does not add waitForURL for non-click/submit actions', () => {

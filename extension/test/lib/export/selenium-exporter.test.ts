@@ -10,7 +10,7 @@ describe('exportToSelenium', () => {
 
     expect(code).toContain("const { Builder, By, until } = require('selenium-webdriver');");
     expect(code).toContain("describe('Login Flow'");
-    expect(code).toContain("let driver;");
+    expect(code).toContain('let driver;');
     expect(code).toContain("driver = await new Builder().forBrowser('chrome').build();");
     expect(code).toContain("await driver.get('https://app.example.com');");
     expect(code).toContain('await driver.quit();');
@@ -27,7 +27,7 @@ describe('exportToSelenium', () => {
     ];
     const code = exportToSelenium(session, actions);
 
-    expect(code).toContain("By.css('[data-testid=\"submit-btn\"]')");
+    expect(code).toContain('By.css(\'[data-testid="submit-btn"]\')');
   });
 
   it('uses By.id when element has an id', () => {

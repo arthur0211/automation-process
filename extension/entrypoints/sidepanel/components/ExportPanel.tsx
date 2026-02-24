@@ -37,7 +37,10 @@ export function ExportPanel({ session, actions }: ExportPanelProps) {
   useEffect(() => {
     chrome.storage.local.get(['brandingSettings'], (result) => {
       if (result.brandingSettings) {
-        brandingRef.current = { ...DEFAULT_BRANDING_SETTINGS, ...(result.brandingSettings as BrandingSettings) };
+        brandingRef.current = {
+          ...DEFAULT_BRANDING_SETTINGS,
+          ...(result.brandingSettings as BrandingSettings),
+        };
       }
     });
   }, []);
@@ -191,8 +194,8 @@ export function ExportPanel({ session, actions }: ExportPanelProps) {
       <label class="block text-xs font-medium text-gray-500 mb-2">Export</label>
       <OnboardingTooltip storageKey="onboarding_export_seen">
         <strong>Export your recording:</strong> <strong>JSON</strong> for LLM processing,{' '}
-        <strong>HTML</strong> for a visual step-by-step guide, or{' '}
-        <strong>Playwright</strong> to generate an automated test script.
+        <strong>HTML</strong> for a visual step-by-step guide, or <strong>Playwright</strong> to
+        generate an automated test script.
       </OnboardingTooltip>
 
       {/* Always-visible actions */}
@@ -220,11 +223,23 @@ export function ExportPanel({ session, actions }: ExportPanelProps) {
             class="w-full bg-gray-50 hover:bg-gray-100 px-3 py-2 rounded cursor-pointer flex items-center justify-between text-sm font-medium text-gray-700 transition-colors"
           >
             <span class="flex items-center gap-2">
-              <svg class="w-4 h-4 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+              <svg
+                class="w-4 h-4 text-gray-500"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                stroke-width="2"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                />
               </svg>
               Documentation
-              <span class="text-xs font-normal text-gray-400 bg-gray-200 rounded-full px-1.5 py-0.5">4</span>
+              <span class="text-xs font-normal text-gray-400 bg-gray-200 rounded-full px-1.5 py-0.5">
+                4
+              </span>
             </span>
             <svg
               class={`w-4 h-4 text-gray-400 transition-transform duration-200 ${openSection === 'documentation' ? 'rotate-180' : ''}`}
@@ -276,11 +291,23 @@ export function ExportPanel({ session, actions }: ExportPanelProps) {
             class="w-full bg-gray-50 hover:bg-gray-100 px-3 py-2 rounded cursor-pointer flex items-center justify-between text-sm font-medium text-gray-700 transition-colors"
           >
             <span class="flex items-center gap-2">
-              <svg class="w-4 h-4 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
+              <svg
+                class="w-4 h-4 text-gray-500"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                stroke-width="2"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"
+                />
               </svg>
               Test Automation
-              <span class="text-xs font-normal text-gray-400 bg-gray-200 rounded-full px-1.5 py-0.5">5</span>
+              <span class="text-xs font-normal text-gray-400 bg-gray-200 rounded-full px-1.5 py-0.5">
+                5
+              </span>
             </span>
             <svg
               class={`w-4 h-4 text-gray-400 transition-transform duration-200 ${openSection === 'testing' ? 'rotate-180' : ''}`}
@@ -338,11 +365,23 @@ export function ExportPanel({ session, actions }: ExportPanelProps) {
             class="w-full bg-gray-50 hover:bg-gray-100 px-3 py-2 rounded cursor-pointer flex items-center justify-between text-sm font-medium text-gray-700 transition-colors"
           >
             <span class="flex items-center gap-2">
-              <svg class="w-4 h-4 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
+              <svg
+                class="w-4 h-4 text-gray-500"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                stroke-width="2"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"
+                />
               </svg>
               Integrations
-              <span class="text-xs font-normal text-gray-400 bg-gray-200 rounded-full px-1.5 py-0.5">1</span>
+              <span class="text-xs font-normal text-gray-400 bg-gray-200 rounded-full px-1.5 py-0.5">
+                1
+              </span>
             </span>
             <svg
               class={`w-4 h-4 text-gray-400 transition-transform duration-200 ${openSection === 'integrations' ? 'rotate-180' : ''}`}
@@ -436,7 +475,9 @@ export function ExportPanel({ session, actions }: ExportPanelProps) {
                       </a>
                     </div>
                   )}
-                  {ghError && <div class="text-xs text-red-600 bg-red-50 p-2 rounded">{ghError}</div>}
+                  {ghError && (
+                    <div class="text-xs text-red-600 bg-red-50 p-2 rounded">{ghError}</div>
+                  )}
                 </div>
               )}
             </div>

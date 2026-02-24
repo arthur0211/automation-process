@@ -27,7 +27,7 @@ describe('exportToPuppeteer', () => {
     ];
     const code = exportToPuppeteer(session, actions);
 
-    expect(code).toContain("[data-testid=\"submit-btn\"]");
+    expect(code).toContain('[data-testid="submit-btn"]');
   });
 
   it('uses aria-label selector when available', () => {
@@ -57,7 +57,7 @@ describe('exportToPuppeteer', () => {
     ];
     const code = exportToPuppeteer(session, actions);
 
-    expect(code).toContain("#email-field");
+    expect(code).toContain('#email-field');
   });
 
   it('falls back to CSS selector', () => {
@@ -78,9 +78,7 @@ describe('exportToPuppeteer', () => {
 
   it('generates click with waitForSelector', () => {
     const session = createSession();
-    const actions = [
-      createAction({ actionType: 'click', description: 'Click submit' }),
-    ];
+    const actions = [createAction({ actionType: 'click', description: 'Click submit' })];
     const code = exportToPuppeteer(session, actions);
 
     expect(code).toContain('await page.waitForSelector(');
@@ -141,7 +139,7 @@ describe('exportToPuppeteer', () => {
     ];
     const code = exportToPuppeteer(session, actions);
 
-    expect(code).toContain("await page.evaluate(() => window.scrollTo(0, 800));");
+    expect(code).toContain('await page.evaluate(() => window.scrollTo(0, 800));');
   });
 
   it('generates navigate with page.goto', () => {
@@ -185,9 +183,7 @@ describe('exportToPuppeteer', () => {
 
   it('adds step comments', () => {
     const session = createSession();
-    const actions = [
-      createAction({ sequenceNumber: 1, description: 'Click the login button' }),
-    ];
+    const actions = [createAction({ sequenceNumber: 1, description: 'Click the login button' })];
     const code = exportToPuppeteer(session, actions);
 
     expect(code).toContain('// Step 1: Click the login button');

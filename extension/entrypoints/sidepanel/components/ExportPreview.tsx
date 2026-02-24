@@ -1,7 +1,14 @@
 import { useState, useEffect, useCallback } from 'preact/hooks';
 import type { CapturedAction, RecordingSession } from '@/lib/types';
 
-export type ExportFormat = 'json' | 'html' | 'playwright' | 'markdown' | 'cypress' | 'selenium' | 'puppeteer';
+export type ExportFormat =
+  | 'json'
+  | 'html'
+  | 'playwright'
+  | 'markdown'
+  | 'cypress'
+  | 'selenium'
+  | 'puppeteer';
 
 interface ExportPreviewProps {
   session: RecordingSession;
@@ -21,7 +28,15 @@ const FORMAT_CONFIG: Record<ExportFormat, { label: string; ext: string; mime: st
   markdown: { label: 'Markdown', ext: '.md', mime: 'text/markdown' },
 };
 
-const FORMATS: ExportFormat[] = ['json', 'html', 'playwright', 'cypress', 'selenium', 'puppeteer', 'markdown'];
+const FORMATS: ExportFormat[] = [
+  'json',
+  'html',
+  'playwright',
+  'cypress',
+  'selenium',
+  'puppeteer',
+  'markdown',
+];
 
 export function ExportPreview({
   session,

@@ -1,6 +1,15 @@
 // ─── Action Types ───────────────────────────────────────────────────────────
 
-export type ActionType = 'click' | 'input' | 'scroll' | 'navigate' | 'submit' | 'hover' | 'contextmenu' | 'keydown' | 'dblclick';
+export type ActionType =
+  | 'click'
+  | 'input'
+  | 'scroll'
+  | 'navigate'
+  | 'submit'
+  | 'hover'
+  | 'contextmenu'
+  | 'keydown'
+  | 'dblclick';
 
 // ─── Element Metadata ───────────────────────────────────────────────────────
 

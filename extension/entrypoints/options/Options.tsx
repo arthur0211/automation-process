@@ -15,7 +15,16 @@ export function Options() {
 
   useEffect(() => {
     chrome.storage.local.get(
-      ['settings', 'backendUrl', 'backendApiKey', 'standaloneAgentsUrl', 'showThumbnails', 'brandingSettings', 'github_pat', 'github_repo'],
+      [
+        'settings',
+        'backendUrl',
+        'backendApiKey',
+        'standaloneAgentsUrl',
+        'showThumbnails',
+        'brandingSettings',
+        'github_pat',
+        'github_repo',
+      ],
       (result) => {
         if (result.settings) {
           setSettings({ ...DEFAULT_CAPTURE_SETTINGS, ...result.settings });
@@ -33,7 +42,10 @@ export function Options() {
           setShowThumbnails(result.showThumbnails as boolean);
         }
         if (result.brandingSettings) {
-          setBranding({ ...DEFAULT_BRANDING_SETTINGS, ...(result.brandingSettings as BrandingSettings) });
+          setBranding({
+            ...DEFAULT_BRANDING_SETTINGS,
+            ...(result.brandingSettings as BrandingSettings),
+          });
         }
         if (result.github_pat) {
           setGithubPat(result.github_pat as string);
@@ -51,10 +63,22 @@ export function Options() {
   }
 
   function handleSave() {
-    chrome.storage.local.set({ settings, backendUrl, backendApiKey, standaloneAgentsUrl, showThumbnails, brandingSettings: branding, github_pat: githubPat, github_repo: githubRepo }, () => {
-      setSaved(true);
-      setTimeout(() => setSaved(false), 2000);
-    });
+    chrome.storage.local.set(
+      {
+        settings,
+        backendUrl,
+        backendApiKey,
+        standaloneAgentsUrl,
+        showThumbnails,
+        brandingSettings: branding,
+        github_pat: githubPat,
+        github_repo: githubRepo,
+      },
+      () => {
+        setSaved(true);
+        setTimeout(() => setSaved(false), 2000);
+      },
+    );
   }
 
   function handleClearData() {
@@ -205,7 +229,10 @@ export function Options() {
               type="color"
               value={branding.accentColor}
               onInput={(e) => {
-                setBranding((prev) => ({ ...prev, accentColor: (e.target as HTMLInputElement).value }));
+                setBranding((prev) => ({
+                  ...prev,
+                  accentColor: (e.target as HTMLInputElement).value,
+                }));
                 setSaved(false);
               }}
               class="w-10 h-10 rounded border border-gray-200 cursor-pointer p-0.5"
@@ -214,7 +241,10 @@ export function Options() {
               type="text"
               value={branding.accentColor}
               onInput={(e) => {
-                setBranding((prev) => ({ ...prev, accentColor: (e.target as HTMLInputElement).value }));
+                setBranding((prev) => ({
+                  ...prev,
+                  accentColor: (e.target as HTMLInputElement).value,
+                }));
                 setSaved(false);
               }}
               class="w-28 px-3 py-2 text-sm border border-gray-200 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-400 font-mono"
@@ -238,7 +268,10 @@ export function Options() {
             placeholder="e.g., Company Name - Internal Documentation"
             value={branding.headerText}
             onInput={(e) => {
-              setBranding((prev) => ({ ...prev, headerText: (e.target as HTMLInputElement).value }));
+              setBranding((prev) => ({
+                ...prev,
+                headerText: (e.target as HTMLInputElement).value,
+              }));
               setSaved(false);
             }}
             class="w-full px-3 py-2 text-sm border border-gray-200 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-400"
@@ -260,7 +293,10 @@ export function Options() {
             placeholder="e.g., Confidential - Do not distribute"
             value={branding.footerText}
             onInput={(e) => {
-              setBranding((prev) => ({ ...prev, footerText: (e.target as HTMLInputElement).value }));
+              setBranding((prev) => ({
+                ...prev,
+                footerText: (e.target as HTMLInputElement).value,
+              }));
               setSaved(false);
             }}
             class="w-full px-3 py-2 text-sm border border-gray-200 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-400"
@@ -319,7 +355,8 @@ export function Options() {
               class="w-full px-3 py-2 text-sm border border-gray-200 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-400"
             />
             <p class="text-xs text-gray-400 mt-1">
-              Shared between Backend URL and Standalone Agents URL. Leave empty if backend has no authentication.
+              Shared between Backend URL and Standalone Agents URL. Leave empty if backend has no
+              authentication.
             </p>
           </div>
           <div>

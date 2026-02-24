@@ -1,4 +1,10 @@
-import type { CapturedAction, RecordingSession, ValidationResult, VisualAnalysis, VisualGrounding } from '../types';
+import type {
+  CapturedAction,
+  RecordingSession,
+  ValidationResult,
+  VisualAnalysis,
+  VisualGrounding,
+} from '../types';
 
 export interface EnrichedAction {
   humanDescription: string;
@@ -32,7 +38,9 @@ function parseJsonSafe<T = Record<string, unknown>>(value: unknown): T {
   return {} as T;
 }
 
-function parseScreenshotParts(screenshotDataUrl: string): { text?: string; inlineData?: { mimeType: string; data: string } }[] {
+function parseScreenshotParts(
+  screenshotDataUrl: string,
+): { text?: string; inlineData?: { mimeType: string; data: string } }[] {
   if (!screenshotDataUrl) return [];
   const match = screenshotDataUrl.match(/^data:(image\/[^;]+);base64,(.+)$/);
   if (match) {
@@ -61,12 +69,16 @@ async function fetchWithRetry(
         return response;
       }
       const retryAfter = response.headers.get('Retry-After');
-      const delay = retryAfter ? parseInt(retryAfter, 10) * 1000 : POLL_DELAYS[Math.min(attempt, POLL_DELAYS.length - 1)];
-      await new Promise(r => setTimeout(r, delay));
+      const delay = retryAfter
+        ? parseInt(retryAfter, 10) * 1000
+        : POLL_DELAYS[Math.min(attempt, POLL_DELAYS.length - 1)];
+      await new Promise((r) => setTimeout(r, delay));
     } catch (err) {
       lastError = err as Error;
       if (attempt === maxRetries) break;
-      await new Promise(r => setTimeout(r, POLL_DELAYS[Math.min(attempt, POLL_DELAYS.length - 1)]));
+      await new Promise((r) =>
+        setTimeout(r, POLL_DELAYS[Math.min(attempt, POLL_DELAYS.length - 1)]),
+      );
     }
   }
   throw lastError || new Error('fetchWithRetry exhausted');
@@ -80,12 +92,13 @@ async function pollSessionState(
   apiKey?: string,
 ): Promise<Record<string, unknown>> {
   const headers = buildHeaders({}, apiKey);
-  const fetchOpts: RequestInit = Object.keys(headers).length > 0
-    ? { signal: AbortSignal.timeout(10_000), headers }
-    : { signal: AbortSignal.timeout(10_000) };
+  const fetchOpts: RequestInit =
+    Object.keys(headers).length > 0
+      ? { signal: AbortSignal.timeout(10_000), headers }
+      : { signal: AbortSignal.timeout(10_000) };
 
   for (const delay of POLL_DELAYS) {
-    await new Promise(r => setTimeout(r, delay));
+    await new Promise((r) => setTimeout(r, delay));
     try {
       const res = await fetch(
         `${baseUrl}/apps/${appName}/users/${USER_ID}/sessions/${sessionId}`,
@@ -94,7 +107,7 @@ async function pollSessionState(
       if (!res.ok) continue;
       const data = await res.json();
       const state = data.state || {};
-      if (outputKeys.every(k => state[k] !== undefined)) {
+      if (outputKeys.every((k) => state[k] !== undefined)) {
         return state;
       }
     } catch {
@@ -111,7 +124,9 @@ async function pollSessionState(
       const data = await res.json();
       return data.state || {};
     }
-  } catch { /* return empty */ }
+  } catch {
+    /* return empty */
+  }
   return {};
 }
 

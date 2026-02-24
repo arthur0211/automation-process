@@ -76,15 +76,13 @@ export function exportToHtml(
   </nav>`
       : '';
 
-  const headerHtml =
-    branding?.headerText
-      ? `\n  <div class="branding-header">${escapeHtml(branding.headerText)}</div>`
-      : '';
+  const headerHtml = branding?.headerText
+    ? `\n  <div class="branding-header">${escapeHtml(branding.headerText)}</div>`
+    : '';
 
-  const footerHtml =
-    branding?.footerText
-      ? `\n  <div class="branding-footer">${escapeHtml(branding.footerText)}</div>`
-      : '';
+  const footerHtml = branding?.footerText
+    ? `\n  <div class="branding-footer">${escapeHtml(branding.footerText)}</div>`
+    : '';
 
   return `<!DOCTYPE html>
 <html lang="en">

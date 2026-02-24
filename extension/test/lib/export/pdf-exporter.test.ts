@@ -83,18 +83,14 @@ describe('generatePrintHtml', () => {
   // ─── No Video / No Interactive Elements ─────────────────────────────────────
 
   it('does not include video elements', () => {
-    const html = generatePrintHtml(createSession({ stoppedAt: 1700000060000 }), [
-      createAction(),
-    ]);
+    const html = generatePrintHtml(createSession({ stoppedAt: 1700000060000 }), [createAction()]);
     expect(html).not.toContain('<video');
     expect(html).not.toContain('seekVideo');
     expect(html).not.toContain('play-btn');
   });
 
   it('does not include interactive script tags', () => {
-    const html = generatePrintHtml(createSession({ stoppedAt: 1700000060000 }), [
-      createAction(),
-    ]);
+    const html = generatePrintHtml(createSession({ stoppedAt: 1700000060000 }), [createAction()]);
     expect(html).not.toContain('<script');
   });
 

@@ -29,9 +29,7 @@ function patchTestForCI(
 ): string {
   // Replace the hardcoded goto with one that reads BASE_URL env var
   const escapedUrl = session.url.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-  const gotoPattern = new RegExp(
-    `await page\\.goto\\('${escapedUrl}'\\);`,
-  );
+  const gotoPattern = new RegExp(`await page\\.goto\\('${escapedUrl}'\\);`);
   const patched = original.replace(
     gotoPattern,
     `await page.goto(process.env.BASE_URL || '${session.url}');`,

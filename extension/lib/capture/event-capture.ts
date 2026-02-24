@@ -84,12 +84,14 @@ function buildAction(
 }
 
 function sendAction(action: CapturedAction) {
-  chrome.runtime.sendMessage({
-    type: 'ACTION_CAPTURED',
-    payload: { action },
-  }).catch((err) => {
-    console.warn('sendAction failed (service worker may be inactive):', err);
-  });
+  chrome.runtime
+    .sendMessage({
+      type: 'ACTION_CAPTURED',
+      payload: { action },
+    })
+    .catch((err) => {
+      console.warn('sendAction failed (service worker may be inactive):', err);
+    });
 }
 
 // ─── Recording Indicator Exclusion ───────────────────────────────────────────
@@ -215,11 +217,7 @@ function isHoverWorthy(element: Element): boolean {
   // Is an interactive element that may trigger a dropdown/menu
   const tag = element.tagName.toLowerCase();
   const role = element.getAttribute('role') || '';
-  const isInteractive =
-    tag === 'button' ||
-    tag === 'a' ||
-    role === 'button' ||
-    role === 'menuitem';
+  const isInteractive = tag === 'button' || tag === 'a' || role === 'button' || role === 'menuitem';
 
   if (isInteractive) {
     // Check for child or sibling that looks like a dropdown/menu indicator
@@ -304,7 +302,9 @@ function handleKeydown(event: KeyboardEvent) {
     event.shiftKey ? 'Shift' : '',
     event.altKey ? 'Alt' : '',
     key,
-  ].filter(Boolean).join('+');
+  ]
+    .filter(Boolean)
+    .join('+');
 
   sendAction(buildAction('keydown', target, { inputValue: keyCombo }));
 }

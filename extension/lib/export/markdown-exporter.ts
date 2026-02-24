@@ -56,7 +56,9 @@ export function exportToMarkdown(
       lines.push('');
       lines.push(`> **Decision Point:** ${escapeMarkdown(action.decisionPoint.reason)}`);
       for (const branch of action.decisionPoint.branches) {
-        lines.push(`> - *${escapeMarkdown(branch.condition)}:* ${escapeMarkdown(branch.description)}`);
+        lines.push(
+          `> - *${escapeMarkdown(branch.condition)}:* ${escapeMarkdown(branch.description)}`,
+        );
       }
     }
 

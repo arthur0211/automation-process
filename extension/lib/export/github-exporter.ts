@@ -44,7 +44,9 @@ export async function createGitHubIssue(config: GitHubExportConfig): Promise<Git
       throw new Error('GitHub authentication failed. Check your Personal Access Token.');
     }
     if (response.status === 404) {
-      throw new Error(`Repository "${repo}" not found. Check the owner/repo format and permissions.`);
+      throw new Error(
+        `Repository "${repo}" not found. Check the owner/repo format and permissions.`,
+      );
     }
     const text = await response.text();
     throw new Error(`GitHub API error (${response.status}): ${text}`);

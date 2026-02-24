@@ -4,7 +4,12 @@ import {
   pauseCapturing,
   resumeCapturing,
 } from '@/lib/capture/event-capture';
-import type { ExtensionMessage, CaptureSettings, StatusPayload, RecordingStatus } from '@/lib/types';
+import type {
+  ExtensionMessage,
+  CaptureSettings,
+  StatusPayload,
+  RecordingStatus,
+} from '@/lib/types';
 
 // ─── Recording Indicator ──────────────────────────────────────────────────────
 
@@ -27,7 +32,8 @@ function createIndicator(): void {
   indicatorHost.id = INDICATOR_HOST_ID;
   indicatorHost.setAttribute('data-agentic-recorder-indicator', 'true');
   // Prevent the host element from interfering with page layout
-  indicatorHost.style.cssText = 'position: fixed; z-index: 2147483647; bottom: 16px; right: 16px; pointer-events: auto;';
+  indicatorHost.style.cssText =
+    'position: fixed; z-index: 2147483647; bottom: 16px; right: 16px; pointer-events: auto;';
 
   indicatorShadow = indicatorHost.attachShadow({ mode: 'closed' });
 
@@ -156,7 +162,10 @@ function renderIndicator(): void {
   }
 
   const stateClass = status === 'recording' ? 'badge--recording' : 'badge--paused';
-  const icon = status === 'recording' ? '<span class="badge__dot"></span>' : '<span style="font-size:11px;">⏸</span>';
+  const icon =
+    status === 'recording'
+      ? '<span class="badge__dot"></span>'
+      : '<span style="font-size:11px;">⏸</span>';
   const label = status === 'recording' ? 'REC' : 'Paused';
   const stepsText = actionCount > 0 ? ` · ${actionCount} step${actionCount !== 1 ? 's' : ''}` : '';
 

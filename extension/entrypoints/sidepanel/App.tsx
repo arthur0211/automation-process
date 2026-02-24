@@ -126,7 +126,11 @@ export function App() {
           >
             &larr; Back to steps
           </button>
-          <StepDetail action={selectedAction} onUpdate={handleUpdate} onDelete={handleDeleteAction} />
+          <StepDetail
+            action={selectedAction}
+            onUpdate={handleUpdate}
+            onDelete={handleDeleteAction}
+          />
         </div>
       ) : view === 'list' ? (
         <>
@@ -163,9 +167,7 @@ export function App() {
 
       {pendingDelete && (
         <UndoToast
-          message={
-            pendingDelete.type === 'action' ? 'Step deleted' : 'Recording deleted'
-          }
+          message={pendingDelete.type === 'action' ? 'Step deleted' : 'Recording deleted'}
           onUndo={handleUndo}
           onDismiss={handleUndoDismiss}
           duration={UNDO_DURATION}

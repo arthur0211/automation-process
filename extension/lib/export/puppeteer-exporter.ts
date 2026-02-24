@@ -20,11 +20,7 @@ function getSelector(element: ElementMetadata): string {
   return escapeSingleQuotes(element.selectors.css);
 }
 
-function actionToCode(
-  action: CapturedAction,
-  index: number,
-  nextAction?: CapturedAction,
-): string {
+function actionToCode(action: CapturedAction, index: number, nextAction?: CapturedAction): string {
   const lines: string[] = [];
   const description = action.llmDescription || action.description;
   const confidence = action.element.selectors.confidence;
@@ -78,7 +74,9 @@ function actionToCode(
       );
       break;
     case 'navigate':
-      lines.push(`${indent}await page.goto('${escapeSingleQuotes(action.url)}', { waitUntil: 'networkidle0' });`);
+      lines.push(
+        `${indent}await page.goto('${escapeSingleQuotes(action.url)}', { waitUntil: 'networkidle0' });`,
+      );
       break;
     case 'hover': {
       lines.push(`${indent}const el${index + 1} = await page.waitForSelector('${selector}');`);
@@ -98,15 +96,10 @@ function actionToCode(
   return lines.join('\n');
 }
 
-export function exportToPuppeteer(
-  session: RecordingSession,
-  actions: CapturedAction[],
-): string {
+export function exportToPuppeteer(session: RecordingSession, actions: CapturedAction[]): string {
   const sorted = [...actions].sort((a, b) => a.sequenceNumber - b.sequenceNumber);
 
-  const stepsCode = sorted
-    .map((action, i) => actionToCode(action, i, sorted[i + 1]))
-    .join('\n\n');
+  const stepsCode = sorted.map((action, i) => actionToCode(action, i, sorted[i + 1])).join('\n\n');
 
   return `const puppeteer = require('puppeteer');
 

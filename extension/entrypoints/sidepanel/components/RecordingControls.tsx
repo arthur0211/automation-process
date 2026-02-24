@@ -36,8 +36,8 @@ export function RecordingControls() {
 
       {status === 'idle' && (
         <OnboardingTooltip storageKey="onboarding_welcome_seen">
-          Welcome! Click <strong>Start Recording</strong> to capture your first web process.
-          Every click, input and navigation will be documented automatically.
+          Welcome! Click <strong>Start Recording</strong> to capture your first web process. Every
+          click, input and navigation will be documented automatically.
         </OnboardingTooltip>
       )}
 

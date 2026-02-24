@@ -95,9 +95,7 @@ function actionToCode(ctx: ActionCodeContext): string {
       lines.push(`${indent}await expect(${locator}).toBeVisible();`);
       lines.push(`${indent}await ${locator}.click();`);
       if (nextAction && nextAction.url !== action.url) {
-        lines.push(
-          `${indent}await page.waitForURL('${escapeSingleQuotes(nextAction.url)}');`,
-        );
+        lines.push(`${indent}await page.waitForURL('${escapeSingleQuotes(nextAction.url)}');`);
       }
       break;
     case 'input':
@@ -126,9 +124,7 @@ function actionToCode(ctx: ActionCodeContext): string {
       lines.push(`${indent}await expect(${locator}).toBeVisible();`);
       lines.push(`${indent}await ${locator}.click({ button: 'right' });`);
       if (nextAction && nextAction.url !== action.url) {
-        lines.push(
-          `${indent}await page.waitForURL('${escapeSingleQuotes(nextAction.url)}');`,
-        );
+        lines.push(`${indent}await page.waitForURL('${escapeSingleQuotes(nextAction.url)}');`);
       }
       break;
     default:
@@ -142,9 +138,7 @@ function actionToCode(ctx: ActionCodeContext): string {
 }
 
 /** Build the testData object from input actions. Returns entries and the generated code block. */
-function buildTestData(
-  sorted: CapturedAction[],
-): { entries: Map<number, string>; code: string } {
+function buildTestData(sorted: CapturedAction[]): { entries: Map<number, string>; code: string } {
   const entries = new Map<number, string>();
   const dataLines: string[] = [];
 
