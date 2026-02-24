@@ -297,6 +297,7 @@ async function enrichActionInBackground(action: CapturedAction) {
     const changes: Partial<CapturedAction> = {
       llmDescription: enriched.humanDescription,
       llmVisualAnalysis: enriched.visualAnalysis,
+      ...(enriched.visualGrounding && { visualGrounding: enriched.visualGrounding }),
     };
 
     if (enriched.decisionAnalysis.isDecisionPoint) {
