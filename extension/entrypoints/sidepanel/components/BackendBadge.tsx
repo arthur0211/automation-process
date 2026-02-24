@@ -1,7 +1,7 @@
 import { useBackendConfig } from '@/lib/hooks/use-backend-config';
 
 export function BackendBadge() {
-  const { isConfigured, mode, loading } = useBackendConfig();
+  const { mode, loading } = useBackendConfig();
 
   if (loading) return null;
 
