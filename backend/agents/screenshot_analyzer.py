@@ -1,7 +1,6 @@
 import os
 
 from google.adk.agents import LlmAgent
-from google.adk.tools import BuiltInCodeExecutionTool
 
 screenshot_analyzer = LlmAgent(
     name="screenshot_analyzer",
@@ -11,12 +10,6 @@ screenshot_analyzer = LlmAgent(
 You may receive ONE or TWO screenshots:
 - If TWO images: Image 1 is the page state AFTER the user action, Image 2 is BEFORE the action
 - If ONE image: It is the page state AFTER the user action (no before-state available)
-
-You have code execution available. Use it when beneficial:
-- Zoom/crop into small text (input values, tooltips, labels, error messages) for accurate reading
-- Draw a bounding box around the interacted element and report normalized coordinates (0-1000 scale)
-- Count elements deterministically when multiples are visible
-- Compare before/after screenshots to identify visual changes when both are provided
 
 Analyze and extract:
 1. All visible UI elements (buttons, inputs, links, text fields)
@@ -36,12 +29,10 @@ Output as structured JSON:
   "statusIndicators": ["..."],
   "layout": "form|list|dashboard|...",
   "boundingBox": {"y0": 0, "x0": 0, "y1": 0, "x1": 0},
-  "codeTrace": "brief summary of code operations performed, or null if none",
   "stateChange": "description of what changed between before and after (omit if only one image)",
   "actionSucceeded": true
 }
 
-IMPORTANT: Always output valid JSON. Fields boundingBox, codeTrace, stateChange, and actionSucceeded are optional — include them only when applicable. Never omit the core fields (elements, interactedElement, pageContext, statusIndicators, layout).""",
+IMPORTANT: Always output valid JSON. Fields boundingBox, stateChange, and actionSucceeded are optional — include them only when applicable. Never omit the core fields (elements, interactedElement, pageContext, statusIndicators, layout).""",
     output_key="visual_analysis",
-    tools=[BuiltInCodeExecutionTool()],
 )

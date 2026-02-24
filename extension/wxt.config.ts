@@ -24,6 +24,7 @@ export default defineConfig({
       'unlimitedStorage',
       'sidePanel',
     ],
+    host_permissions: ['https://generativelanguage.googleapis.com/*'],
     commands: {
       'start-recording': {
         suggested_key: { default: 'Ctrl+Shift+R' },

@@ -39,12 +39,12 @@ export function BackendSetupBanner() {
     <div class="mx-3 mt-2 p-2.5 bg-indigo-50 border border-indigo-200 rounded-lg">
       <div class="flex items-start gap-2">
         <div class="flex-1 text-xs text-indigo-700">
-          Configure AI analysis to enrich your recordings with intelligent descriptions.{' '}
+          Unlock AI analysis — get a free Gemini API key in 2 minutes.{' '}
           <button
             onClick={handleOpenSettings}
             class="font-medium text-indigo-600 hover:text-indigo-800 underline"
           >
-            Settings
+            Set up now
           </button>
         </div>
         <button

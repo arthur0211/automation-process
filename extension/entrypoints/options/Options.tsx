@@ -13,9 +13,11 @@ export function Options() {
   const [branding, setBranding] = useState<BrandingSettings>(DEFAULT_BRANDING_SETTINGS);
   const [githubPat, setGithubPat] = useState('');
   const [githubRepo, setGithubRepo] = useState('');
+  const [geminiApiKey, setGeminiApiKey] = useState('');
   const [saved, setSaved] = useState(false);
   const [backendStatus, setBackendStatus] = useState<ConnectionStatus>('idle');
   const [standaloneStatus, setStandaloneStatus] = useState<ConnectionStatus>('idle');
+  const [geminiStatus, setGeminiStatus] = useState<ConnectionStatus>('idle');
 
   useEffect(() => {
     chrome.storage.local.get(
@@ -28,6 +30,7 @@ export function Options() {
         'brandingSettings',
         'github_pat',
         'github_repo',
+        'geminiApiKey',
       ],
       (result) => {
         if (result.settings) {
@@ -57,6 +60,9 @@ export function Options() {
         if (result.github_repo) {
           setGithubRepo(result.github_repo as string);
         }
+        if (result.geminiApiKey) {
+          setGeminiApiKey(result.geminiApiKey as string);
+        }
       },
     );
   }, []);
@@ -77,6 +83,7 @@ export function Options() {
         brandingSettings: branding,
         github_pat: githubPat,
         github_repo: githubRepo,
+        geminiApiKey,
       },
       () => {
         setSaved(true);
@@ -123,6 +130,38 @@ export function Options() {
     },
     [backendApiKey],
   );
+
+  const testGeminiConnection = useCallback(() => {
+    setGeminiStatus('testing');
+
+    fetch(
+      'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent',
+      {
+        method: 'POST',
+        headers: {
+          'x-goog-api-key': geminiApiKey,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          contents: [{ parts: [{ text: 'Respond with: {"status":"ok"}' }] }],
+        }),
+        signal: AbortSignal.timeout(5000),
+      },
+    )
+      .then((response) => {
+        if (response.ok) {
+          setGeminiStatus('success');
+          setTimeout(() => setGeminiStatus('idle'), 3000);
+        } else {
+          setGeminiStatus('error');
+          setTimeout(() => setGeminiStatus('idle'), 5000);
+        }
+      })
+      .catch(() => {
+        setGeminiStatus('error');
+        setTimeout(() => setGeminiStatus('idle'), 5000);
+      });
+  }, [geminiApiKey]);
 
   return (
     <div class="max-w-2xl mx-auto p-6 space-y-6">
@@ -339,14 +378,67 @@ export function Options() {
         </div>
       </div>
 
+      <div class="space-y-4 bg-white p-5 rounded-lg shadow-sm">
+        <h2 class="text-sm font-semibold text-gray-700">AI Analysis</h2>
+        <p class="text-xs text-gray-400">
+          Enable AI-powered analysis of your recordings using the Gemini API.
+        </p>
+        <div>
+          <label class="block text-xs font-medium text-gray-600 mb-1">
+            Gemini API Key
+            <span
+              class="inline-flex items-center justify-center w-4 h-4 ml-1 text-[10px] font-bold text-gray-400 bg-gray-100 rounded-full cursor-help align-middle"
+              title="Your Gemini API key for AI-powered screenshot analysis and description generation."
+            >
+              i
+            </span>
+          </label>
+          <div class="flex items-center gap-2">
+            <input
+              type="password"
+              placeholder="Paste your Gemini API key"
+              value={geminiApiKey}
+              onInput={(e) => {
+                setGeminiApiKey((e.target as HTMLInputElement).value);
+                setSaved(false);
+              }}
+              class="flex-1 px-3 py-2 text-sm border border-gray-200 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-400"
+            />
+            <button
+              type="button"
+              disabled={!geminiApiKey || geminiStatus === 'testing'}
+              onClick={testGeminiConnection}
+              class="px-3 py-2 text-xs font-medium rounded-md transition-colors whitespace-nowrap disabled:opacity-40 disabled:cursor-not-allowed bg-gray-100 text-gray-700 hover:bg-gray-200"
+            >
+              {geminiStatus === 'testing' && <span class="animate-pulse">Testing...</span>}
+              {geminiStatus === 'success' && <span class="text-green-600">&#10003; Connected</span>}
+              {geminiStatus === 'error' && <span class="text-red-600">&#10007; Failed</span>}
+              {geminiStatus === 'idle' && 'Test'}
+            </button>
+          </div>
+          <p class="text-xs text-gray-400 mt-1">
+            <a
+              href="https://aistudio.google.com/app/apikey"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="text-blue-500 hover:text-blue-600 underline"
+            >
+              Get a free key at Google AI Studio &rarr;
+            </a>
+          </p>
+          <p class="text-xs text-gray-400 mt-1">
+            Your API key is stored locally in your browser and never sent to any server.
+          </p>
+        </div>
+      </div>
+
       <details class="bg-white rounded-lg shadow-sm">
         <summary class="px-5 py-4 text-sm font-semibold text-gray-700 cursor-pointer select-none hover:bg-gray-50 rounded-lg">
           Advanced
         </summary>
         <div class="space-y-4 px-5 pb-5">
           <p class="text-xs text-gray-400">
-            Connect to an ADK backend for LLM-powered enrichment. Leave empty for template-only
-            mode.
+            For power users who run their own ADK backend. Not needed if using Gemini API key above.
           </p>
           <div>
             <label class="block text-xs font-medium text-gray-600 mb-1">

@@ -136,6 +136,7 @@ export interface CapturedAction {
   llmDescription?: string;
   llmVisualAnalysis?: VisualAnalysis;
   visualGrounding?: VisualGrounding;
+  enrichmentSource?: 'gemini-direct' | 'adk-backend';
   tabId?: number;
   tabTitle?: string;
 }

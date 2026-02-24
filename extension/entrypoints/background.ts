@@ -9,11 +9,8 @@ import {
 } from '@/lib/storage/db';
 import { captureScreenshot } from '@/lib/capture/screenshot';
 import { generateDescription } from '@/lib/capture/description-generator';
-import {
-  processActionWithBackend,
-  validateRecordingWithBackend,
-  analyzeComplexAction,
-} from '@/lib/api/backend-client';
+import { analyzeComplexAction } from '@/lib/api/backend-client';
+import type { ValidationProvider } from '@/lib/api/enrichment-provider';
 import type {
   RecordingStatus,
   RecordingSession,
@@ -307,10 +304,9 @@ const COMPLEX_ANALYSIS_CONFIDENCE_THRESHOLD = 0.5;
 
 async function enrichActionInBackground(action: CapturedAction) {
   try {
-    const result = await chrome.storage.local.get(['backendUrl', 'backendApiKey']);
-    const backendUrl = result.backendUrl as string | undefined;
-    if (!backendUrl) return;
-    const apiKey = result.backendApiKey as string | undefined;
+    const { getEnrichmentProvider } = await import('@/lib/api/enrichment-provider');
+    const provider = await getEnrichmentProvider();
+    if (!provider) return;
 
     // Look up previous action for temporal context (before/after)
     let prevScreenshotDataUrl: string | undefined;
@@ -319,11 +315,9 @@ async function enrichActionInBackground(action: CapturedAction) {
       prevScreenshotDataUrl = prevAction?.screenshotDataUrl;
     }
 
-    const enriched = await processActionWithBackend(
+    const enriched = await provider.enrichAction(
       action,
       action.screenshotDataUrl || '',
-      backendUrl,
-      apiKey,
       prevScreenshotDataUrl,
     );
     if (!enriched) return;
@@ -331,6 +325,7 @@ async function enrichActionInBackground(action: CapturedAction) {
     const changes: Partial<CapturedAction> = {
       llmDescription: enriched.humanDescription,
       llmVisualAnalysis: enriched.visualAnalysis,
+      enrichmentSource: provider.name === 'gemini-direct' ? 'gemini-direct' : 'adk-backend',
       ...(enriched.visualGrounding && { visualGrounding: enriched.visualGrounding }),
     };
 
@@ -341,8 +336,9 @@ async function enrichActionInBackground(action: CapturedAction) {
     await updateAction(action.id, changes);
     broadcastStatus();
 
-    // Trigger complex analysis for low-confidence selectors
+    // Trigger complex analysis for low-confidence selectors (backend provider only)
     if (
+      provider.capabilities.complexAnalysis &&
       action.element.selectors.confidence !== undefined &&
       action.element.selectors.confidence < COMPLEX_ANALYSIS_CONFIDENCE_THRESHOLD
     ) {
@@ -355,10 +351,12 @@ async function enrichActionInBackground(action: CapturedAction) {
 
 async function validateRecordingInBackground(sessionId: string) {
   try {
-    const result = await chrome.storage.local.get(['standaloneAgentsUrl', 'backendApiKey']);
-    const agentsUrl = result.standaloneAgentsUrl as string | undefined;
-    if (!agentsUrl) return;
-    const apiKey = result.backendApiKey as string | undefined;
+    const { getEnrichmentProvider } = await import('@/lib/api/enrichment-provider');
+    const provider = await getEnrichmentProvider();
+    if (!provider || !provider.capabilities.docValidation) return;
+
+    // Check if provider supports validation (implements validateRecording)
+    if (!('validateRecording' in provider)) return;
 
     await updateSession(sessionId, { validationStatus: 'running' });
     broadcastStatus();
@@ -367,11 +365,9 @@ async function validateRecordingInBackground(sessionId: string) {
     if (!session) return;
     const actions = await getSessionActions(sessionId);
 
-    const validationResult = await validateRecordingWithBackend(
+    const validationResult = await (provider as unknown as ValidationProvider).validateRecording(
       session,
       actions,
-      agentsUrl,
-      apiKey,
     );
 
     if (validationResult) {
