@@ -371,6 +371,29 @@ describe('processActionWithBackend', () => {
       branches: [{ condition: 'Email', description: 'Login with email' }],
     });
   });
+
+  it('parses boundingBox and codeTrace from visual_analysis (ROAD-28)', async () => {
+    setupFetchMock(fetchMock, {
+      description: 'Clicks the Submit button',
+      visual_analysis: {
+        elements: [{ type: 'button', text: 'Submit', position: 'center' }],
+        layout: 'form',
+        boundingBox: { y0: 100, x0: 200, y1: 150, x1: 400 },
+        codeTrace: 'Cropped region around button, drew bounding box',
+      },
+      decision_analysis: { isDecisionPoint: false, reason: '', branches: [] },
+    });
+
+    const result = await processActionWithBackend(
+      createAction({ sessionId: 'sess-bbox' }),
+      'data:image/png;base64,abc123',
+      BACKEND_URL,
+    );
+
+    expect(result).not.toBeNull();
+    expect(result!.visualAnalysis.boundingBox).toEqual({ y0: 100, x0: 200, y1: 150, x1: 400 });
+    expect(result!.visualAnalysis.codeTrace).toBe('Cropped region around button, drew bounding box');
+  });
 });
 
 describe('validateRecordingWithBackend', () => {

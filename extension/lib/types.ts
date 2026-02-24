@@ -92,6 +92,8 @@ export interface VisualAnalysis {
   layout?: string;
   confidence?: number;
   reasoning?: string;
+  boundingBox?: { y0: number; x0: number; y1: number; x1: number };
+  codeTrace?: string;
 }
 
 // ─── Captured Action ────────────────────────────────────────────────────────
