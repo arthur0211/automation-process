@@ -26,7 +26,8 @@ jobs:
           cache-dependency-path: extension/package-lock.json
 
       - run: npm ci --ignore-scripts
-      - run: npm install --no-save lightningcss-linux-x64-gnu@1.31.1
+      - name: Install Linux-native binaries (cross-platform CI fix)
+        run: npm install --no-save lightningcss-linux-x64-gnu@1.31.1 @tailwindcss/oxide-linux-x64-gnu@4.2.0
       - run: npx wxt prepare
 
       - name: Format check
