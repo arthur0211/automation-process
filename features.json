@@ -856,7 +856,7 @@
         "Step detail shows actual URL instead of empty field",
         "All exporters receive valid URLs for navigate steps"
       ],
-      "status": "planned",
+      "status": "done",
       "phase": "refine-1",
       "priority": "P0",
       "effort": "S",
@@ -873,7 +873,7 @@
         "Add test for empty URL edge case",
         "Verify all other exporters handle empty URLs gracefully"
       ],
-      "status": "planned",
+      "status": "done",
       "phase": "refine-1",
       "priority": "P0",
       "effort": "S",
@@ -893,7 +893,7 @@
         "Can be dismissed/minimized by user",
         "Does not appear in captured screenshots"
       ],
-      "status": "planned",
+      "status": "done",
       "phase": "refine-1",
       "priority": "P1",
       "effort": "M",
@@ -912,7 +912,7 @@
         "Quick actions (Copy, Preview) always visible outside accordion",
         "Section headers show count of export options"
       ],
-      "status": "planned",
+      "status": "done",
       "phase": "refine-1",
       "priority": "P1",
       "effort": "M",
@@ -929,7 +929,7 @@
         "Tooltip on hover: 'Double-click to rename'",
         "Keep double-click as alternative interaction"
       ],
-      "status": "planned",
+      "status": "done",
       "phase": "refine-1",
       "priority": "P1",
       "effort": "S",
