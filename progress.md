@@ -2,15 +2,16 @@
 
 ## Current State
 
-- **Latest commit**: `feat(extension,backend): make AI backend integration discoverable and functional`
-- **Total commits**: 84
+- **Latest commit**: `feat(extension,backend): add Gemini BYOK direct API + EnrichmentProvider architecture`
+- **Total commits**: 88
 - **Tests**: 349 passing (extension), 18 test files
 - **TS errors**: 0
 - **Lint errors**: 0
-- **Extension**: 70 features done, 6 planned (external deps), 5 UX refinements remaining (Sprint Refine-2)
-- **Backend**: ADK agents consolidated (single app), model versions configurable via env vars, Dockerfile fixed, health check, API key auth. Now with python-dotenv auto-loading and correct env var mapping.
+- **Extension**: 71 features done, 6 planned (external deps), 5 UX refinements remaining (Sprint Refine-2)
+- **Backend**: 3-agent pipeline (removed broken BuiltInCodeExecutionTool + visual_grounder). Dotenv auto-loading.
+- **AI Enrichment**: 3-tier model: Tier 0 (no AI), Tier 1 (Gemini BYOK direct), Tier 2 (ADK backend Vertex AI)
+- **Architecture**: EnrichmentProvider interface unifies both paths. GeminiDirectProvider + AdkBackendProvider.
 - **UX Testing**: Comprehensive E2E testing via Playwright MCP completed (2026-02-24). 23 UX issues documented, 2 bugs found, 3 Agent Team reviews completed.
-- **Backend Discoverability**: Status badge, setup banner, AI loading states, connection test buttons, dotenv integration (2026-02-24).
 
 ## UX Testing Session (2026-02-24)
 
@@ -132,6 +133,20 @@
 
 ## Completed This Session
 
+### Gemini BYOK + EnrichmentProvider Architecture (2026-02-24)
+- **REFINE-12**: Gemini BYOK direct API + EnrichmentProvider
+  - Created `EnrichmentProvider` interface + factory (priority: backendUrl > geminiApiKey > none)
+  - Created `GeminiDirectProvider` with combined 3-in-1 prompt (Gemini REST API direct)
+  - Created `RateLimiter` for free tier (10 RPM, 250 RPD, queue-based, daily counter)
+  - Created `AdkBackendProvider` wrapping existing backend-client.ts
+  - Refactored background.ts to use provider pattern (dynamic import)
+  - Added Gemini API key field in Options with Test Connection
+  - Added `host_permissions` for generativelanguage.googleapis.com
+  - Updated BackendBadge: 3 modes (green=backend, blue=Gemini, gray=none)
+  - **Backend Phase 0**: Removed `BuiltInCodeExecutionTool` (broken in sub-agents per ADK limitation)
+  - **Backend Phase 0**: Removed `visual_grounder` from pipeline (redundant with native bounding boxes)
+  - Simplified to 3-agent parallel pipeline (screenshot_analyzer + description_generator + decision_detector)
+
 ### Backend AI Discoverability (2026-02-24)
 - **REFINE-11**: Made backend AI integration discoverable and functional
   - Created `useBackendConfig` hook for reading chrome.storage.local backend settings with live updates
@@ -228,6 +243,9 @@
 78. `fix(extension): resolve ESLint react-hooks errors in App and UndoToast`
 79. `chore: mark Sprint Refine-1 features as done (REFINE-01 to REFINE-05)`
 80. `feat(extension,backend): make AI backend integration discoverable and functional`
+81. `feat(extension,backend): add Gemini BYOK direct API + EnrichmentProvider architecture`
+82. `fix(extension): remove unused isConfigured destructure in BackendBadge`
+83. `fix(ci): exclude runtime API modules from coverage thresholds`
 
 ## 360 Audit Results (Updated 2026-02-24)
 
@@ -236,7 +254,7 @@
 |------|-------|-------|
 | Extension Code | 9.5/10 | 349 tests, 0 TS errors, 0 lint errors, 10 exporters. Bugs fixed. |
 | Tests | A+ | 349 tests across 18 files, all passing |
-| Features | 86% | 70/81 features done (6 external deps + 5 UX refinements planned) |
+| Features | 87% | 71/82 features done (6 external deps + 5 UX refinements planned) |
 | Backend | Deployable | Dockerfile fixed, health check, API auth, env validation, consolidated |
 | Documentation | 9/10 | CLAUDE.md, README, features.json, progress.md all up to date |
 | Automation | 9/10 | GitHub Actions CI, ESLint + Prettier |

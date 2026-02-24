@@ -1044,6 +1044,29 @@
       "effort": "M",
       "source": "ux-testing",
       "relatedIssues": ["UX-23"]
+    },
+    {
+      "id": "REFINE-12",
+      "name": "Gemini BYOK direct API + EnrichmentProvider architecture",
+      "description": "Add Tier 1 BYOK path: users paste a free Gemini API key and the extension calls the Gemini REST API directly from the background service worker, eliminating backend dependency. EnrichmentProvider interface unifies both paths.",
+      "acceptanceCriteria": [
+        "EnrichmentProvider interface with factory (backendUrl > geminiApiKey > none)",
+        "GeminiDirectProvider with combined 3-in-1 prompt (description + visual + decision)",
+        "RateLimiter for Gemini free tier (10 RPM, 250 RPD) with queue and daily counter",
+        "AdkBackendProvider wrapping existing backend-client functions",
+        "background.ts uses provider pattern for enrichment orchestration",
+        "Gemini API key field in Options page with Test Connection button",
+        "host_permissions for generativelanguage.googleapis.com in manifest",
+        "BackendBadge shows 3 modes: green (backend), blue (Gemini), gray (none)",
+        "Backend Phase 0: remove broken BuiltInCodeExecutionTool from sub-agents",
+        "Backend: remove visual_grounder from pipeline (redundant with native bounding boxes)",
+        "Backend: simplified to 3-agent parallel pipeline"
+      ],
+      "status": "done",
+      "phase": "refine-1.5",
+      "priority": "P0",
+      "effort": "L",
+      "source": "architecture-review"
     }
   ]
 }
