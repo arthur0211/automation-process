@@ -286,11 +286,20 @@ async function enrichActionInBackground(action: CapturedAction) {
     if (!backendUrl) return;
     const apiKey = result.backendApiKey as string | undefined;
 
+    // Look up previous action for temporal context (before/after)
+    let prevScreenshotDataUrl: string | undefined;
+    if (action.sequenceNumber > 1) {
+      const actions = await getSessionActions(action.sessionId);
+      const prevAction = actions.find(a => a.sequenceNumber === action.sequenceNumber - 1);
+      prevScreenshotDataUrl = prevAction?.screenshotDataUrl;
+    }
+
     const enriched = await processActionWithBackend(
       action,
       action.screenshotDataUrl || '',
       backendUrl,
       apiKey,
+      prevScreenshotDataUrl,
     );
     if (!enriched) return;
 
