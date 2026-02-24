@@ -302,6 +302,88 @@ describe('exportToCypress', () => {
     expect(result).toContain('// Unsupported action type: unknown');
   });
 
+  it('does not crash when next action has empty URL string', () => {
+    const session = createSession();
+    const actions = [
+      createAction({
+        id: 'a1',
+        sequenceNumber: 1,
+        actionType: 'click',
+        url: 'https://example.com/login',
+        description: 'Click login',
+      }),
+      createAction({
+        id: 'a2',
+        sequenceNumber: 2,
+        actionType: 'click',
+        url: '',
+        description: 'Click something',
+      }),
+    ];
+    const result = exportToCypress(session, actions);
+
+    expect(result).toContain("describe('Test Session'");
+    expect(result).toContain('.click();');
+    // URL assertion should be skipped because empty URL is invalid
+    expect(result).not.toContain('cy.url()');
+  });
+
+  it('does not crash when next action has invalid URL string', () => {
+    const session = createSession();
+    const actions = [
+      createAction({
+        id: 'a1',
+        sequenceNumber: 1,
+        actionType: 'click',
+        url: 'https://example.com/page',
+        description: 'Click link',
+      }),
+      createAction({
+        id: 'a2',
+        sequenceNumber: 2,
+        actionType: 'click',
+        url: 'not-a-valid-url',
+        description: 'Click something',
+      }),
+    ];
+    const result = exportToCypress(session, actions);
+
+    expect(result).toContain("describe('Test Session'");
+    expect(result).toContain('.click();');
+    // URL assertion should be skipped because URL is invalid
+    expect(result).not.toContain('cy.url()');
+  });
+
+  it('does not crash when contextmenu next action has empty URL', () => {
+    const session = createSession();
+    const actions = [
+      createAction({
+        id: 'a1',
+        sequenceNumber: 1,
+        actionType: 'contextmenu',
+        url: 'https://example.com/page',
+        description: 'Right-click item',
+        element: createElementMetadata({
+          tag: 'div',
+          text: 'File item',
+          selectors: createSelector({ testId: undefined, css: '.file-item' }),
+        }),
+      }),
+      createAction({
+        id: 'a2',
+        sequenceNumber: 2,
+        actionType: 'click',
+        url: '',
+        description: 'Click option',
+      }),
+    ];
+    const result = exportToCypress(session, actions);
+
+    expect(result).toContain('.rightclick();');
+    // URL assertion should be skipped because empty URL is invalid
+    expect(result).not.toContain('cy.url()');
+  });
+
   it('skips text longer than 50 chars for contains and falls back', () => {
     const longText = 'A'.repeat(51);
     const session = createSession();

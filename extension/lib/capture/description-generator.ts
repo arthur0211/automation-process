@@ -30,12 +30,13 @@ function describeElement(action: CapturedAction): string {
 }
 
 function getPageName(url: string): string {
+  if (!url) return 'unknown page';
   try {
     const u = new URL(url);
     const path = u.pathname === '/' ? '' : ` (${u.pathname})`;
     return `${u.hostname}${path}`;
   } catch {
-    return url;
+    return url || 'unknown page';
   }
 }
 
@@ -77,6 +78,14 @@ export function generateDescription(action: CapturedAction): string {
 
     case 'contextmenu':
       return `Right-clicked ${target} on ${page}`;
+
+    case 'keydown': {
+      const keyCombo = action.inputValue || 'unknown key';
+      return `Pressed ${keyCombo} on ${target}`;
+    }
+
+    case 'dblclick':
+      return `Double-clicked on ${target} on ${page}`;
 
     default:
       return `Performed action on ${page}`;

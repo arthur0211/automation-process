@@ -1,6 +1,6 @@
 // ─── Action Types ───────────────────────────────────────────────────────────
 
-export type ActionType = 'click' | 'input' | 'scroll' | 'navigate' | 'submit' | 'hover' | 'contextmenu';
+export type ActionType = 'click' | 'input' | 'scroll' | 'navigate' | 'submit' | 'hover' | 'contextmenu' | 'keydown' | 'dblclick';
 
 // ─── Element Metadata ───────────────────────────────────────────────────────
 
@@ -241,6 +241,7 @@ export interface StatusPayload {
   status: RecordingStatus;
   sessionId?: string;
   actionCount: number;
+  settings?: CaptureSettings;
 }
 
 export interface TabCapturePayload {

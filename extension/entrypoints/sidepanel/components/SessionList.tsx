@@ -1,4 +1,4 @@
-import { useState } from 'preact/hooks';
+import { useState, useRef } from 'preact/hooks';
 import type { RecordingSession } from '@/lib/types';
 
 interface SessionListProps {
@@ -46,6 +46,7 @@ export function SessionList({
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editValue, setEditValue] = useState('');
   const [importError, setImportError] = useState<string | null>(null);
+  const renameCancelledRef = useRef(false);
 
   function handleImportClick() {
     const input = document.createElement('input');
@@ -71,6 +72,10 @@ export function SessionList({
   }
 
   function commitRename(id: string) {
+    if (renameCancelledRef.current) {
+      renameCancelledRef.current = false;
+      return;
+    }
     const trimmed = editValue.trim();
     if (trimmed && trimmed !== sessions.find((s) => s.id === id)?.name) {
       onRename(id, trimmed);
@@ -124,7 +129,7 @@ export function SessionList({
         <div
           key={session.id}
           onClick={() => onSelect(session)}
-          class="flex items-start gap-2 p-2.5 border-b border-gray-100 cursor-pointer transition-colors hover:bg-gray-50"
+          class="group flex items-start gap-2 p-2.5 border-b border-gray-100 cursor-pointer transition-colors hover:bg-gray-50"
         >
           <span
             class={`w-2 h-2 rounded-full flex-shrink-0 mt-1.5 ${statusColors[session.status] || 'bg-gray-400'}`}
@@ -137,7 +142,10 @@ export function SessionList({
                 onInput={(e) => setEditValue((e.target as HTMLInputElement).value)}
                 onKeyDown={(e) => {
                   if (e.key === 'Enter') commitRename(session.id);
-                  if (e.key === 'Escape') setEditingId(null);
+                  if (e.key === 'Escape') {
+                    renameCancelledRef.current = true;
+                    setEditingId(null);
+                  }
                 }}
                 onBlur={() => commitRename(session.id)}
                 onClick={(e) => e.stopPropagation()}
@@ -145,14 +153,30 @@ export function SessionList({
                 autoFocus
               />
             ) : (
-              <div
-                class="text-sm text-gray-800 truncate"
-                onDblClick={(e) => {
-                  e.stopPropagation();
-                  startRename(session.id, session.name);
-                }}
-              >
-                {session.name}
+              <div class="flex items-center gap-1">
+                <div
+                  class="text-sm text-gray-800 truncate"
+                  title="Double-click to rename"
+                  onDblClick={(e) => {
+                    e.stopPropagation();
+                    startRename(session.id, session.name);
+                  }}
+                >
+                  {session.name}
+                </div>
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    startRename(session.id, session.name);
+                  }}
+                  class="flex-shrink-0 opacity-0 group-hover:opacity-100 text-gray-400 hover:text-gray-600 transition-opacity duration-150"
+                  title="Click to rename"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/>
+                    <path d="m15 5 4 4"/>
+                  </svg>
+                </button>
               </div>
             )}
             <div class="text-xs text-gray-400 mt-0.5 truncate">{truncateUrl(session.url)}</div>

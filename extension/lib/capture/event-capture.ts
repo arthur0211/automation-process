@@ -92,12 +92,24 @@ function sendAction(action: CapturedAction) {
   });
 }
 
+// ─── Recording Indicator Exclusion ───────────────────────────────────────────
+
+function isInsideRecordingIndicator(target: EventTarget | null): boolean {
+  if (!target || !(target instanceof Node)) return false;
+  const host = document.getElementById('agentic-recorder-indicator');
+  if (!host) return false;
+  // The target could be the host itself (unlikely due to Shadow DOM)
+  // or an ancestor chain could include it
+  return host === target || host.contains(target as Node);
+}
+
 // ─── Event Handlers ─────────────────────────────────────────────────────────
 
 function handleClick(event: MouseEvent) {
   if (!isCapturing) return;
   const target = event.target as Element;
   if (!target || target === document.documentElement || target === document.body) return;
+  if (isInsideRecordingIndicator(target)) return;
 
   const action = buildAction('click', target, {
     clickCoordinates: {
@@ -115,22 +127,27 @@ const inputTimers = new Map<Element, ReturnType<typeof setTimeout>>();
 
 function handleInput(event: Event) {
   if (!isCapturing) return;
-  const target = event.target as HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement;
+  const target = event.target as HTMLElement;
   if (!target) return;
 
-  // Clear previous timer for this element
   const existing = inputTimers.get(target);
   if (existing) clearTimeout(existing);
 
-  // Debounce: wait after last input
   inputTimers.set(
     target,
     setTimeout(() => {
       inputTimers.delete(target);
-      const value = (target as HTMLInputElement).type === 'password' ? '••••••••' : target.value;
-      const action = buildAction('input', target, {
-        inputValue: value,
-      });
+      let value: string;
+      if ((target as HTMLInputElement).type === 'password') {
+        value = '••••••••';
+      } else if ('value' in target) {
+        value = (target as HTMLInputElement).value;
+      } else if (target.isContentEditable) {
+        value = target.innerText?.slice(0, 500) || '';
+      } else {
+        value = '';
+      }
+      const action = buildAction('input', target as Element, { inputValue: value });
       sendAction(action);
     }, captureSettings.inputDebounceMs),
   );
@@ -172,6 +189,7 @@ function handleContextMenu(event: MouseEvent) {
   if (!isCapturing) return;
   const target = event.target as Element;
   if (!target || target === document.documentElement || target === document.body) return;
+  if (isInsideRecordingIndicator(target)) return;
 
   const action = buildAction('contextmenu', target, {
     clickCoordinates: {
@@ -228,6 +246,7 @@ function handleMouseOver(event: MouseEvent) {
   if (!isCapturing) return;
   const target = event.target as Element;
   if (!target || target === document.documentElement || target === document.body) return;
+  if (isInsideRecordingIndicator(target)) return;
   if (target === lastHoverTarget) return;
 
   if (hoverTimer) clearTimeout(hoverTimer);
@@ -266,16 +285,66 @@ function handleChange(event: Event) {
   sendAction(buildAction('input', target, { inputValue: target.value }));
 }
 
+// Keyboard event capture — only significant keys and shortcuts
+function handleKeydown(event: KeyboardEvent) {
+  if (!isCapturing) return;
+  const target = event.target as Element;
+  if (!target) return;
+
+  const key = event.key;
+  // Only capture significant keys
+  const significantKeys = ['Enter', 'Tab', 'Escape', 'Backspace', 'Delete'];
+  const isShortcut = (event.ctrlKey || event.metaKey) && /^[acvxzs]$/i.test(key);
+
+  if (!significantKeys.includes(key) && !isShortcut) return;
+
+  const keyCombo = [
+    event.ctrlKey ? 'Ctrl' : '',
+    event.metaKey ? 'Cmd' : '',
+    event.shiftKey ? 'Shift' : '',
+    event.altKey ? 'Alt' : '',
+    key,
+  ].filter(Boolean).join('+');
+
+  sendAction(buildAction('keydown', target, { inputValue: keyCombo }));
+}
+
+// Double-click capture — inline editing, word selection
+function handleDblClick(event: MouseEvent) {
+  if (!isCapturing) return;
+  const target = event.target as Element;
+  if (!target || target === document.documentElement || target === document.body) return;
+  if (isInsideRecordingIndicator(target)) return;
+
+  const action = buildAction('dblclick', target, {
+    clickCoordinates: {
+      x: event.clientX,
+      y: event.clientY,
+      pageX: event.pageX,
+      pageY: event.pageY,
+    },
+  });
+  sendAction(action);
+}
+
 // Navigation detection via History API patching
 let lastUrl = window.location.href;
 
 function checkNavigation() {
   if (!isCapturing) return;
   const currentUrl = window.location.href;
-  if (currentUrl !== lastUrl) {
+  if (currentUrl && currentUrl !== lastUrl) {
     lastUrl = currentUrl;
-    sendAction(buildAction('navigate', document.documentElement));
+    sendAction(buildAction('navigate', document.documentElement, { url: currentUrl }));
   }
+}
+
+function handlePopState() {
+  checkNavigation();
+}
+
+function handleHashChange() {
+  checkNavigation();
 }
 
 // ─── Public API ─────────────────────────────────────────────────────────────
@@ -283,6 +352,12 @@ function checkNavigation() {
 let navigationInterval: ReturnType<typeof setInterval> | null = null;
 
 export function startCapturing(sessionId: string, settings?: Partial<CaptureSettings>) {
+  if (isCapturing && sessionId === currentSessionId) {
+    // Already capturing for this session — just update settings if provided
+    if (settings) captureSettings = { ...DEFAULT_CAPTURE_SETTINGS, ...settings };
+    return;
+  }
+
   currentSessionId = sessionId;
   sequenceCounter = 0;
   isCapturing = true;
@@ -295,18 +370,22 @@ export function startCapturing(sessionId: string, settings?: Partial<CaptureSett
   document.addEventListener('submit', handleSubmit, true);
   document.addEventListener('change', handleChange, true);
   document.addEventListener('contextmenu', handleContextMenu, true);
+  document.addEventListener('keydown', handleKeydown, true);
+  document.addEventListener('dblclick', handleDblClick, true);
 
   if (captureSettings.captureHover) {
     document.addEventListener('mouseover', handleMouseOver, true);
   }
 
-  // Poll for SPA navigation changes
+  // Instant SPA navigation detection via popstate/hashchange
+  window.addEventListener('popstate', handlePopState);
+  window.addEventListener('hashchange', handleHashChange);
+
+  // Poll for SPA navigation changes (fallback for pushState/replaceState)
   navigationInterval = setInterval(checkNavigation, 500);
 }
 
 export function stopCapturing() {
-  isCapturing = false;
-
   document.removeEventListener('click', handleClick, true);
   document.removeEventListener('input', handleInput, true);
   document.removeEventListener('scroll', handleScroll, true);
@@ -314,17 +393,40 @@ export function stopCapturing() {
   document.removeEventListener('change', handleChange, true);
   document.removeEventListener('contextmenu', handleContextMenu, true);
   document.removeEventListener('mouseover', handleMouseOver, true);
+  document.removeEventListener('keydown', handleKeydown, true);
+  document.removeEventListener('dblclick', handleDblClick, true);
+
+  window.removeEventListener('popstate', handlePopState);
+  window.removeEventListener('hashchange', handleHashChange);
 
   if (navigationInterval) {
     clearInterval(navigationInterval);
     navigationInterval = null;
   }
 
-  // Clear pending input debounce timers
-  for (const timer of inputTimers.values()) {
+  // Flush pending input debounce timers (don't lose last input)
+  for (const [element, timer] of inputTimers.entries()) {
     clearTimeout(timer);
+    // Fire the pending input action immediately
+    const target = element as HTMLInputElement | HTMLTextAreaElement | HTMLElement;
+    let value: string;
+    if ((target as HTMLInputElement).type === 'password') {
+      value = '••••••••';
+    } else if ('value' in target) {
+      value = (target as HTMLInputElement).value;
+    } else if (target.isContentEditable) {
+      value = target.innerText?.slice(0, 500) || '';
+    } else {
+      value = '';
+    }
+    if (value) {
+      const action = buildAction('input', target as Element, { inputValue: value });
+      sendAction(action);
+    }
   }
   inputTimers.clear();
+
+  isCapturing = false;
 
   if (scrollTimer) {
     clearTimeout(scrollTimer);

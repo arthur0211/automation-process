@@ -54,9 +54,14 @@ function actionToCode(
     case 'submit':
       lines.push(`${indent}${locator}.should('be.visible').click();`);
       if (nextAction && nextAction.url !== action.url) {
-        lines.push(
-          `${indent}cy.url().should('include', '${escapeSingleQuotes(new URL(nextAction.url).pathname)}');`,
-        );
+        try {
+          const pathname = new URL(nextAction.url).pathname;
+          lines.push(
+            `${indent}cy.url().should('include', '${escapeSingleQuotes(pathname)}');`,
+          );
+        } catch {
+          // Non-fatal: skip URL assertion if URL is invalid
+        }
       }
       break;
     case 'input': {
@@ -81,9 +86,14 @@ function actionToCode(
     case 'contextmenu':
       lines.push(`${indent}${locator}.rightclick();`);
       if (nextAction && nextAction.url !== action.url) {
-        lines.push(
-          `${indent}cy.url().should('include', '${escapeSingleQuotes(new URL(nextAction.url).pathname)}');`,
-        );
+        try {
+          const pathname = new URL(nextAction.url).pathname;
+          lines.push(
+            `${indent}cy.url().should('include', '${escapeSingleQuotes(pathname)}');`,
+          );
+        } catch {
+          // Non-fatal: skip URL assertion if URL is invalid
+        }
       }
       break;
     default:
