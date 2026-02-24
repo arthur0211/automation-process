@@ -49,8 +49,8 @@ export function exportToHtml(
         ${playButton}
       </div>
       ${
-        action.screenshotDataUrl
-          ? `<div class="screenshot"><img src="${action.screenshotDataUrl}" alt="Step ${index + 1}" loading="lazy" /></div>`
+        action.visualGrounding?.annotatedImageBase64 || action.screenshotDataUrl
+          ? `<div class="screenshot"><img src="${action.visualGrounding?.annotatedImageBase64 || action.screenshotDataUrl}" alt="Step ${index + 1}" loading="lazy" /></div>`
           : ''
       }
       <div class="step-description">${escapeHtml(action.llmDescription || action.description)}</div>

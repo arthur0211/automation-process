@@ -49,8 +49,8 @@ export function generatePrintHtml(
         ${action.decisionPoint.isDecisionPoint ? '<span class="decision-badge">Decision Point</span>' : ''}
       </div>
       ${
-        action.screenshotDataUrl
-          ? `<div class="screenshot"><img src="${action.screenshotDataUrl}" alt="Step ${index + 1}" /></div>`
+        action.visualGrounding?.annotatedImageBase64 || action.screenshotDataUrl
+          ? `<div class="screenshot"><img src="${action.visualGrounding?.annotatedImageBase64 || action.screenshotDataUrl}" alt="Step ${index + 1}" /></div>`
           : ''
       }
       <div class="step-description">${escapeHtml(action.llmDescription || action.description)}</div>
